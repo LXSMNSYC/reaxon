@@ -12,3 +12,6 @@ test
 appveyor.yml
 .nvmrc
 .git
+.vscode
+lib
+.merlin
