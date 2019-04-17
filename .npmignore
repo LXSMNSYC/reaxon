@@ -1,0 +1,14 @@
+assets
+coverage
+.nyc_output
+docs
+src
+test
+.babelrc
+.esdoc.json
+.esdoc.old.json
+.eslintrc.json
+.travis.yml
+appveyor.yml
+.nvmrc
+.git
