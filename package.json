@@ -4,7 +4,9 @@
   "description": "Reactive Extensions for Reason",
   "main": "index.js",
   "scripts": {
-    "test": "echo \"Error: no test specified\" && exit 1"
+    "build": "./node_modules/.bin/bsb -make-world",
+    "start": "./node_modules/.bin/bsb -make-world -w",
+    "clean": "./node_modules/.bin/bsb -clean-world"
   },
   "repository": {
     "type": "git",
@@ -22,7 +24,9 @@
     "url": "https://github.com/LXSMNSYC/reaxon/issues"
   },
   "homepage": "https://github.com/LXSMNSYC/reaxon#readme",
-  "dependencies": {},
+  "dependencies": {
+    "bs-webapi": "^0.14.1"
+  },
   "devDependencies": {
     "bs-platform": "^5.0.2"
   }
