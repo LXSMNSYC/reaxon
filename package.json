@@ -1,0 +1,29 @@
+{
+  "name": "reaxon",
+  "version": "0.1.0",
+  "description": "Reactive Extensions for Reason",
+  "main": "index.js",
+  "scripts": {
+    "test": "echo \"Error: no test specified\" && exit 1"
+  },
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/LXSMNSYC/reaxon.git"
+  },
+  "keywords": [
+    "reactivex",
+    "reactive-extensions",
+    "reaxon",
+    "rx"
+  ],
+  "author": "LXSMNSYC (alexis.munsayac@gmail.com)",
+  "license": "MIT",
+  "bugs": {
+    "url": "https://github.com/LXSMNSYC/reaxon/issues"
+  },
+  "homepage": "https://github.com/LXSMNSYC/reaxon#readme",
+  "dependencies": {},
+  "devDependencies": {
+    "bs-platform": "^5.0.2"
+  }
+}
