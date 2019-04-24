@@ -10,12 +10,12 @@ type option('a) =
   
 type callable = unit => unit;
   
-type cancellable = {
+type t = {
   state: ref(cancelState),
-  linked: ref(option(cancellable)),
+  linked: ref(option(t)),
   listener: ref(option(callable)),
   
-  composition: ref(list(cancellable)),
+  composition: ref(list(t)),
   listeners: ref(list(callable)),
 };
 
@@ -29,21 +29,21 @@ let make = () => {
   };
 };
 
-let cancelled = (c: cancellable) => c.state^ == CANCELLED;
+let cancelled = (c: t) => c.state^ == CANCELLED;
 
-let addListener = (c: callable, src: cancellable) => {
+let addListener = (c: callable, src: t) => {
   if (!cancelled(src)) {
     src.listeners := [c] @ src.listeners^;
   }
 };
 
-let removeListener = (c: callable, src: cancellable) => {
+let removeListener = (c: callable, src: t) => {
   if (!cancelled(src)) {
     src.listeners := src.listeners^ |> List.filter(x => x != c);
   }
 };
 
-let unlink = (src: cancellable) => {
+let unlink = (src: t) => {
   if (!cancelled(src) && src.linked^ != None) {
     switch (src.listener^) {
       | Some(c) => src |> removeListener(c);
@@ -55,7 +55,7 @@ let unlink = (src: cancellable) => {
   }
 };
 
-let rec cancel = (src: cancellable) => {
+let rec cancel = (src: t) => {
   if (!cancelled(src)) {
     switch(src.linked^) {
       | Some(linked) => {
@@ -71,7 +71,7 @@ let rec cancel = (src: cancellable) => {
   }
 }
 
-let link = (c: cancellable, src: cancellable) => {
+let link = (c: t, src: t) => {
   if (c !== src) {
     if (cancelled(c)) {
       cancel(src);
@@ -89,7 +89,7 @@ let link = (c: cancellable, src: cancellable) => {
   }
 };
 
-let add = (c: cancellable, src: cancellable) => {
+let add = (c: t, src: t) => {
   if (cancelled(src)) {
     cancel(c);
   } else {
@@ -97,7 +97,7 @@ let add = (c: cancellable, src: cancellable) => {
   }
 };
 
-let remove = (c: cancellable, src: cancellable) => {
+let remove = (c: t, src: t) => {
   if (!cancelled(src)) {
     src.composition := src.composition^ |> List.filter(x => x != c);
   }
