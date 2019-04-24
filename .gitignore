@@ -4,3 +4,4 @@ coverage
 docs
 lib
 .merlin
+*.bs.js
