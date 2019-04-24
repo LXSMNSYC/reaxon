@@ -1,7 +1,7 @@
 type t('a);
 type observer('a);
 type emitter('a);
-type error;
+type exn;
 
 let ambArray: array(t('a)) => t('a);
 let ambList: list(t('a)) => t('a);
@@ -16,13 +16,13 @@ let doAfterSuccess: ('a => unit) => t('a) => t('a);
 let doAfterTerminate: (unit => unit) => t('a) => t('a);
 let doFinally: (unit => unit) => t('a) => t('a);
 let doOnCancel: (unit => unit) => t('a) => t('a);
-let doOnError: (error => unit) => t('a) => t('a);
+let doOnError: (exn => unit) => t('a) => t('a);
 let doOnSubscribe: (Cancellable.t => unit) => t('a) => t('a);
 let doOnSuccess: ('a => unit) => t('a) => t('a);
 let doOnTerminate: (unit => unit) => t('a) => t('a);
 
 let equals: t('a) => t('a) => t(bool);
-let error: error => t(error);
+let exn: exn => t(exn);
 
 let flatMap: ('a => t('a)) => t('a) => t('a);
 let fromCallable: (unit => 'a) => t('a);
@@ -34,15 +34,15 @@ let merge: t(t('a)) => t('a);
 
 let never: unit => t('a);
 
-let onErrorResume: (error => t('a)) => t('a) => t('a);
+let onErrorResume: (exn => t('a)) => t('a) => t('a);
 let onErrorResumeNext: t('a) => t('a) => t('a);
-let onErrorReturn: (error => 'a) => t('a) => t('a);
+let onErrorReturn: (exn => 'a) => t('a) => t('a);
 let onErrorReturnItem: 'a => t('a) => t('a);
 
-let retry: (int => error => unit) => t('a) => t('a);
+let retry: (int => exn => unit) => t('a) => t('a);
 
 let subscribeWith: observer('a) => t('a) => unit;
-let subscribe: ('a => unit) => (error => unit) => t('a) => Cancellable.t;
+let subscribe: ('a => unit) => (exn => unit) => t('a) => Cancellable.t;
 
 let takeUntil: t('a) => t('a) => t('a);
 
