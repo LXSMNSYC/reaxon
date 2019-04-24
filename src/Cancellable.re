@@ -29,7 +29,7 @@ let make = () => {
   };
 };
 
-let cancelled = (c: t) => c.state^ == CANCELLED;
+let cancelled = (c: t) : bool => c.state^ == CANCELLED;
 
 let addListener = (c: callable, src: t) => {
   if (!cancelled(src)) {
