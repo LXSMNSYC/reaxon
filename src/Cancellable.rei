@@ -1,16 +1,16 @@
 type cancelState;
-type cancellable;
+type t;
 
-let make : unit => cancellable;
+let make : unit => t;
 
-let cancel : cancellable => unit;
-let cancelled : cancellable => bool;
+let cancel : t => unit;
+let cancelled : t => bool;
 
-let add : cancellable => cancellable => unit;
-let remove : cancellable => cancellable => unit;
+let add : t => t => unit;
+let remove : t => t => unit;
 
-let link : cancellable => cancellable => unit;
-let unlink : cancellable => unit;
+let link : t => t => unit;
+let unlink : t => unit;
 
-let addListener : (unit => unit) => cancellable => unit;
-let removeListener : (unit => unit) => cancellable => unit;
+let addListener : (unit => unit) => t => unit;
+let removeListener : (unit => unit) => t => unit;
