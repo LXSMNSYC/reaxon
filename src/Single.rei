@@ -1,5 +1,5 @@
 type t('a);
-type observer;
+type observer('a);
 type emitter('a);
 type error;
 
@@ -40,6 +40,9 @@ let onErrorReturn: (error => 'a) => t('a) => t('a);
 let onErrorReturnItem: 'a => t('a) => t('a);
 
 let retry: (int => error => unit) => t('a) => t('a);
+
+let subscribeWith: observer('a) => t('a) => unit;
+let subscribe: ('a => unit) => (error => unit) => t('a) => Cancellable.t;
 
 let takeUntil: t('a) => t('a) => t('a);
 
