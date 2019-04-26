@@ -1,7 +1,6 @@
 type t('a);
 type observer('a);
 type emitter('a);
-type exn;
 
 let ambArray: array(t('a)) => t('a);
 let ambList: list(t('a)) => t('a);
