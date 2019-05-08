@@ -1,104 +1,48 @@
-type cancelState = 
-  | CANCELLED
-  | UNCANCELLED
-  ;
-  
-type option('a) =
-  | Some('a)
-  | None
-  ;
-  
-type callable = unit => unit;
-  
-type t = {
-  state: ref(cancelState),
-  linked: ref(option(t)),
-  listener: ref(option(callable)),
-  
-  composition: ref(list(t)),
-  listeners: ref(list(callable)),
-};
+type t('a) = {
+  ..
+  cancel: Functions.action,
+  isCancelled: Functions.factory(bool),
+} as 'a;
 
-let make = () => {
-  {
-    state: ref(UNCANCELLED),
-    linked: ref(None),
-    listener: ref(None),
-    composition: ref([]),
-    listeners: ref([]),
-  };
-};
 
-let cancelled = (c: t) : bool => c.state^ == CANCELLED;
+module Boolean {
+  let make = () => {
+    val flag = ref(false);
 
-let addListener = (c: callable, src: t) => {
-  if (!cancelled(src)) {
-    src.listeners := [c] @ src.listeners^;
-  }
-};
-
-let removeListener = (c: callable, src: t) => {
-  if (!cancelled(src)) {
-    src.listeners := src.listeners^ |> List.filter(x => x != c);
-  }
-};
-
-let unlink = (src: t) => {
-  if (!cancelled(src) && src.linked^ != None) {
-    switch (src.listener^) {
-      | Some(c) => src |> removeListener(c);
-      | None => ()
-    };
-    
-    src.linked := None;
-    src.listener := None;
-  }
-};
-
-let rec cancel = (src: t) => {
-  if (!cancelled(src)) {
-    switch(src.linked^) {
-      | Some(linked) => {
-        unlink(src);
-        cancel(linked);
-      }
-      | None => ()
+    pub cancel =  () => {
+      flag := true;
     };
 
-    src.state := CANCELLED;
-    src.composition^ |> List.iter(x => cancel(x));
-    src.listeners^ |> List.iter(x => x());
-  }
+    pub isCancelled = () => flag^;
+  } 
 }
 
-let link = (c: t, src: t) => {
-  if (c !== src) {
-    if (cancelled(c)) {
-      cancel(src);
-    } else if (cancelled(src)) {
-      cancel(c);
-    } else {
-      unlink(src);
-      src.linked := Some(c);
-      
-      let listener = () => cancel(c);
-      
-      src.listener := Some(listener);
-      c |> addListener(listener);
-    }
-  }
-};
+module Composite {
+  let make = () => {
+    val container : ref(list(t('a))) = ref([]);
+    val flag = ref(false);
 
-let add = (c: t, src: t) => {
-  if (cancelled(src)) {
-    cancel(c);
-  } else {
-    src.composition := [c] @ src.composition^;
-  }
-};
+    pub cancel = () => {
+      if (!flag^) {
+        container^ |> List.iter(x => x#cancel())
+        flag := true;
+      }
+    };
 
-let remove = (c: t, src: t) => {
-  if (!cancelled(src)) {
-    src.composition := src.composition^ |> List.filter(x => x != c);
-  }
-};
+    pub isCancelled = () => flag^;
+
+    pub add = (c: t('a)) => {
+      if (flag^) {
+        c#cancel();
+      } else {
+        container := [c] @ container^;
+      }
+    };
+
+    pub remove = (c: t('a)) => {
+      if (!flag^) {
+        container := container^ |> List.filter(x => x != c);
+      }
+    };
+  };
+}
