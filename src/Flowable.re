@@ -1,27 +1,27 @@
 type subscription = {
   .
-  request: Functions.consumer(int),
-  cancel: Functions.action,
+  request: Utils.consumer(int),
+  cancel: Utils.action,
 };
 
 type subscriber('a) = {
   .
-  onSubscribe: Functions.consumer(subscription),
-  onNext: Functions.consumer('a),
-  onError: Functions.consumer(exn),
-  onComplete: Functions.action,
+  onSubscribe: Utils.consumer(subscription),
+  onNext: Utils.consumer('a),
+  onError: Utils.consumer(exn),
+  onComplete: Utils.action,
 };
 
 type publisher('a) = {
   .
-  subscribe: Functions.consumer(subscriber('a)),
+  subscribe: Utils.consumer(subscriber('a)),
 };
 
 type emitter('a) = {
   .
-  isCancelled: Functions.factory(bool),
-  setCleanup: Functions.consumer(Functions.action),
-  onNext: Functions.consumer('a),
-  onError: Functions.consumer(exn),
-  onComplete: Functions.action,
+  isCancelled: Utils.factory(bool),
+  setCleanup: Utils.consumer(Utils.action),
+  onNext: Utils.consumer('a),
+  onError: Utils.consumer(exn),
+  onComplete: Utils.action,
 };
