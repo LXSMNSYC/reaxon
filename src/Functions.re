@@ -1,10 +1,12 @@
 type action = unit => unit;
 
-type consumer('a) = 'a => unit;
-type biconsumer('a, 'b) = 'a => 'b => unit;
+type func('a, 'b) = 'a => 'b;
+type bifunc('a, 'b, 'c) = 'a => 'b => 'c;
 
 type predicate('a) = 'a => bool;
 type bipredicate('a, 'b) = 'a => 'b => bool;
 
-type func('a, 'b) = 'a => 'b;
-type bifunc('a, 'b, 'c) = 'a => 'b => 'c;
+type consumer('a) = 'a => unit;
+type biconsumer('a, 'b) = 'a => 'b => unit;
+
+type factory('a) = unit => 'a;
