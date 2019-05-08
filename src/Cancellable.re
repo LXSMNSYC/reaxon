@@ -1,3 +1,6 @@
+/**
+ * Represents the structure of a Cancellable object
+ */
 type t('a) = {
   ..
   cancel: Utils.action,
@@ -5,12 +8,27 @@ type t('a) = {
   addListener: Utils.consumer(Utils.action),
   removeListener: Utils.consumer(Utils.action),
 } as 'a;
-
+/**
+ * A Boolean Cancellable is a fundamental Cancellable: it represents
+ * a boolean state for cancellation.
+ */
 module Boolean {
+  /**
+   * Creates a Boolean Cancellable
+   */
   let make : Utils.factory(t('a)) = () => {
+    /**
+     * Holds all event listeners
+     */
     val listeners = ref([]);
+    /**
+     * Represents the state
+     */
     val flag = ref(false);
 
+    /**
+     * Cancels this Cancellable instance.
+     */
     pub cancel: Utils.action =  () => {
       if(!flag^) {
         listeners^ |> List.iter(x => x());
@@ -18,14 +36,23 @@ module Boolean {
       }
     };
 
+    /**
+     * Checks if this Cancellable instance is cancelled.
+     */
     pub isCancelled: Utils.factory(bool) = () => flag^;
 
+    /**
+     * Add a cancellation event listener
+     */
     pub addListener: Utils.consumer(Utils.action) = (fn: Utils.action) => {
       if (!flag^) {
         listeners := [fn] @ listeners^;
       }
     };
 
+    /**
+     * Remove a cancellation event listener
+     */
     pub removeListener: Utils.consumer(Utils.action) = (fn: Utils.action) => {
       if (!flag^) {
         listeners := listeners^ |> List.filter(x => x != fn);
@@ -33,8 +60,14 @@ module Boolean {
     };
   } 
 }
-
+/**
+ * A Composite Cancellable allows combination of multiple Cancellable
+ * instances into a single Cancellable
+ */
 module Composite {
+  /**
+   * Tells the structure of a Composite Cancellable
+   */
   type i('a) = {
     .
     cancel: Utils.action,
@@ -44,11 +77,26 @@ module Composite {
     add: Utils.consumer(t('a)),
     remove: Utils.consumer(t('a)),
   };
+  /**
+   * Creates a Composite Cancellable
+   */
   let make : Utils.factory(t(i('a))) = () => {
+    /**
+     * Holds all event listeners
+     */
     val listeners = ref([]);
+    /**
+     * Holds all Cancellable instances
+     */
     val container = ref([]);
+    /**
+     * Represents the state
+     */
     val flag = ref(false);
 
+    /**
+     * Cancels this Cancellable instance.
+     */
     pub cancel: Utils.action = () => {
       if (!flag^) {
         container^ |> List.iter(x => x#cancel())
@@ -57,8 +105,17 @@ module Composite {
       }
     };
 
+    /**
+     * Checks if this Cancellable instance is cancelled.
+     */
     pub isCancelled: Utils.factory(bool) = () => flag^;
 
+    /**
+     * Adds a Cancellable instance to the container.
+     * 
+     * If this Cancellable is already cancelled, the given
+     * Cancellable is cancelled as well.
+     */
     pub add: Utils.consumer(t('a)) = (c) => {
       if (flag^) {
         c#cancel();
@@ -67,18 +124,27 @@ module Composite {
       }
     };
 
+    /**
+     * Removes a Cancellable instance from the container
+     */
     pub remove: Utils.consumer(t('a)) = (c) => {
       if (!flag^) {
         container := container^ |> List.filter(x => x != c);
       }
     };
 
+    /**
+     * Add a cancellation event listener
+     */
     pub addListener: Utils.consumer(Utils.action) = (fn: Utils.action) => {
       if (!flag^) {
         listeners := [fn] @ listeners^;
       }
     };
 
+    /**
+     * Remove a cancellation event listener
+     */
     pub removeListener: Utils.consumer(Utils.action) = (fn: Utils.action) => {
       if (!flag^) {
         listeners := listeners^ |> List.filter(x => x != fn);
@@ -86,7 +152,9 @@ module Composite {
     };
   };
 }
-
+/**
+ * A Linked Cancellable allows sharing states with another Cancellable instance.
+ */
 module Linked {
   type i('a) = {
     .
@@ -98,11 +166,26 @@ module Linked {
     unlink: Utils.action,
   };
   let make : Utils.factory(t(i('a))) = () => {
+    /**
+     * Holds all event listeners
+     */
     val listeners = ref([]);
+    /**
+     * References the listener registered to the linked Cancellable
+     */
     val listener = ref(None);
+    /**
+     * References the linked Cancellable
+     */
     val linked = ref(None);
+    /**
+     * Represents the state
+     */
     val flag = ref(false);
 
+    /**
+     * Cancels this Cancellable instance.
+     */
     pub cancel: Utils.action = () => {
       if (!flag^) {
         switch (linked^) {
@@ -118,8 +201,14 @@ module Linked {
       }
     };
 
+    /**
+     * Checks if this Cancellable instance is cancelled.
+     */
     pub isCancelled: Utils.factory(bool) = () => flag^;
 
+    /**
+     * Unlinks this Cancellable to its linked Cancellable
+     */
     pub unlink: Utils.action = () => {
       if (!flag^ && linked^ != None) {
         switch (linked^) {
@@ -135,31 +224,41 @@ module Linked {
       }
     };
 
+    /**
+     * Links this Cancellable to another Cancellable.
+     * 
+     * If this Cancellable is already cancelled, the other
+     * Cancellable is also cancelled, vice-versa.
+     */
     pub link: Utils.consumer(t('a)) = (c) => {
-      if (c !== this) {
-        if (c#isCancelled()) {
-          this#cancel();
-        } else if (flag^) {
-          c#cancel();
-        } else {
-          this#unlink();
+      if (c#isCancelled()) {
+        this#cancel();
+      } else if (flag^) {
+        c#cancel();
+      } else {
+        this#unlink();
 
-          linked := Some(c);
+        linked := Some(c);
 
-          let l = () => this#cancel();
-          c#addListener(l);
-          listener := Some(l);
-        }
+        let l = () => this#cancel();
+        c#addListener(l);
+        listener := Some(l);
       }
     };
     
 
+    /**
+     * Add a cancellation event listener
+     */
     pub addListener: Utils.consumer(Utils.action) = (fn: Utils.action) => {
       if (!flag^) {
         listeners := [fn] @ listeners^;
       }
     };
 
+    /**
+     * Remove a cancellation event listener
+     */
     pub removeListener: Utils.consumer(Utils.action) = (fn: Utils.action) => {
       if (!flag^) {
         listeners := listeners^ |> List.filter(x => x != fn);
