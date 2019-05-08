@@ -1,11 +1,17 @@
+let a = Cancellable.Boolean.make();
+let b = Cancellable.Boolean.make();
 
+let c = Cancellable.Composite.make();
 
-let print = (msg: string) => {
-  Js.log(msg);
-};
+Js.log(a#isCancelled());
+Js.log(b#isCancelled());
+Js.log(c#isCancelled());
 
-let call = (consumer: Functions.consumer(string)) => {
-  consumer("Hello World");
-}
+c#add(a);
+c#add(b);
 
-call(print);
+c#cancel();
+
+Js.log(a#isCancelled());
+Js.log(b#isCancelled());
+Js.log(c#isCancelled());
