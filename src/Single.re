@@ -1,6 +1,9 @@
+
 exception Cancellation;
 
+
 type subscription = Cancellable.Boolean.i;
+
 
 type observer('observer, 'a) = {
   ..
@@ -9,10 +12,12 @@ type observer('observer, 'a) = {
   onError: Utils.consumer(exn),
 } as 'observer;
 
+
 type t('observer,'a) = {
   .
   subscribeWith: Utils.consumer(observer('observer, 'a)),
 };
+
 
 type emitter('emitter, 'a) = {
   ..
@@ -21,6 +26,7 @@ type emitter('emitter, 'a) = {
   onSuccess: Utils.consumer('a),
   onError: Utils.consumer(exn),
 } as 'emitter;
+
 
 let ambList = (singleList) => {
   pub subscribeWith = (obs) => {
@@ -47,6 +53,8 @@ let ambList = (singleList) => {
   };
 };
 
+
+
 let ambArray = (singleArray) => {
   pub subscribeWith = (obs) => {
     let state = Cancellable.Composite.make();
@@ -71,6 +79,7 @@ let ambArray = (singleArray) => {
     }));
   };
 };
+
 
 let ambWith = (a, b) => {
   pub subscribeWith = (obs) => {
@@ -110,6 +119,7 @@ let ambWith = (a, b) => {
     });
   };
 };
+
 
 let cache = (source) => {
   val cached: ref(bool) = ref(false);
@@ -177,6 +187,7 @@ let cache = (source) => {
   };
 };
 
+
 let contains = (item, comparer, source) => {
   pub subscribeWith = (obs) => {
     let state = Cancellable.Linked.make();
@@ -207,12 +218,14 @@ let contains = (item, comparer, source) => {
   };
 };
 
+
 let defer = (supplier) => {
   pub subscribeWith = (obs) => switch (supplier()) {
     | source => source#subscribeWith(obs)
     | exception e => obs#onError(e);  
   };
 };
+
 
 let delayUntil = (other, source) => {
   pub subscribeWith = (obs) => {
@@ -241,7 +254,8 @@ let delayUntil = (other, source) => {
       pub onError = obs#onError;
     })
   }
-}
+};
+
 
 let doAfterSuccess = (onSuccess, source) => {
   pub subscribeWith = (obs) => {
