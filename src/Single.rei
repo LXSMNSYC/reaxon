@@ -11,7 +11,7 @@ let ambArray: Utils.func(array(t({..}, 'a)), t({..}, 'a));
 let ambWith: Utils.bifunc(t({..}, 'a), t({..}, 'a), t({..}, 'a));
 
 let cache: Utils.func(t({..}, 'a), t({..}, 'a));
-let contains: Utils.bifunc(Utils.bipredicate('a, 'a), t({..}, 'a), t({..}, 'a))
+let contains: Utils.bifunc(Utils.bipredicate('a, Utils.option('a)), t({..}, 'a), t({..}, 'a))
 
 let defer: Utils.func(Utils.producer(t({..}, 'a)), t({..}, 'a));
 let delayUntil: Utils.bifunc(t({..}, 'a), t({..}, 'a), t({..}, 'a));
