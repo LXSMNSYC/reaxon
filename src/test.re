@@ -1,5 +1,9 @@
-let a = Cancellable.Boolean.make();
-let b = Cancellable.Linked.make();
+exception MyError;
 
-b#link(a);
+let a = Single.just("Hello World");
 
+a |> Single.flatMap(x => Single.just(x ++ " World"))
+|> Single.subscribe({
+  onSuccess: Js.log,
+  onError: Js.log,
+})
