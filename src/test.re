@@ -8,7 +8,7 @@ let b = Completable.make((e) => {
   e#onComplete();
 });
 
-Completable.concatArray([|a, b|]) |> Completable.subscribe({
+a |> Completable.concatWith(b) |> Completable.subscribe({
   onComplete: () => Js.log("Completed!"),
   onError: Js.log,
 });
