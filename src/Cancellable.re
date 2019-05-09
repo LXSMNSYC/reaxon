@@ -4,23 +4,23 @@
 type t('a) = {
   ..
   cancel: Utils.action,
-  isCancelled: Utils.factory(bool),
-  addListener: Utils.consumer(Utils.action),
-  removeListener: Utils.consumer(Utils.action),
+  isCancelled: Utils.producer(bool),
 } as 'a;
+
 /**
  * A Boolean Cancellable is a fundamental Cancellable: it represents
  * a boolean state for cancellation.
  */
 module Boolean {
+  type i = t({
+    .
+    cancel: Utils.action,
+    isCancelled: Utils.producer(bool),
+  });
   /**
    * Creates a Boolean Cancellable
    */
-  let make : Utils.factory(t('a)) = () => {
-    /**
-     * Holds all event listeners
-     */
-    val listeners = ref([]);
+  let make : Utils.producer(i) = () => {
     /**
      * Represents the state
      */
@@ -31,7 +31,6 @@ module Boolean {
      */
     pub cancel: Utils.action =  () => {
       if(!flag^) {
-        listeners^ |> List.iter(x => x());
         flag := true;
       }
     };
@@ -39,25 +38,7 @@ module Boolean {
     /**
      * Checks if this Cancellable instance is cancelled.
      */
-    pub isCancelled: Utils.factory(bool) = () => flag^;
-
-    /**
-     * Add a cancellation event listener
-     */
-    pub addListener: Utils.consumer(Utils.action) = (fn: Utils.action) => {
-      if (!flag^) {
-        listeners := [fn] @ listeners^;
-      }
-    };
-
-    /**
-     * Remove a cancellation event listener
-     */
-    pub removeListener: Utils.consumer(Utils.action) = (fn: Utils.action) => {
-      if (!flag^) {
-        listeners := listeners^ |> List.filter(x => x != fn);
-      }
-    };
+    pub isCancelled: Utils.producer(bool) = () => flag^;
   } 
 }
 /**
@@ -66,21 +47,9 @@ module Boolean {
  */
 module Composite {
   /**
-   * Tells the structure of a Composite Cancellable
-   */
-  type i('a) = {
-    .
-    cancel: Utils.action,
-    isCancelled: Utils.factory(bool),
-    addListener: Utils.consumer(Utils.action),
-    removeListener: Utils.consumer(Utils.action),
-    add: Utils.consumer(t('a)),
-    remove: Utils.consumer(t('a)),
-  };
-  /**
    * Creates a Composite Cancellable
    */
-  let make : Utils.factory(t(i('a))) = () => {
+  let make : Utils.producer(t({..})) = () => {
     /**
      * Holds all event listeners
      */
@@ -108,7 +77,7 @@ module Composite {
     /**
      * Checks if this Cancellable instance is cancelled.
      */
-    pub isCancelled: Utils.factory(bool) = () => flag^;
+    pub isCancelled: Utils.producer(bool) = () => flag^;
 
     /**
      * Adds a Cancellable instance to the container.
@@ -116,7 +85,7 @@ module Composite {
      * If this Cancellable is already cancelled, the given
      * Cancellable is cancelled as well.
      */
-    pub add: Utils.consumer(t('a)) = (c) => {
+    pub add: Utils.consumer(t({..})) = (c) => {
       if (flag^) {
         c#cancel();
       } else {
@@ -127,27 +96,9 @@ module Composite {
     /**
      * Removes a Cancellable instance from the container
      */
-    pub remove: Utils.consumer(t('a)) = (c) => {
+    pub remove: Utils.consumer(t({..})) = (c) => {
       if (!flag^) {
         container := container^ |> List.filter(x => x != c);
-      }
-    };
-
-    /**
-     * Add a cancellation event listener
-     */
-    pub addListener: Utils.consumer(Utils.action) = (fn: Utils.action) => {
-      if (!flag^) {
-        listeners := [fn] @ listeners^;
-      }
-    };
-
-    /**
-     * Remove a cancellation event listener
-     */
-    pub removeListener: Utils.consumer(Utils.action) = (fn: Utils.action) => {
-      if (!flag^) {
-        listeners := listeners^ |> List.filter(x => x != fn);
       }
     };
   };
@@ -156,16 +107,7 @@ module Composite {
  * A Linked Cancellable allows sharing states with another Cancellable instance.
  */
 module Linked {
-  type i('a) = {
-    .
-    cancel: Utils.action,
-    isCancelled: Utils.factory(bool),
-    addListener: Utils.consumer(Utils.action),
-    removeListener: Utils.consumer(Utils.action),
-    link: Utils.consumer(t('a)),
-    unlink: Utils.action,
-  };
-  let make : Utils.factory(t(i('a))) = () => {
+  let make : Utils.producer(t({..})) = () => {
     /**
      * Holds all event listeners
      */
@@ -204,23 +146,14 @@ module Linked {
     /**
      * Checks if this Cancellable instance is cancelled.
      */
-    pub isCancelled: Utils.factory(bool) = () => flag^;
+    pub isCancelled: Utils.producer(bool) = () => flag^;
 
     /**
      * Unlinks this Cancellable to its linked Cancellable
      */
     pub unlink: Utils.action = () => {
       if (!flag^ && linked^ != None) {
-        switch (linked^) {
-          | Some(c) =>  switch (listener^) {
-            | Some(x) => c#removeListener(x)
-            | None => ()
-          }
-          | None => ()
-        }
-
         linked := None;
-        listener := None;
       }
     };
 
@@ -230,38 +163,14 @@ module Linked {
      * If this Cancellable is already cancelled, the other
      * Cancellable is also cancelled, vice-versa.
      */
-    pub link: Utils.consumer(t('a)) = (c) => {
+    pub link: Utils.consumer(t({..})) = (c) => {
       if (c#isCancelled()) {
         this#cancel();
       } else if (flag^) {
         c#cancel();
       } else {
         this#unlink();
-
         linked := Some(c);
-
-        let l = () => this#cancel();
-        c#addListener(l);
-        listener := Some(l);
-      }
-    };
-    
-
-    /**
-     * Add a cancellation event listener
-     */
-    pub addListener: Utils.consumer(Utils.action) = (fn: Utils.action) => {
-      if (!flag^) {
-        listeners := [fn] @ listeners^;
-      }
-    };
-
-    /**
-     * Remove a cancellation event listener
-     */
-    pub removeListener: Utils.consumer(Utils.action) = (fn: Utils.action) => {
-      if (!flag^) {
-        listeners := listeners^ |> List.filter(x => x != fn);
       }
     };
   }
