@@ -182,12 +182,71 @@ let cache = (source) => {
   };
 };
 
+let contains = (item, comparer, source) => {
+  pub subscribeWith = (obs) => {
+    let state = Cancellable.Linked.make();
+
+    obs#onSubscribe({
+      pub isCancelled = state#isCancelled;
+      pub cancel = state#cancel;
+    });
+
+    source#subscribeWith({
+      pub onSubscribe = state#link;
+
+      pub onSuccess = (x) => {
+        switch(comparer) {
+          | Some(cmp) => {
+            switch (cmp(x, item)) {
+              | result => obs#onSuccess(result)
+              | exception e => obs#onError(e);
+            };
+          }
+          | None => ()
+        };
+        state#cancel();
+      };
+
+      pub onError = obs#onError;
+    })
+  };
+};
+
 let defer = (supplier) => {
   pub subscribeWith = (obs) => switch (supplier()) {
     | source => source#subscribeWith(obs)
     | exception e => obs#onError(e);  
   };
 };
+
+let delayUntil = (other, source) => {
+  pub subscribeWith = (obs) => {
+    let state = Cancellable.Linked.make();
+
+    obs#onSubscribe({
+      pub isCancelled = state#isCancelled;
+      pub cancel = state#cancel;
+    });
+
+    other#subscribeWith({
+      pub onSubscribe = state#link;
+
+      pub onSuccess = (x) => {
+        state#unlink();
+
+        source#subscribeWith({
+          pub onSubscribe = state#link;
+
+          pub onSuccess = obs#onSuccess;
+
+          pub onError = obs#onError;
+        });
+      };
+
+      pub onError = obs#onError;
+    })
+  }
+}
 
 let doAfterSuccess = (onSuccess, source) => {
   pub subscribeWith = (obs) => {
@@ -570,6 +629,15 @@ let just = (value) => {
   };
 };
 
+let lift = (operator, source) => {
+  pub subscribeWith = (obs) => {
+    switch(operator(obs)) {
+      | newObserver => source#subscribeWith(newObserver)
+      | exception e => obs#onError(e) 
+    };
+  };
+}
+
 let make = (onSubscribe) => {
   pub subscribeWith = (obs) => {
     let state = Cancellable.Linked.make();
@@ -626,6 +694,38 @@ let map = (mapper, source) => {
     })
   };
 };
+
+let never = () => {
+  pub subscribeWith = (obs) => {
+    obs#onSubscribe({
+      pub isCancelled = () => false;
+      pub cancel = () => {};
+    });
+  };
+};
+
+let observeOn = (scheduler, source) => {
+  pub subscribeWith = (obs) => {
+    let state = Cancellable.Linked.make();
+
+    obs#onSubscribe({
+      pub isCancelled = state#isCancelled;
+      pub cancel = state#cancel;
+    });
+
+    source#subscribeWith({
+      pub onSubscribe = state#link;
+
+      pub onSuccess = (x) => state#link(scheduler#run(() => {
+        obs#onSuccess(x);
+      }));
+
+      pub onError = (x) => state#link(scheduler#run(() => {
+        obs#onError(x);
+      }));
+    })
+  };
+}
 
 type basicObserver('a) = {
   onSuccess: Utils.consumer('a),
