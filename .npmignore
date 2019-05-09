@@ -16,4 +16,3 @@ appveyor.yml
 lib
 .merlin
 *.bs.js
-src/*.md
