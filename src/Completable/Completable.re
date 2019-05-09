@@ -311,6 +311,257 @@ let concatWith: Utils.bifunc(t({..}), t({..}), t({..})) = (other, source) => {
 };
 
 
+let defer: Utils.func(Utils.supplier(t({..})), t({..})) = (supplier) => {
+  pub subscribeWith = (obs) => switch (supplier()) {
+    | source => source#subscribeWith(obs)
+    | exception e => obs#onError(e);  
+  };
+};
+
+let delayUntil: Utils.bifunc(t({..}), t({..}), t({..})) = (other, source) => {
+  pub subscribeWith = (obs) => {
+    let state = Cancellable.Linked.make();
+
+    obs#onSubscribe({
+      pub isCancelled = state#isCancelled;
+      pub cancel = state#cancel;
+    });
+
+    other#subscribeWith({
+      pub onSubscribe = state#link;
+
+      pub onComplete = () => {
+        state#unlink();
+
+        source#subscribeWith({
+          pub onSubscribe = state#link;
+
+          pub onComplete = obs#onComplete;
+
+          pub onError = obs#onError;
+        });
+      };
+
+      pub onError = obs#onError;
+    })
+  }
+};
+
+let doAfterTerminate: Utils.bifunc(Utils.action, t({..}), t({..})) = (onTerminate, source) => {
+  pub subscribeWith = (obs) => {
+    let state = Cancellable.Linked.make();
+
+    obs#onSubscribe({
+      pub isCancelled = state#isCancelled;
+      pub cancel = state#cancel;
+    });
+
+    source#subscribeWith({
+      pub onSubscribe = state#link;
+  
+      pub onComplete = () => {
+        obs#onComplete();
+        onTerminate();
+      };
+  
+      pub onError = (x) => {
+        obs#onError(x);
+        onTerminate();
+      };
+    });
+  };
+};
+
+let doFinally: Utils.bifunc(Utils.action, t({..}), t({..})) = (onFinally, source) => {
+  pub subscribeWith = (obs) => {
+    let state = Cancellable.Linked.make();
+
+    obs#onSubscribe({
+      pub isCancelled = state#isCancelled;
+      pub cancel = state#cancel;
+    });
+
+    source#subscribeWith({
+      pub onSubscribe = (sub) => {
+        state#link({
+          pub isCancelled = sub#isCancelled;
+          pub cancel = () => {
+            sub#cancel();
+            onFinally();
+          }
+        });
+      };
+  
+      pub onComplete = () => {
+        obs#onComplete();
+        onFinally();
+      };
+  
+      pub onError = (x) => {
+        obs#onError(x);
+        onFinally();
+      };
+    });
+  };
+};
+
+let doOnCancel: Utils.bifunc(Utils.action, t({..}), t({..})) = (onCancel, source) => {
+  pub subscribeWith = (obs) => {
+    let state = Cancellable.Linked.make();
+
+    obs#onSubscribe({
+      pub isCancelled = state#isCancelled;
+      pub cancel = state#cancel;
+    });
+
+    source#subscribeWith({
+      pub onSubscribe = (sub) => {
+        state#link({
+          pub isCancelled = sub#isCancelled;
+          pub cancel = () => {
+            onCancel();
+            sub#cancel();
+          }
+        });
+      };
+  
+      pub onComplete = obs#onComplete;
+  
+      pub onError = obs#onError;
+    });
+  };
+};
+
+let doOnError: Utils.bifunc(Utils.consumer(exn), t({..}), t({..})) = (onError, source) => {
+  pub subscribeWith = (obs) => {
+    let state = Cancellable.Linked.make();
+
+    obs#onSubscribe({
+      pub isCancelled = state#isCancelled;
+      pub cancel = state#cancel;
+    });
+
+    source#subscribeWith({
+      pub onSubscribe = state#link;
+  
+      pub onComplete = obs#onComplete;
+  
+      pub onError = (x) => {
+        onError(x);
+        obs#onError(x);
+      };
+    });
+  };
+};
+
+let doOnEvent: Utils.bifunc(Utils.consumer(Utils.option(exn)), t({..}), t({..})) = (onEvent, source) => {
+  pub subscribeWith = (obs) => {
+    let state = Cancellable.Linked.make();
+
+    obs#onSubscribe({
+      pub isCancelled = state#isCancelled;
+      pub cancel = state#cancel;
+    });
+
+    source#subscribeWith({
+      pub onSubscribe = state#link;
+  
+      pub onComplete = () => {
+        onEvent(None);
+        obs#onComplete();
+      };
+  
+      pub onError = (x) => {
+        onEvent(Some(x));
+        obs#onError(x);
+      };
+    });
+  };
+};
+
+let doOnSubscribe: Utils.bifunc(Utils.consumer(subscription), t({..}), t({..})) = (onSubscribe, source) => {
+  pub subscribeWith = (obs) => {
+    let state = Cancellable.Linked.make();
+
+    obs#onSubscribe({
+      pub isCancelled = state#isCancelled;
+      pub cancel = state#cancel;
+    });
+
+    source#subscribeWith({
+      pub onSubscribe = (sub) => {
+        onSubscribe(sub);
+        state#link(sub);
+      };
+
+      pub onComplete = obs#onComplete;
+
+      pub onError = obs#onError;
+    });
+  };
+};
+
+let doOnComplete: Utils.bifunc(Utils.action, t({..}), t({..})) = (onComplete, source) => {
+  pub subscribeWith = (obs) => {
+    let state = Cancellable.Linked.make();
+
+    obs#onSubscribe({
+      pub isCancelled = state#isCancelled;
+      pub cancel = state#cancel;
+    });
+
+    source#subscribeWith({
+      pub onSubscribe = state#link;
+
+      pub onComplete = () => {
+        onComplete();
+        obs#onComplete();
+      };
+
+      pub onError = obs#onError;
+    });
+  };
+};
+
+let doOnTerminate: Utils.bifunc(Utils.action, t({..}), t({..})) = (onTerminate, source) => {
+  pub subscribeWith = (obs) => {
+    let state = Cancellable.Linked.make();
+
+    obs#onSubscribe({
+      pub isCancelled = state#isCancelled;
+      pub cancel = state#cancel;
+    });
+
+    source#subscribeWith({
+      pub onSubscribe = state#link;
+  
+      pub onComplete = () => {
+        onTerminate();
+        obs#onComplete();
+      };
+  
+      pub onError  = (x) => {
+        onTerminate();
+        obs#onError(x);
+      };
+    });
+  };
+};
+
+let error: Utils.func(exn, t({..})) = (err) => {
+  pub subscribeWith = (obs) => {
+    let state = Cancellable.Boolean.make();
+
+    obs#onSubscribe(state);
+
+    if (!state#isCancelled()) {
+      obs#onError(err);
+      state#cancel();
+    }
+  };
+};
+
+
 let make: Utils.func(Utils.consumer(emitter({..})), t({..})) = (onSubscribe) => {
   pub subscribeWith = (obs) => {
     let state = Cancellable.Linked.make();
