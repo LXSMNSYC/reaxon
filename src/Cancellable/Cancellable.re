@@ -4,7 +4,7 @@
 type t('a) = {
   ..
   cancel: Utils.action,
-  isCancelled: Utils.producer(bool),
+  isCancelled: Utils.supplier(bool),
 } as 'a;
 
 /**
@@ -15,12 +15,12 @@ module Boolean {
   type i = t({
     .
     cancel: Utils.action,
-    isCancelled: Utils.producer(bool),
+    isCancelled: Utils.supplier(bool),
   });
   /**
    * Creates a Boolean Cancellable
    */
-  let make : Utils.producer(i) = () => {
+  let make : Utils.supplier(i) = () => {
     /**
      * Represents the state
      */
@@ -49,7 +49,7 @@ module Composite {
   /**
    * Creates a Composite Cancellable
    */
-  let make : Utils.producer(t({..})) = () => {
+  let make : Utils.supplier(t({..})) = () => {
     /**
      * Holds all event listeners
      */
@@ -107,7 +107,7 @@ module Composite {
  * A Linked Cancellable allows sharing states with another Cancellable instance.
  */
 module Linked {
-  let make : Utils.producer(t({..})) = () => {
+  let make : Utils.supplier(t({..})) = () => {
     /**
      * References the listener registered to the linked Cancellable
      */
