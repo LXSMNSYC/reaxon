@@ -1,20 +1,14 @@
-open Single;
-
-let a = Single.make((e) => {
-  Js.log("This");
-  Js.log("is");
-  Js.log("cached");
-  e#onSuccess("Hello World");
+let a = Completable.make((e) => {
+  Js.log("Hello");
+  e#onComplete();
 });
 
-let cached = a |> Single.cache;
-
-cached |> Single.subscribe({
-  onSuccess: Js.log,
-  onError: Js.log,
+let b = Completable.make((e) => {
+  Js.log("World");
+  e#onComplete();
 });
 
-cached |> Single.subscribe({
-  onSuccess: Js.log,
+Completable.concatArray([|a, b|]) |> Completable.subscribe({
+  onComplete: () => Js.log("Completed!"),
   onError: Js.log,
 });
