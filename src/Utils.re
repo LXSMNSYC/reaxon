@@ -10,7 +10,7 @@ type bipredicate('a, 'b) = 'a => 'b => bool;
 type consumer('a) = 'a => unit;
 type biconsumer('a, 'b) = 'a => 'b => unit;
 
-type producer('a) = unit => 'a;
+type supplier('a) = unit => 'a;
 
 type option('a) = 
   | Some('a)
