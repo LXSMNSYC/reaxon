@@ -1,0 +1,25 @@
+
+type subscription = Cancellable.Boolean.i;
+
+
+type observer('observer) = {
+  ..
+  onSubscribe: Utils.consumer(subscription),
+  onComplete: Utils.action,
+  onError: Utils.consumer(exn),
+} as 'observer;
+
+
+type t('observer) = {
+  .
+  subscribeWith: Utils.consumer(observer('observer)),
+};
+
+
+type emitter('emitter) = {
+  ..
+  setCancellable: Utils.consumer(Cancellable.t({..})),
+  isCancelled: Utils.producer(bool),
+  onComplete: Utils.action,
+  onError: Utils.consumer(exn),
+} as 'emitter;
