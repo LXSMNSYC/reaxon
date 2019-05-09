@@ -5,3 +5,4 @@ docs
 lib
 .merlin
 *.bs.js
+src/*.md
