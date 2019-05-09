@@ -109,17 +109,13 @@ module Composite {
 module Linked {
   let make : Utils.producer(t({..})) = () => {
     /**
-     * Holds all event listeners
-     */
-    val listeners = ref([]);
-    /**
      * References the listener registered to the linked Cancellable
      */
     val listener = ref(None);
     /**
-     * References the linked Cancellable
+     * References the linked Cancellables
      */
-    val linked = ref(None);
+    val next = ref(None);
     /**
      * Represents the state
      */
@@ -130,15 +126,13 @@ module Linked {
      */
     pub cancel: Utils.action = () => {
       if (!flag^) {
-        switch (linked^) {
+        switch (next^) {
           | Some(c) => {
-            this#unlink();
+            next := None;
             c#cancel();
           }
           | None => ()
         };
-
-        listeners^ |> List.iter(x => x());
         flag := true;
       }
     };
@@ -152,8 +146,8 @@ module Linked {
      * Unlinks this Cancellable to its linked Cancellable
      */
     pub unlink: Utils.action = () => {
-      if (!flag^ && linked^ != None) {
-        linked := None;
+      if (!flag^ && next^ != None) {
+        next := None;
       }
     };
 
@@ -169,8 +163,15 @@ module Linked {
       } else if (flag^) {
         c#cancel();
       } else {
-        this#unlink();
-        linked := Some(c);
+        let source = this;
+        next := Some({
+          pub isCancelled = c#isCancelled;
+
+          pub cancel = () => {
+            source#cancel();
+            c#cancel();
+          };
+        })
       }
     };
   }
