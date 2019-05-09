@@ -11,9 +11,9 @@ type observer('observer, 'a) = {
   onError: Utils.consumer(exn),
 } as 'observer;
 
-type t('b,'a) = {
+type t('observer,'a) = {
   .
-  subscribeWith: Utils.consumer(observer('b, 'a)),
+  subscribeWith: Utils.consumer(observer('observer, 'a)),
 };
 
 type emitter('emitter, 'a) = {
@@ -45,8 +45,32 @@ let ambList = (singleList) => {
         obs#onError(x);
         state#cancel();
       };
-    }))
-;
+    }));
+  };
+};
+
+let ambArray = (singleArray) => {
+  pub subscribeWith = (obs) => {
+    let state = Cancellable.Composite.make();
+
+    obs#onSubscribe({
+      pub isCancelled = state#isCancelled;
+      pub cancel = state#cancel;
+    });
+
+    singleArray |> Array.iter(single => single#subscribeWith({
+      pub onSubscribe = state#add;
+
+      pub onSuccess = (x) => {
+        obs#onSuccess(x);
+        state#cancel();
+      };
+
+      pub onError = (x) => {
+        obs#onError(x);
+        state#cancel();
+      };
+    }));
   };
 };
 
@@ -89,14 +113,83 @@ let ambWith = (a, b) => {
   };
 };
 
-let defer: Utils.func(Utils.producer(t({..}, 'a)), t({..}, 'a)) = (supplier) => {
+let cache = (source) => {
+  val cached: ref(bool) = ref(false);
+  val subscribed: ref(bool) = ref(false);
+  val observers: ref(list(observer({..}, 'a))) = ref([]);
+  val success = ref(None);
+  val error = ref(None);
+
+  pub subscribeWith = (obs) => {
+
+    if (cached^) {
+      let state = Cancellable.Boolean.make();
+
+      obs#onSubscribe({
+        pub isCancelled = state#isCancelled;
+        pub cancel = state#cancel;
+      });
+
+      if (!state#isCancelled()) {
+        switch (success^) {
+          | Some(x) => obs#onSuccess(x)
+          | None => switch(error^) {
+            | Some(e) => obs#onError(e)
+            | None => () 
+          }
+        };
+  
+        state#cancel();
+      }
+    } else {
+      let state = Cancellable.Boolean.make();
+
+      observers := [obs] @ observers^;
+
+      let subscription = {
+        pub isCancelled = state#isCancelled;
+        pub cancel = () => {
+          observers := observers^ |> List.filter(x => x != obs);
+          state#cancel();
+        };
+      };
+
+      obs#onSubscribe(subscription);
+
+      if (!subscribed^) {
+        subscribed := true;
+        source#subscribeWith({
+          pub onSubscribe = sub => {};
+  
+          pub onSuccess = (x) => {
+            cached := true;
+            success := Some(x);
+
+            observers^ |> List.iter(o => o#onSuccess(x));
+            subscription#cancel();
+          };
+
+          pub onError = (e) => {
+            cached := true;
+            error := Some(e);
+
+            observers^ |> List.iter(o => o#onError(e));
+            subscription#cancel();
+          };
+        });
+      }
+    }
+  };
+};
+
+let defer = (supplier) => {
   pub subscribeWith = (obs) => switch (supplier()) {
     | source => source#subscribeWith(obs)
     | exception e => obs#onError(e);  
   };
 };
 
-let doAfterSuccess: Utils.bifunc(Utils.consumer('a), t({..}, 'a), t({..}, 'a)) = (onSuccess, source) => {
+let doAfterSuccess = (onSuccess, source) => {
   pub subscribeWith = (obs) => {
     let state = Cancellable.Linked.make();
 
@@ -119,7 +212,7 @@ let doAfterSuccess: Utils.bifunc(Utils.consumer('a), t({..}, 'a), t({..}, 'a)) =
   };
 };
 
-let doAfterTerminate: Utils.bifunc(Utils.action, t({..}, 'a), t({..}, 'a)) = (onTerminate, source) => {
+let doAfterTerminate = (onTerminate, source) => {
   pub subscribeWith = (obs) => {
     let state = Cancellable.Linked.make();
 
@@ -144,7 +237,7 @@ let doAfterTerminate: Utils.bifunc(Utils.action, t({..}, 'a), t({..}, 'a)) = (on
   };
 };
 
-let doFinally: Utils.bifunc(Utils.action, t({..}, 'a), t({..}, 'a)) = (onFinally, source) => {
+let doFinally = (onFinally, source) => {
   pub subscribeWith = (obs) => {
     let state = Cancellable.Linked.make();
 
@@ -177,7 +270,7 @@ let doFinally: Utils.bifunc(Utils.action, t({..}, 'a), t({..}, 'a)) = (onFinally
   };
 };
 
-let doOnCancel: Utils.bifunc(Utils.action, t({..}, 'a), t({..}, 'a)) = (onCancel, source) => {
+let doOnCancel = (onCancel, source) => {
   pub subscribeWith = (obs) => {
     let state = Cancellable.Linked.make();
 
@@ -204,7 +297,7 @@ let doOnCancel: Utils.bifunc(Utils.action, t({..}, 'a), t({..}, 'a)) = (onCancel
   };
 };
 
-let doOnError: Utils.bifunc(Utils.consumer(exn), t({..}, 'a), t({..}, 'a)) = (onError, source) => {
+let doOnError = (onError, source) => {
   pub subscribeWith = (obs) => {
     let state = Cancellable.Linked.make();
 
@@ -226,7 +319,7 @@ let doOnError: Utils.bifunc(Utils.consumer(exn), t({..}, 'a), t({..}, 'a)) = (on
   };
 };
 
-let doOnEvent: Utils.bifunc(Utils.biconsumer(option('a), option(exn)), t({..}, 'a), t({..}, 'a)) = (onEvent, source) => {
+let doOnEvent = (onEvent, source) => {
   pub subscribeWith = (obs) => {
     let state = Cancellable.Linked.make();
 
@@ -251,7 +344,7 @@ let doOnEvent: Utils.bifunc(Utils.biconsumer(option('a), option(exn)), t({..}, '
   };
 };
 
-let doOnSubscribe: Utils.bifunc(Utils.consumer(subscription), t({..}, 'a), t({..}, 'a)) = (onSubscribe, source) => {
+let doOnSubscribe = (onSubscribe, source) => {
   pub subscribeWith = (obs) => {
     let state = Cancellable.Linked.make();
 
@@ -273,7 +366,7 @@ let doOnSubscribe: Utils.bifunc(Utils.consumer(subscription), t({..}, 'a), t({..
   };
 };
 
-let doOnSuccess: Utils.bifunc(Utils.consumer(subscription), t({..}, 'a), t({..}, 'a)) = (onSuccess, source) => {
+let doOnSuccess = (onSuccess, source) => {
   pub subscribeWith = (obs) => {
     let state = Cancellable.Linked.make();
 
@@ -295,7 +388,7 @@ let doOnSuccess: Utils.bifunc(Utils.consumer(subscription), t({..}, 'a), t({..},
   };
 };
 
-let doOnTerminate: Utils.bifunc(Utils.action, t({..}, 'a), t({..}, 'a)) = (onTerminate, source) => {
+let doOnTerminate = (onTerminate, source) => {
   pub subscribeWith = (obs) => {
     let state = Cancellable.Linked.make();
 
@@ -320,7 +413,7 @@ let doOnTerminate: Utils.bifunc(Utils.action, t({..}, 'a), t({..}, 'a)) = (onTer
   };
 };
 
-let equals: Utils.bifunc(t({..}, 'a), t({..}, 'a), t({..}, bool)) = (a, b) => {
+let equals = (a, b) => {
   pub subscribeWith = (obs) => {
     let state = Cancellable.Composite.make();
 
@@ -376,7 +469,7 @@ let equals: Utils.bifunc(t({..}, 'a), t({..}, 'a), t({..}, bool)) = (a, b) => {
   };
 };
 
-let error: Utils.func(exn, t({..}, 'a)) = (err) => {
+let error = (err) => {
   pub subscribeWith = (obs) => {
     let state = Cancellable.Boolean.make();
 
@@ -391,7 +484,7 @@ let error: Utils.func(exn, t({..}, 'a)) = (err) => {
   };
 };
 
-let flatMap: Utils.bifunc(Utils.func('a, t({..}, 'a)), t({..}, 'a), t({..}, 'a)) = (mapper, source) => {
+let flatMap = (mapper, source) => {
   pub subscribeWith = (obs) => {
     let state = Cancellable.Linked.make();
 
@@ -423,7 +516,7 @@ let flatMap: Utils.bifunc(Utils.func('a, t({..}, 'a)), t({..}, 'a), t({..}, 'a))
   };
 };
 
-let fromProducer: Utils.func(Utils.producer('a), t({..}, 'a)) = (producer) => {
+let fromProducer = (producer) => {
   pub subscribeWith = (obs) => {
     let state = Cancellable.Boolean.make();
 
@@ -442,7 +535,7 @@ let fromProducer: Utils.func(Utils.producer('a), t({..}, 'a)) = (producer) => {
   };
 };
 
-let hide: Utils.func(t({..}, 'a), t({..}, 'a)) = (source) => {
+let hide = (source) => {
   pub subscribeWith = (obs) => {
     let state = Cancellable.Linked.make();
 
@@ -461,7 +554,7 @@ let hide: Utils.func(t({..}, 'a), t({..}, 'a)) = (source) => {
   };
 };
 
-let just: Utils.func('a, t({..}, 'a)) = (value) => {
+let just = (value) => {
   pub subscribeWith = (obs) => {
     let state = Cancellable.Boolean.make();
 
@@ -477,7 +570,7 @@ let just: Utils.func('a, t({..}, 'a)) = (value) => {
   };
 };
 
-let make: Utils.func(Utils.consumer(emitter({..}, 'a)), t({..}, 'a)) = (onSubscribe) => {
+let make = (onSubscribe) => {
   pub subscribeWith = (obs) => {
     let state = Cancellable.Linked.make();
 
@@ -512,7 +605,7 @@ let make: Utils.func(Utils.consumer(emitter({..}, 'a)), t({..}, 'a)) = (onSubscr
   };
 };
 
-let map: Utils.bifunc(Utils.func('a, 'a), t({..}, 'a), t({..}, 'a)) = (mapper, source) => {
+let map = (mapper, source) => {
   pub subscribeWith = (obs) => {
     let state = Cancellable.Linked.make();
 
@@ -539,7 +632,7 @@ type basicObserver('a) = {
   onError: Utils.consumer(exn),
 };
 
-let subscribe: Utils.bifunc(basicObserver('a), t({..}, 'a), subscription) = (obs, source) => {
+let subscribe = (obs, source) => {
   let state = Cancellable.Linked.make();
 
   source#subscribeWith({
