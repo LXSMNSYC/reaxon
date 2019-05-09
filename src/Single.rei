@@ -60,6 +60,6 @@ let takeUntil: Utils.bifunc(t({..}, 'a), t({..}, 'a), t({..}, 'a));
 
 let unsubscribeOn: Utils.bifunc(Scheduler.t, t({..}, 'a), t({..}, 'a));
 
-let zipList: Utils.bifunc(list(t({..}, 'a)), Utils.func(list('a), 'b), t({..}, 'b));
+let zipList: Utils.bifunc(list(t({..}, 'a)), Utils.func(array('a), 'b), t({..}, 'b));
 let zipArray: Utils.bifunc(array(t({..}, 'a)), Utils.func(array('a), 'b), t({..}, 'b));
 let zipWith: Utils.trifunc(t({..}, 'a), Utils.bifunc('a, 'a, 'b), t({..}, 'a), t({..}, 'b));
