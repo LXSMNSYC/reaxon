@@ -1,9 +1,14 @@
 exception MyError;
 
-let a = Single.just("Hello World");
+let a = Single.just("Hello world");
 
-a |> Single.flatMap(x => Single.just(x ++ " World"))
-|> Single.subscribe({
+
+a |> Single.subscribe({
   onSuccess: Js.log,
   onError: Js.log,
-})
+});
+
+a |> Single.subscribe({
+  onSuccess: Js.log,
+  onError: Js.log,
+});
