@@ -910,22 +910,6 @@ let retryWhile = (checker, source) => {
   };
 };
 
-let zipList = (singleList, combiner) => {
-  pub subscribeWith = (obs) => {
-    let state = Cancellable.Composite.make();
-
-    let container = [||];
-
-    obs#onSubscribe({
-      pub isCancelled = state#isCancelled;
-      pub cancel = state#cancel;
-    });
-
-
-
-  };
-}
-
 let subscribeOn = (scheduler, source) => {
   pub subscribeWith = (obs) => {
     let state = Cancellable.Linked.make();
@@ -1000,6 +984,147 @@ let unsubscribeOn = (scheduler, source) => {
       pub onSuccess = obs#onSuccess;
 
       pub onError = obs#onError;
+    });
+  };
+};
+
+let zipArray = (singleArray, combiner) => {
+  pub subscribeWith = (obs) => {
+    let state = Cancellable.Composite.make();
+
+    let pending = ref(singleArray |> Array.length);
+    let container = [||];
+
+    obs#onSubscribe({
+      pub isCancelled = state#isCancelled;
+      pub cancel = state#cancel;
+    });
+
+    singleArray |> Array.iteri((index, item) => {
+      item#subscribeWith({
+        pub onSubscribe = state#add;
+
+        pub onSuccess = (x) => {
+          Array.set(container, index, x);
+          pending := pending^ - 1;
+
+          if (pending^ == 0) {
+            switch (combiner(container)) {
+              | item => obs#onSuccess(item)
+              | exception e => obs#onError(e)
+            };
+            state#cancel();
+          }
+        };
+
+        pub onError = (x) => {
+          obs#onError(x);
+          state#cancel();
+        }
+      })
+    });
+
+  };
+}
+
+let zipList = (singleList, combiner) => {
+  pub subscribeWith = (obs) => {
+    let state = Cancellable.Composite.make();
+
+    let pending = ref(singleList |> List.length);
+    let container = [||];
+
+    obs#onSubscribe({
+      pub isCancelled = state#isCancelled;
+      pub cancel = state#cancel;
+    });
+
+    let index = ref(0);
+
+    singleList |> List.iter(item => {
+      item#subscribeWith({
+        pub onSubscribe = state#add;
+
+        pub onSuccess = (x) => {
+          Array.set(container, index^, x);
+          pending := pending^ - 1;
+
+          if (pending^ == 0) {
+            switch (combiner(container)) {
+              | item => obs#onSuccess(item)
+              | exception e => obs#onError(e)
+            };
+            state#cancel();
+          }
+        };
+
+        pub onError = (x) => {
+          obs#onError(x);
+          state#cancel();
+        }
+      })
+    });
+  };
+};
+
+let zipWith = (other, combiner, source) => {
+  pub subscribeWith = (obs) => {
+    let state = Cancellable.Composite.make();
+
+    obs#onSubscribe({
+      pub isCancelled = state#isCancelled;
+      pub cancel = state#cancel;
+    });
+
+    let left = ref(None);
+    let right = ref(None);
+
+    source#subscribeWith({
+      pub onSubscribe = state#add;
+
+      pub onSuccess = (x) => {
+        switch (left^) {
+          | Some(value) => {
+            switch(combiner(value, x)) {
+              | combined => obs#onSuccess(combined)
+              | exception e => obs#onError(e)
+            };
+            state#cancel();
+          }
+          | None => {
+            right := Some(x);
+          }
+        };
+      };
+
+      pub onError = (x) => {
+        obs#onError(x);
+        state#cancel();
+      };
+    });
+
+    other#subscribeWith({
+      pub onSubscribe = state#add;
+
+      pub onSuccess = (x) => {
+        switch (right^) {
+          | Some(value) => {
+            switch(combiner(value, x)) {
+              | combined => obs#onSuccess(combined)
+              | exception e => obs#onError(e)
+            };
+            state#cancel();
+          }
+          | None => {
+            left := Some(x);
+          }
+        };
+      };
+
+      pub onError = (x) => {
+        obs#onError(x);
+        state#cancel();
+      };
     });
   };
 };
