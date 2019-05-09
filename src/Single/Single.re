@@ -218,11 +218,52 @@ let contains: Utils.trifunc('a, Utils.option(Utils.bipredicate('a, 'a)), t({..},
   };
 };
 
+let error: Utils.func(exn, t({..}, 'a)) = (err) => {
+  pub subscribeWith = (obs) => {
+    let state = Cancellable.Boolean.make();
+
+    obs#onSubscribe(state);
+
+    if (!state#isCancelled()) {
+      obs#onError(err);
+      state#cancel();
+    }
+  };
+};
+
+
 
 let defer: Utils.func(Utils.supplier(t({..}, 'a)), t({..}, 'a)) = (supplier) => {
   pub subscribeWith = (obs) => switch (supplier()) {
     | source => source#subscribeWith(obs)
-    | exception e => obs#onError(e);  
+    | exception e => error(e)#subscribeWith(obs);
+  };
+};
+
+let delay: Utils.trifunc(int, Scheduler.t, t({..}, 'a), t({..}, 'a)) = (time, scheduler, source) => {
+  pub subscribeWith = (obs) => {
+    let state = Cancellable.Linked.make();
+
+    obs#onSubscribe({
+      pub isCancelled = state#isCancelled;
+      pub cancel = state#cancel;
+    });
+
+    source#subscribeWith({
+      pub onSubscribe = state#link;
+
+      pub onSuccess = (x) => {
+        state#link(scheduler#timeout(() => {
+          obs#onSuccess(x);
+        }, time));
+      };
+
+      pub onError = (x) => {
+        state#link(scheduler#timeout(() => {
+          obs#onError(x);
+        }, time));
+      };
+    });
   };
 };
 
@@ -534,19 +575,6 @@ let equals: Utils.bifunc(t({..}, 'a), t({..}, 'a), t({..}, bool)) = (a, b) => {
         state#cancel();
       };
     });
-  };
-};
-
-let error: Utils.func(exn, t({..}, 'a)) = (err) => {
-  pub subscribeWith = (obs) => {
-    let state = Cancellable.Boolean.make();
-
-    obs#onSubscribe(state);
-
-    if (!state#isCancelled()) {
-      obs#onError(err);
-      state#cancel();
-    }
   };
 };
 
