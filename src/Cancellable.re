@@ -29,7 +29,7 @@ module Boolean {
     /**
      * Cancels this Cancellable instance.
      */
-    pub cancel: Utils.action =  () => {
+    pub cancel =  () => {
       if(!flag^) {
         flag := true;
       }
@@ -38,7 +38,7 @@ module Boolean {
     /**
      * Checks if this Cancellable instance is cancelled.
      */
-    pub isCancelled: Utils.producer(bool) = () => flag^;
+    pub isCancelled = () => flag^;
   } 
 }
 /**
@@ -66,7 +66,7 @@ module Composite {
     /**
      * Cancels this Cancellable instance.
      */
-    pub cancel: Utils.action = () => {
+    pub cancel = () => {
       if (!flag^) {
         container^ |> List.iter(x => x#cancel())
         listeners^ |> List.iter(x => x());
@@ -77,7 +77,7 @@ module Composite {
     /**
      * Checks if this Cancellable instance is cancelled.
      */
-    pub isCancelled: Utils.producer(bool) = () => flag^;
+    pub isCancelled = () => flag^;
 
     /**
      * Adds a Cancellable instance to the container.
@@ -124,7 +124,7 @@ module Linked {
     /**
      * Cancels this Cancellable instance.
      */
-    pub cancel: Utils.action = () => {
+    pub cancel = () => {
       if (!flag^) {
         switch (next^) {
           | Some(c) => {
@@ -140,7 +140,7 @@ module Linked {
     /**
      * Checks if this Cancellable instance is cancelled.
      */
-    pub isCancelled: Utils.producer(bool) = () => flag^;
+    pub isCancelled = () => flag^;
 
     /**
      * Unlinks this Cancellable to its linked Cancellable
