@@ -1,14 +1,29 @@
-let a = Completable.make((e) => {
-  Js.log("Hello");
-  e#onComplete();
-});
+[@bs.val] external setTimeout : (unit => unit) => int => unit = "setTimeout";
 
-let b = Completable.make((e) => {
-  Js.log("World");
-  e#onComplete();
-});
+let instantScheduler: Scheduler.t = {
+  pub run = (fn) => {
+    let state = Cancellable.Boolean.make();
+    fn();
+    state#cancel();
+    state;
+  };
 
-a |> Completable.concatWith(b) |> Completable.subscribe({
-  onComplete: () => Js.log("Completed!"),
-  onError: Js.log,
-});
+  pub timeout = (fn, time) => {
+    let state = Cancellable.Boolean.make();
+
+    setTimeout(() => {
+      if (!state#isCancelled()) {
+        fn();
+      }
+    }, time);
+
+    state;
+  };
+};
+
+Single.just("Hello World")
+  |> Single.delay(1000, instantScheduler)
+  |> Single.subscribe({
+    onSuccess: Js.log,
+    onError: Js.log,
+  });
