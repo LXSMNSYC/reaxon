@@ -1,5 +1,5 @@
 
-let operator: Utils.supplier(SingleTypes.t({..}, 'a)) = () => {
+let operator: Utils.supplier(SingleTypes.operator({..}, 'a)) = () => {
   pub subscribeWith = (obs) => {
     obs#onSubscribe({
       pub isCancelled = () => false;

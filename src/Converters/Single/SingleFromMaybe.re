@@ -1,4 +1,4 @@
-let operator: Utils.func(MaybeTypes.t({..}, 'a), SingleTypes.t({..} ,'t)) = (maybe) => {
+let operator: Utils.func(MaybeTypes.t({..}, 'a), SingleTypes.operator({..} ,'t)) = (maybe) => {
   pub subscribeWith = (obs) => {
     let state = Cancellable.Linked.make();
 

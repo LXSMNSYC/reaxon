@@ -1,4 +1,4 @@
-let operator: Utils.func(list(SingleTypes.t({..}, 'a)), SingleTypes.t({..}, 'a)) = (singleList) => {
+let operator: Utils.func(list(SingleTypes.t({..}, {..}, 'a)), SingleTypes.operator({..}, 'a)) = (singleList) => {
   pub subscribeWith = (obs) => {
     let state = Cancellable.Composite.make();
 

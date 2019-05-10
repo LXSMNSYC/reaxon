@@ -1,5 +1,5 @@
 
-let operator: Utils.bifunc(Scheduler.t, SingleTypes.t({..}, 'a), SingleTypes.t({..}, 'a)) = (scheduler, source) => {
+let operator: Utils.bifunc(Scheduler.t, CompletableTypes.t({..}), CompletableTypes.t({..})) = (scheduler, source) => {
   pub subscribeWith = (obs) => {
     let state = Cancellable.Linked.make();
 
@@ -11,8 +11,8 @@ let operator: Utils.bifunc(Scheduler.t, SingleTypes.t({..}, 'a), SingleTypes.t({
     source#subscribeWith({
       pub onSubscribe = state#link;
 
-      pub onSuccess = (x) => state#link(scheduler#run(() => {
-        obs#onSuccess(x);
+      pub onComplete = () => state#link(scheduler#run(() => {
+        obs#onComplete();
       }));
 
       pub onError = (x) => state#link(scheduler#run(() => {

@@ -5,7 +5,7 @@ let ambWith: Utils.bifunc(CompletableTypes.t({..}), CompletableTypes.t({..}), Co
 let andThen: Utils.bifunc(CompletableTypes.t({..}), CompletableTypes.t({..}), CompletableTypes.t({..})) = CompletableConcatWith.operator;
 let andThenMaybe: Utils.bifunc(MaybeTypes.t({..}, 'a), CompletableTypes.t({..}), MaybeTypes.t({..}, 'a)) = CompletableAndThenMaybe.operator;
 let andThenObservable: Utils.bifunc(ObservableTypes.t({..}, 'a), CompletableTypes.t({..}), ObservableTypes.t({..}, 'a)) = CompletableAndThenObservable.operator;
-let andThenSingle: Utils.bifunc(SingleTypes.t({..}, 'a), CompletableTypes.t({..}), SingleTypes.t({..}, 'a)) = CompletableAndThenSingle.operator;
+let andThenSingle: Utils.bifunc(SingleTypes.t({..}, {..}, 'a), CompletableTypes.t({..}), SingleTypes.operator({..}, 'a)) = CompletableAndThenSingle.operator;
 
 let cache: Utils.func(CompletableTypes.t({..}), CompletableTypes.t({..})) = CompletableCache.operator;
 let complete: Utils.supplier(CompletableTypes.t({..})) = CompletableComplete.operator;
@@ -17,7 +17,7 @@ let defer: Utils.func(Utils.supplier(CompletableTypes.t({..})), CompletableTypes
 let delay: Utils.trifunc(int, Scheduler.t, CompletableTypes.t({..}), CompletableTypes.t({..})) = CompletableDelay.operator;
 let delaySubscription: Utils.trifunc(int, Scheduler.t, CompletableTypes.t({..}), CompletableTypes.t({..})) = CompletableDelaySubscription.operator;
 let delayUntil: Utils.bifunc(CompletableTypes.t({..}), CompletableTypes.t({..}), CompletableTypes.t({..})) = CompletableDelayUntil.operator;
-let dematerialize: Utils.func(SingleTypes.t({..}, Notification.Completable.t), CompletableTypes.t({..})) = CompletableDematerialize.operator;
+let dematerialize: Utils.func(SingleTypes.t({..}, {..}, Notification.Completable.t), CompletableTypes.t({..})) = CompletableDematerialize.operator;
 let doAfterTerminate: Utils.bifunc(Utils.action, CompletableTypes.t({..}), CompletableTypes.t({..})) = CompletableDoAfterTerminate.operator;
 let doFinally: Utils.bifunc(Utils.action, CompletableTypes.t({..}), CompletableTypes.t({..})) = CompletableDoFinally.operator;
 let doOnCancel: Utils.bifunc(Utils.action, CompletableTypes.t({..}), CompletableTypes.t({..})) = CompletableDoOnCancel.operator;
@@ -31,14 +31,14 @@ let error: Utils.func(exn, CompletableTypes.t({..})) = CompletableError.operator
 
 let fromAction: Utils.func(Utils.action, CompletableTypes.t({..})) = CompletableFromAction.operator;
 let fromSupplier: Utils.func(Utils.supplier('a), CompletableTypes.t({..})) = CompletableFromSupplier.operator;
-let fromSingle: Utils.func(SingleTypes.t({..}, 'a), CompletableTypes.t({..})) = CompletableFromSingle.operator;
+let fromSingle: Utils.func(SingleTypes.t({..}, {..}, 'a), CompletableTypes.t({..})) = CompletableFromSingle.operator;
 
 let hide: Utils.func(CompletableTypes.t({..}), CompletableTypes.t({..})) = CompletableHide.operator;
 
 let make: Utils.func(Utils.consumer(CompletableTypes.emitter({..})), CompletableTypes.t({..})) = CompletableMake.operator;
-let materialize: Utils.func(SingleTypes.t({..}, 'a), SingleTypes.t({..}, Notification.Completable.t)) = CompletableMaterialize.operator;
+let materialize: Utils.func(CompletableTypes.t({..}), SingleTypes.operator({..}, Notification.Completable.t)) = CompletableMaterialize.operator;
 
-let observeOn: Utils.bifunc(Scheduler.t, SingleTypes.t({..}, 'a), SingleTypes.t({..}, 'a)) = CompletableObserveOn.operator;
+let observeOn: Utils.bifunc(Scheduler.t, CompletableTypes.t({..}), CompletableTypes.t({..})) = CompletableObserveOn.operator;
 let onErrorComplete: Utils.func(CompletableTypes.t({..}), CompletableTypes.t({..})) = CompletableOnErrorComplete.operator;
 let onErrorCompleteWhen: Utils.bifunc(Utils.func(exn, bool), CompletableTypes.t({..}), CompletableTypes.t({..})) = CompletableOnErrorCompleteWhen.operator;
 let onErrorResume: Utils.bifunc(Utils.func(exn, CompletableTypes.t({..})), CompletableTypes.t({..}), CompletableTypes.t({..})) = CompletableOnErrorResume.operator;
@@ -56,7 +56,7 @@ let takeUntil: Utils.bifunc(CompletableTypes.t({..}), CompletableTypes.t({..}), 
 let timeout: Utils.trifunc(int, Scheduler.t, CompletableTypes.t({..}), CompletableTypes.t({..})) = CompletableTimeout.operator;
 let timer: Utils.bifunc(int, Scheduler.t, CompletableTypes.t({..})) = CompletableTimer.operator;
 let toMaybe: Utils.func(CompletableTypes.t({..}), MaybeTypes.t({..}, 'a)) = MaybeFromCompletable.operator;
-let toSingle: Utils.bifunc(Utils.supplier('a), CompletableTypes.t({..}), SingleTypes.t({..}, 'a)) = SingleFromCompletableSupplier.operator;
-let toSingleDefault: Utils.bifunc('a, CompletableTypes.t({..}), SingleTypes.t({..}, 'a)) = SingleFromCompletableDefault.operator;
+let toSingle: Utils.bifunc(Utils.supplier('a), CompletableTypes.t({..}), SingleTypes.operator({..}, 'a)) = SingleFromCompletableSupplier.operator;
+let toSingleDefault: Utils.bifunc('a, CompletableTypes.t({..}), SingleTypes.operator({..}, 'a)) = SingleFromCompletableDefault.operator;
 
 let unsubscribeOn: Utils.bifunc(Scheduler.t, CompletableTypes.t({..}), CompletableTypes.t({..})) = CompletableUnsubscribeOn.operator;

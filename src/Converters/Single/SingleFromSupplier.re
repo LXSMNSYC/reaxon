@@ -1,4 +1,4 @@
-let operator: Utils.func(Utils.supplier('a), SingleTypes.t({..}, 'a)) = (supplier) => {
+let operator: Utils.func(Utils.supplier('a), SingleTypes.operator({..}, 'a)) = (supplier) => {
   pub subscribeWith = (obs) => {
     let state = Cancellable.Boolean.make();
 
