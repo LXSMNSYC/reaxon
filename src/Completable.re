@@ -55,6 +55,7 @@ let subscribeOn: Utils.bifunc(Scheduler.t, CompletableTypes.t({..}), Completable
 let takeUntil: Utils.bifunc(CompletableTypes.t({..}), CompletableTypes.t({..}), CompletableTypes.t({..})) = CompletableTakeUntil.operator;
 let timeout: Utils.trifunc(int, Scheduler.t, CompletableTypes.t({..}), CompletableTypes.t({..})) = CompletableTimeout.operator;
 let timer: Utils.bifunc(int, Scheduler.t, CompletableTypes.t({..})) = CompletableTimer.operator;
+let toMaybe: Utils.func(CompletableTypes.t({..}), MaybeTypes.t({..}, 'a)) = MaybeFromCompletable.operator;
 let toSingle: Utils.bifunc(Utils.supplier('a), CompletableTypes.t({..}), SingleTypes.t({..}, 'a)) = SingleFromCompletableSupplier.operator;
 let toSingleDefault: Utils.bifunc('a, CompletableTypes.t({..}), SingleTypes.t({..}, 'a)) = SingleFromCompletableDefault.operator;
 
