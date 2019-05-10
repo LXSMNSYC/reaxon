@@ -1,5 +1,5 @@
 
-let operator: Utils.bifunc(Utils.bipredicate(int, exn), SingleTypes.t(SingleTypes.observer({..}, 'a), 'a), SingleTypes.t(SingleTypes.observer({..}, 'a), 'a)) = (checker, source) => {
+let operator: Utils.bifunc(Utils.bipredicate(int, exn), SingleTypes.t({..}, 'a), SingleTypes.t({..}, 'a)) = (checker, source) => {
   pub subscribeWith = (obs) => {
     let state = Cancellable.Linked.make();
 

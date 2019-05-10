@@ -1,5 +1,5 @@
 
-let operator: Utils.func(SingleTypes.t(SingleTypes.observer({..}, 'a), 'a), SingleTypes.t(SingleTypes.observer({..}, 'a), 'a)) = (source) => {
+let operator: Utils.func(SingleTypes.t({..}, 'a), SingleTypes.t({..}, 'a)) = (source) => {
   val cached: ref(bool) = ref(false);
   val subscribed: ref(bool) = ref(false);
   val observers: ref(list(SingleTypes.observer({..}, 'a))) = ref([]);
