@@ -64,7 +64,7 @@ let subscribeOn: Utils.bifunc(Scheduler.t, SingleTypes.t({..}, 'a), SingleTypes.
 
 let takeUntil: Utils.bifunc(SingleTypes.t({..}, 'a), SingleTypes.t({..}, 'a), SingleTypes.t({..}, 'a)) = SingleTakeUntil.operator;
 let timeout: Utils.trifunc(int, Scheduler.t, SingleTypes.t({..}, 'a), SingleTypes.t({..}, 'a)) = SingleTimeout.operator;
-let timer: Utils.bifunc(int, Scheduler.t, SingleTypes.t({..}, 'a)) = SingleTimer.operator;
+let timer: Utils.bifunc(int, Scheduler.t, SingleTypes.t({..}, int)) = SingleTimer.operator;
 let toCompletable: Utils.func(SingleTypes.t({..}, 'a), CompletableTypes.t({..})) = CompletableFromSingle.operator;
 
 let unsubscribeOn: Utils.bifunc(Scheduler.t, SingleTypes.t({..}, 'a), SingleTypes.t({..}, 'a)) = SingleUnsubscribeOn.operator;
