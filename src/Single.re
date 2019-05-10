@@ -1,6 +1,6 @@
 let ambArray: Utils.func(array(SingleTypes.t({..}, {..}, 'a)), SingleTypes.operator({..}, 'a)) = SingleAmbArray.operator;
 let ambList: Utils.func(list(SingleTypes.t({..}, {..}, 'a)), SingleTypes.operator({..}, 'a)) = SingleAmbList.operator;
-let ambWith: Utils.bifunc(SingleTypes.t({..}, {..}, 'a), SingleTypes.operator({..}, 'a), SingleTypes.operator({..}, 'a)) = SingleAmbWith.operator;
+let ambWith: Utils.bifunc(SingleTypes.t({..}, {..}, 'a), SingleTypes.t({..}, {..}, 'a), SingleTypes.operator({..}, 'a)) = SingleAmbWith.operator;
 
 let cache: Utils.func(SingleTypes.t({..}, {..}, 'a), SingleTypes.operator({..}, 'a)) = SingleCache.operator;
 let contains: Utils.trifunc('a, Utils.option(Utils.bipredicate('a, 'a)), SingleTypes.t({..}, {..}, 'a), SingleTypes.operator({..}, 'a)) = SingleContains.operator;
