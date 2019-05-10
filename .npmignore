@@ -13,6 +13,4 @@ appveyor.yml
 .nvmrc
 .git
 .vscode
-lib
 .merlin
-*.bs.js
