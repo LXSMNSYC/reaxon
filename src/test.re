@@ -1,6 +1,6 @@
 [@bs.val] external setTimeout : (unit => unit) => int => unit = "setTimeout";
 
-let instantScheduler: Scheduler.t = {
+let jsInstantScheduler: Scheduler.t = {
   pub run = (fn) => {
     let state = Cancellable.Boolean.make();
     fn();
@@ -20,3 +20,11 @@ let instantScheduler: Scheduler.t = {
     state;
   };
 };
+
+Single.just("Hello")
+  |> Single.delay(1000, jsInstantScheduler)
+  |> Single.map(x => x ++ " World")
+  |> Single.subscribe({
+    onSuccess: Js.log,
+    onError: Js.log,
+  });
