@@ -1,4 +1,4 @@
-let operator: Utils.func(SingleTypes.t({..}, Notification.Single.t('a)), SingleTypes.t({..}, 'a)) = (source) => {
+let operator: Utils.func(SingleTypes.t({..}, Notification.Single.t('a)), SingleTypes.t(SingleTypes.observer({..}, 'a), 'a)) = (source) => {
   pub subscribeWith = (obs) => {
     let state = Cancellable.Linked.make();
 

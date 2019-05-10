@@ -1,4 +1,4 @@
-let operator: Utils.bifunc('a, CompletableTypes.t({..}), SingleTypes.t({..}, 'a)) = (item, completable) => {
+let operator: Utils.bifunc('a, CompletableTypes.t({..}), SingleTypes.t(SingleTypes.observer({..}, 'a), 'a)) = (item, completable) => {
   pub subscribeWith = (obs) => {
     let state = Cancellable.Linked.make();
 

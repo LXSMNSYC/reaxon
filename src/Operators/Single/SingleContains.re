@@ -1,5 +1,5 @@
 
-let operator: Utils.trifunc('a, Utils.option(Utils.bipredicate('a, 'a)), SingleTypes.t({..}, 'a), SingleTypes.t({..}, 'a)) = (item, comparer, source) => {
+let operator: Utils.trifunc('a, Utils.option(Utils.bipredicate('a, 'a)), SingleTypes.t(SingleTypes.observer({..}, 'a), 'a), SingleTypes.t(SingleTypes.observer({..}, 'a), 'a)) = (item, comparer, source) => {
   pub subscribeWith = (obs) => {
     let state = Cancellable.Linked.make();
 

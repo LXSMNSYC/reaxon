@@ -1,5 +1,5 @@
 
-let operator: Utils.bifunc(array(SingleTypes.t({..}, 'a)), Utils.func(array('a), 'b), SingleTypes.t({..}, 'b)) = (singleArray, combiner) => {
+let operator: Utils.bifunc(array(SingleTypes.t(SingleTypes.observer({..}, 'a), 'a)), Utils.func(array('a), 'b), SingleTypes.t({..}, 'b)) = (singleArray, combiner) => {
   pub subscribeWith = (obs) => {
     let state = Cancellable.Composite.make();
 
