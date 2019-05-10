@@ -28,6 +28,7 @@ let flatMap: Utils.bifunc(Utils.func('a, SingleTypes.t({..}, 'b)), SingleTypes.t
 let flatMapCompletable: Utils.bifunc(Utils.func('a, CompletableTypes.t({..})), SingleTypes.t({..}, 'a), CompletableTypes.t({..})) = SingleFlatMapCompletable.operator;
 let flatMapMaybe: Utils.bifunc(Utils.func('a, MaybeTypes.t({..}, 'a)), SingleTypes.t({..}, 'a), MaybeTypes.t({..}, 'a));
 let flatMapObservable: Utils.bifunc(Utils.func('a, ObservableTypes.t({..}, 'a)), SingleTypes.t({..}, 'a), ObservableTypes.t({..}, 'a)) = SingleFlatMapObservable.operator;
+let flattenToObservable: Utils.bifunc(Utils.func('a, list('a)), SingleTypes.t({..}, 'a), ObservableTypes.t({..}, 'a)) = (mapper, source);
 let filter: Utils.bifunc(Utils.predicate('a), SingleTypes.t({..}, 'a), MaybeTypes.t({..}, 'a)) = SingleFilter.operator;
 let fromObservable: Utils.func(ObservableTypes.t({..}, 'a), SingleTypes.t({..}, 'a)) = SingleFromObservable.operator;
 let fromPublisher: Utils.func(ReactiveStreams.publisher({..}, {..}, {..}, 'a), SingleTypes.t({..}, 'a)) = SingleFromPublisher.operator;
@@ -44,6 +45,8 @@ let lift: Utils.bifunc(Utils.func(SingleTypes.observer({..}, 'a), SingleTypes.ob
 let make: Utils.func(Utils.consumer(SingleTypes.emitter({..}, 'a)), SingleTypes.t({..}, 'a)) = SingleMake.operator;
 let map: Utils.bifunc(Utils.func('a, 'b), SingleTypes.t({..}, 'a), SingleTypes.t({..}, 'b)) = SingleMap.operator;
 let materialize: Utils.func(SingleTypes.t({..}, 'a), SingleTypes.t({..}, Notification.Single.t('a))) = SingleMaterialize.operator;
+let merge: Utils.func(SingleTypes.t({..}, SingleTypes.t({..}, 'a)), SingleTypes.t({..}, 'a)) = SingleMerge.operator;
+
 let never: Utils.supplier(SingleTypes.t({..}, 'a)) = SingleNever.operator;
 
 let observeOn: Utils.bifunc(Scheduler.t, SingleTypes.t({..}, 'a), SingleTypes.t({..}, 'a)) = SingleObserveOn.operator;
