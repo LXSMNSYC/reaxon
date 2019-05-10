@@ -1,194 +1,23 @@
 
 exception CancellationException;
+exception TimeoutException;
+exception IndexOutOfBoundsException;
+exception NoSuchElementException;
 
 
-type subscription = Cancellable.Boolean.i;
+let ambArray: Utils.func(array(SingleTypes.t({..}, 'a)), SingleTypes.t({..}, 'a)) = SingleAmbArray.operator;
+let ambList: Utils.func(list(SingleTypes.t({..}, 'a)), SingleTypes.t({..}, 'a)) = SingleAmbList.operator;
+let ambWith: Utils.bifunc(SingleTypes.t({..}, 'a), SingleTypes.t({..}, 'a), SingleTypes.t({..}, 'a)) = SingleAmbWith.operator;
 
+let cache: Utils.func(SingleTypes.t({..}, 'a), SingleTypes.t({..}, 'a)) = SingleCache.operator;
+let contains: Utils.trifunc('a, Utils.option(Utils.bipredicate('a, 'a)), SingleTypes.t({..}, 'a), SingleTypes.t({..}, 'a)) = SingleContains.operator;
 
-type observer('observer, 'a) = {
-  ..
-  onSubscribe: Utils.consumer(subscription),
-  onSuccess: Utils.consumer('a),
-  onError: Utils.consumer(exn),
-} as 'observer;
+let error: Utils.func(exn, SingleTypes.t({..}, 'a)) = SingleError.operator;
+let defer: Utils.func(Utils.supplier(SingleTypes.t({..}, 'a)), SingleTypes.t({..}, 'a)) = SingleDefer.operator;
 
+let delay: Utils.trifunc(int, Scheduler.t, SingleTypes.t({..}, 'a), SingleTypes.t({..}, 'a)) = SingleDelay.operator;
 
-type t('observer,'a) = {
-  .
-  subscribeWith: Utils.consumer(observer('observer, 'a)),
-};
-
-
-type emitter('emitter, 'a) = {
-  ..
-  setCancellable: Utils.consumer(Cancellable.t({..})),
-  isCancelled: Utils.supplier(bool),
-  onSuccess: Utils.consumer('a),
-  onError: Utils.consumer(exn),
-} as 'emitter;
-
-
-let ambList: Utils.func(list(t({..}, 'a)), t({..}, 'a)) = (singleList) => {
-  pub subscribeWith = (obs) => {
-    let state = Cancellable.Composite.make();
-
-    obs#onSubscribe({
-      pub isCancelled = state#isCancelled;
-      pub cancel = state#cancel;
-    });
-
-    singleList |> List.iter(single => single#subscribeWith({
-      pub onSubscribe = state#add;
-
-      pub onSuccess = (x) => {
-        obs#onSuccess(x);
-        state#cancel();
-      };
-
-      pub onError = (x) => {
-        obs#onError(x);
-        state#cancel();
-      };
-    }));
-  };
-};
-
-
-
-let ambArray: Utils.func(array(t({..}, 'a)), t({..}, 'a)) = (singleArray) => {
-  pub subscribeWith = (obs) => {
-    let state = Cancellable.Composite.make();
-
-    obs#onSubscribe({
-      pub isCancelled = state#isCancelled;
-      pub cancel = state#cancel;
-    });
-
-    singleArray |> Array.iter(single => single#subscribeWith({
-      pub onSubscribe = state#add;
-
-      pub onSuccess = (x) => {
-        obs#onSuccess(x);
-        state#cancel();
-      };
-
-      pub onError = (x) => {
-        obs#onError(x);
-        state#cancel();
-      };
-    }));
-  };
-};
-
-
-let ambWith: Utils.bifunc(t({..}, 'a), t({..}, 'a), t({..}, 'a)) = (a, b) => {
-  pub subscribeWith = (obs) => {
-    let state = Cancellable.Composite.make();
-
-    obs#onSubscribe({
-      pub isCancelled = state#isCancelled;
-      pub cancel = state#cancel;
-    });
-
-    a#subscribeWith({
-      pub onSubscribe = state#add;
-
-      pub onSuccess = (x) => {
-        obs#onSuccess(x);
-        state#cancel();
-      };
-
-      pub onError = (x) => {
-        obs#onError(x);
-        state#cancel();
-      };
-    });
-
-    b#subscribeWith({
-      pub onSubscribe = state#add;
-
-      pub onSuccess = (x) => {
-        obs#onSuccess(x);
-        state#cancel();
-      };
-
-      pub onError = (x) => {
-        obs#onError(x);
-        state#cancel();
-      };
-    });
-  };
-};
-
-
-let cache: Utils.func(t({..}, 'a), t({..}, 'a)) = (source) => {
-  val cached: ref(bool) = ref(false);
-  val subscribed: ref(bool) = ref(false);
-  val observers: ref(list(observer({..}, 'a))) = ref([]);
-  val success = ref(None);
-  val error = ref(None);
-
-  pub subscribeWith = (obs) => {
-
-    if (cached^) {
-      let state = Cancellable.Boolean.make();
-
-      obs#onSubscribe(state);
-
-      if (!state#isCancelled()) {
-        switch (success^) {
-          | Some(x) => obs#onSuccess(x)
-          | None => switch(error^) {
-            | Some(e) => obs#onError(e)
-            | None => () 
-          }
-        };
-  
-        state#cancel();
-      }
-    } else {
-      let state = Cancellable.Boolean.make();
-
-      observers := [obs] @ observers^;
-
-      let subscription = {
-        pub isCancelled = state#isCancelled;
-        pub cancel = () => {
-          observers := observers^ |> List.filter(x => x != obs);
-          state#cancel();
-        };
-      };
-
-      obs#onSubscribe(subscription);
-
-      if (!subscribed^) {
-        subscribed := true;
-        source#subscribeWith({
-          pub onSubscribe = (sub) => ();
-  
-          pub onSuccess = (x) => {
-            cached := true;
-            success := Some(x);
-
-            observers^ |> List.iter(o => o#onSuccess(x));
-            subscription#cancel();
-          };
-
-          pub onError = (e) => {
-            cached := true;
-            error := Some(e);
-
-            observers^ |> List.iter(o => o#onError(e));
-            subscription#cancel();
-          };
-        });
-      }
-    }
-  };
-};
-
-
-let contains: Utils.trifunc('a, Utils.option(Utils.bipredicate('a, 'a)), t({..}, 'a), t({..}, 'a)) = (item, comparer, source) => {
+let delaySubscription: Utils.trifunc(int, Scheduler.t, SingleTypes.t({..}, 'a), SingleTypes.t({..}, 'a)) = (time, scheduler, source) => {
   pub subscribeWith = (obs) => {
     let state = Cancellable.Linked.make();
 
@@ -197,78 +26,21 @@ let contains: Utils.trifunc('a, Utils.option(Utils.bipredicate('a, 'a)), t({..},
       pub cancel = state#cancel;
     });
 
-    source#subscribeWith({
-      pub onSubscribe = state#link;
+    state#link(scheduler#timeout(() => {
+      state#unlink();
+      source#subscribeWith({
+        pub onSubscribe = state#link;
 
-      pub onSuccess = (x) => {
-        switch(comparer) {
-          | Some(cmp) => {
-            switch (cmp(x, item)) {
-              | result => obs#onSuccess(result)
-              | exception e => obs#onError(e);
-            };
-          }
-          | None => obs#onSuccess(x == item)
-        };
-        state#cancel();
-      };
+        pub onSuccess = obs#onSuccess;
 
-      pub onError = obs#onError;
-    })
-  };
-};
-
-let error: Utils.func(exn, t({..}, 'a)) = (err) => {
-  pub subscribeWith = (obs) => {
-    let state = Cancellable.Boolean.make();
-
-    obs#onSubscribe(state);
-
-    if (!state#isCancelled()) {
-      obs#onError(err);
-      state#cancel();
-    }
+        pub onError = obs#onError;
+      });
+    }, time));
   };
 };
 
 
-
-let defer: Utils.func(Utils.supplier(t({..}, 'a)), t({..}, 'a)) = (supplier) => {
-  pub subscribeWith = (obs) => switch (supplier()) {
-    | source => source#subscribeWith(obs)
-    | exception e => error(e)#subscribeWith(obs);
-  };
-};
-
-let delay: Utils.trifunc(int, Scheduler.t, t({..}, 'a), t({..}, 'a)) = (time, scheduler, source) => {
-  pub subscribeWith = (obs) => {
-    let state = Cancellable.Linked.make();
-
-    obs#onSubscribe({
-      pub isCancelled = state#isCancelled;
-      pub cancel = state#cancel;
-    });
-
-    source#subscribeWith({
-      pub onSubscribe = state#link;
-
-      pub onSuccess = (x) => {
-        state#link(scheduler#timeout(() => {
-          obs#onSuccess(x);
-        }, time));
-      };
-
-      pub onError = (x) => {
-        state#link(scheduler#timeout(() => {
-          obs#onError(x);
-        }, time));
-      };
-    });
-  };
-};
-
-
-let delayUntil: Utils.bifunc(t({..}, 'a), t({..}, 'a), t({..}, 'a)) = (other, source) => {
+let delayUntil: Utils.bifunc(SingleTypes.t({..}, 'a), SingleTypes.t({..}, 'a), SingleTypes.t({..}, 'a)) = (other, source) => {
   pub subscribeWith = (obs) => {
     let state = Cancellable.Linked.make();
 
@@ -298,7 +70,7 @@ let delayUntil: Utils.bifunc(t({..}, 'a), t({..}, 'a), t({..}, 'a)) = (other, so
 };
 
 
-let doAfterSuccess: Utils.bifunc(Utils.consumer('a), t({..}, 'a), t({..}, 'a)) = (onSuccess, source) => {
+let doAfterSuccess: Utils.bifunc(Utils.consumer('a), SingleTypes.t({..}, 'a), SingleTypes.t({..}, 'a)) = (onSuccess, source) => {
   pub subscribeWith = (obs) => {
     let state = Cancellable.Linked.make();
 
@@ -321,7 +93,7 @@ let doAfterSuccess: Utils.bifunc(Utils.consumer('a), t({..}, 'a), t({..}, 'a)) =
   };
 };
 
-let doAfterTerminate: Utils.bifunc(Utils.action, t({..}, 'a), t({..}, 'a)) = (onTerminate, source) => {
+let doAfterTerminate: Utils.bifunc(Utils.action, SingleTypes.t({..}, 'a), SingleTypes.t({..}, 'a)) = (onTerminate, source) => {
   pub subscribeWith = (obs) => {
     let state = Cancellable.Linked.make();
 
@@ -346,7 +118,7 @@ let doAfterTerminate: Utils.bifunc(Utils.action, t({..}, 'a), t({..}, 'a)) = (on
   };
 };
 
-let doFinally: Utils.bifunc(Utils.action, t({..}, 'a), t({..}, 'a)) = (onFinally, source) => {
+let doFinally: Utils.bifunc(Utils.action, SingleTypes.t({..}, 'a), SingleTypes.t({..}, 'a)) = (onFinally, source) => {
   pub subscribeWith = (obs) => {
     let state = Cancellable.Linked.make();
 
@@ -379,7 +151,7 @@ let doFinally: Utils.bifunc(Utils.action, t({..}, 'a), t({..}, 'a)) = (onFinally
   };
 };
 
-let doOnCancel: Utils.bifunc(Utils.action, t({..}, 'a), t({..}, 'a)) = (onCancel, source) => {
+let doOnCancel: Utils.bifunc(Utils.action, SingleTypes.t({..}, 'a), SingleTypes.t({..}, 'a)) = (onCancel, source) => {
   pub subscribeWith = (obs) => {
     let state = Cancellable.Linked.make();
 
@@ -406,7 +178,7 @@ let doOnCancel: Utils.bifunc(Utils.action, t({..}, 'a), t({..}, 'a)) = (onCancel
   };
 };
 
-let doOnError: Utils.bifunc(Utils.consumer(exn), t({..}, 'a), t({..}, 'a)) = (onError, source) => {
+let doOnError: Utils.bifunc(Utils.consumer(exn), SingleTypes.t({..}, 'a), SingleTypes.t({..}, 'a)) = (onError, source) => {
   pub subscribeWith = (obs) => {
     let state = Cancellable.Linked.make();
 
@@ -428,7 +200,7 @@ let doOnError: Utils.bifunc(Utils.consumer(exn), t({..}, 'a), t({..}, 'a)) = (on
   };
 };
 
-let doOnEvent: Utils.bifunc(Utils.biconsumer(Utils.option('a), Utils.option(exn)), t({..}, 'a), t({..}, 'a)) = (onEvent, source) => {
+let doOnEvent: Utils.bifunc(Utils.biconsumer(Utils.option('a), Utils.option(exn)), SingleTypes.t({..}, 'a), SingleTypes.t({..}, 'a)) = (onEvent, source) => {
   pub subscribeWith = (obs) => {
     let state = Cancellable.Linked.make();
 
@@ -453,7 +225,7 @@ let doOnEvent: Utils.bifunc(Utils.biconsumer(Utils.option('a), Utils.option(exn)
   };
 };
 
-let doOnSubscribe: Utils.bifunc(Utils.consumer(subscription), t({..}, 'a), t({..}, 'a)) = (onSubscribe, source) => {
+let doOnSubscribe: Utils.bifunc(Utils.consumer(subscription), SingleTypes.t({..}, 'a), SingleTypes.t({..}, 'a)) = (onSubscribe, source) => {
   pub subscribeWith = (obs) => {
     let state = Cancellable.Linked.make();
 
@@ -475,7 +247,7 @@ let doOnSubscribe: Utils.bifunc(Utils.consumer(subscription), t({..}, 'a), t({..
   };
 };
 
-let doOnSuccess: Utils.bifunc(Utils.consumer('a), t({..}, 'a), t({..}, 'a)) = (onSuccess, source) => {
+let doOnSuccess: Utils.bifunc(Utils.consumer('a), SingleTypes.t({..}, 'a), SingleTypes.t({..}, 'a)) = (onSuccess, source) => {
   pub subscribeWith = (obs) => {
     let state = Cancellable.Linked.make();
 
@@ -497,7 +269,7 @@ let doOnSuccess: Utils.bifunc(Utils.consumer('a), t({..}, 'a), t({..}, 'a)) = (o
   };
 };
 
-let doOnTerminate: Utils.bifunc(Utils.action, t({..}, 'a), t({..}, 'a)) = (onTerminate, source) => {
+let doOnTerminate: Utils.bifunc(Utils.action, SingleTypes.t({..}, 'a), SingleTypes.t({..}, 'a)) = (onTerminate, source) => {
   pub subscribeWith = (obs) => {
     let state = Cancellable.Linked.make();
 
@@ -522,7 +294,7 @@ let doOnTerminate: Utils.bifunc(Utils.action, t({..}, 'a), t({..}, 'a)) = (onTer
   };
 };
 
-let equals: Utils.bifunc(t({..}, 'a), t({..}, 'a), t({..}, bool)) = (a, b) => {
+let equals: Utils.bifunc(SingleTypes.t({..}, 'a), SingleTypes.t({..}, 'a), t({..}, bool)) = (a, b) => {
   pub subscribeWith = (obs) => {
     let state = Cancellable.Composite.make();
 
@@ -578,7 +350,7 @@ let equals: Utils.bifunc(t({..}, 'a), t({..}, 'a), t({..}, bool)) = (a, b) => {
   };
 };
 
-let flatMap: Utils.bifunc(Utils.func('a, t({..}, 'b)), t({..}, 'a), t({..}, 'b)) = (mapper, source) => {
+let flatMap: Utils.bifunc(Utils.func('a, t({..}, 'b)), SingleTypes.t({..}, 'a), t({..}, 'b)) = (mapper, source) => {
   pub subscribeWith = (obs) => {
     let state = Cancellable.Linked.make();
 
@@ -612,7 +384,7 @@ let flatMap: Utils.bifunc(Utils.func('a, t({..}, 'b)), t({..}, 'a), t({..}, 'b))
   };
 };
 
-let flatMap: Utils.bifunc(Utils.func('a, Completable.t({..})), t({..}, 'a), Completable.t({..})) = (mapper, source) => {
+let fromObservable: Utils.func(Observable.SingleTypes.t({..}, 'a), SingleTypes.t({..}, 'a)) = (observable) => {
   pub subscribeWith = (obs) => {
     let state = Cancellable.Linked.make();
 
@@ -621,32 +393,92 @@ let flatMap: Utils.bifunc(Utils.func('a, Completable.t({..})), t({..}, 'a), Comp
       pub cancel = state#cancel;
     });
 
-    source#subscribeWith({
-      pub onSubscribe = state#link;
+    observer#subscribeWith({
+      pub onSubscribe = (sub) => state#link;
 
-      pub onSuccess = (x) => {
-        switch(mapper(x)) {
-          | item => {
-            state#unlink();
-            item#subscribeWith({
-              pub onSubscribe = state#link;
+      pub onNext = (x) => {
+        if (single^) {
+          obs#onError(IndexOutOfBoundsException);
+          state#cancel();
+        } else {
+          single := true;
+          last := Some(x);
+        }
+      };
 
-              pub onComplete = obs#onComplete;
-
-              pub onError = obs#onError;
-            });
-          }
-          | exception e => obs#onError(e)
+      pub onComplete = () => {
+        if (single^) {
+          switch (last^) {
+            | Some(item) => obs#onSuccess(item)
+            | None => obs#onError(NoSuchElementException)
+          };
+        } else {
+          obs#onError(NoSuchElementException);
         }
       };
 
       pub onError = obs#onError;
     });
-    
   };
 };
 
-let fromsupplier: Utils.func(Utils.supplier('a), t({..}, 'a)) = (supplier) => {
+let fromPublisher: Utils.func(ReactiveStreams.publisher({..}, {..}, {..}, 'a), SingleTypes.t({..}, 'a)) = (publisher) => {
+  pub subscribeWith = (obs) => {
+    let state = Cancellable.Linked.make();
+
+    obs#onSubscribe({
+      pub isCancelled = state#isCancelled;
+      pub cancel = state#cancel;
+    });
+
+    let last = ref(None);
+    let single = ref(false);
+
+    publisher#subscribe({
+      pub onSubscribe = (sub) => {
+        let subscriptionState = ref(false);
+        state#link({
+          pub isCancelled = () => subscriptionState^;
+          pub cancel = () => {
+            subscriptionState := true;
+            sub#cancel();
+          };
+        });
+
+        sub#request(max_int);
+      };
+
+      pub onNext = (x) => {
+        if (single^) {
+          obs#onError(IndexOutOfBoundsException);
+          state#cancel();
+        } else {
+          single := true;
+          last := Some(x);
+        }
+      };
+
+      pub onComplete = () => {
+        if (single^) {
+          switch (last^) {
+            | Some(item) => obs#onSuccess(item)
+            | None => obs#onError(NoSuchElementException)
+          };
+          state#cancel();
+        } else {
+          obs#onError(NoSuchElementException);
+        }
+      };
+
+      pub onError = (x) => {
+        obs#onError(x);
+        state#cancel();
+      };
+    });
+  };
+};
+
+let fromSupplier: Utils.func(Utils.supplier('a), SingleTypes.t({..}, 'a)) = (supplier) => {
   pub subscribeWith = (obs) => {
     let state = Cancellable.Boolean.make();
 
@@ -662,7 +494,7 @@ let fromsupplier: Utils.func(Utils.supplier('a), t({..}, 'a)) = (supplier) => {
   };
 };
 
-let hide: Utils.func(t({..}, 'a), t({..}, 'a)) = (source) => {
+let hide: Utils.func(SingleTypes.t({..}, 'a), SingleTypes.t({..}, 'a)) = (source) => {
   pub subscribeWith = (obs) => {
     let state = Cancellable.Linked.make();
 
@@ -681,26 +513,7 @@ let hide: Utils.func(t({..}, 'a), t({..}, 'a)) = (source) => {
   };
 };
 
-let ignoreElement: Utils.func(t({..}, 'a), Completable.t({..})) = (source) => {
-  pub subscribeWith = (obs) => {
-    let state = Cancellable.Linked.make();
-
-    obs#onSubscribe({
-      pub isCancelled = state#isCancelled;
-      pub cancel = state#cancel;
-    });
-
-    source#subscribeWith({
-      pub onSubscribe = state#link;
-
-      pub onSuccess = (x) => obs#onComplete();
-      
-      pub onError = obs#onError;
-    });
-  };
-};
-
-let just: Utils.func('a, t({..}, 'a)) = (value) => {
+let just: Utils.func('a, SingleTypes.t({..}, 'a)) = (value) => {
   pub subscribeWith = (obs) => {
     let state = Cancellable.Boolean.make();
 
@@ -713,14 +526,14 @@ let just: Utils.func('a, t({..}, 'a)) = (value) => {
   };
 };
 
-let lift: Utils.bifunc(Utils.func(observer({..}, 'a), observer({..}, 'b)), t({..}, 'a), t({..}, 'b)) = (operator, source) => {
+let lift: Utils.bifunc(Utils.func(observer({..}, 'a), observer({..}, 'b)), SingleTypes.t({..}, 'a), t({..}, 'b)) = (operator, source) => {
   pub subscribeWith = (obs) => switch(operator(obs)) {
     | newObserver => source#subscribeWith(newObserver)
     | exception e => error(e)#subscribeWith(obs)
   };
 }
 
-let make: Utils.func(Utils.consumer(emitter({..}, 'a)), t({..}, 'a)) = (onSubscribe) => {
+let make: Utils.func(Utils.consumer(emitter({..}, 'a)), SingleTypes.t({..}, 'a)) = (onSubscribe) => {
   pub subscribeWith = (obs) => {
     let state = Cancellable.Linked.make();
 
@@ -755,7 +568,7 @@ let make: Utils.func(Utils.consumer(emitter({..}, 'a)), t({..}, 'a)) = (onSubscr
   };
 };
 
-let map: Utils.bifunc(Utils.func('a, 'b), t({..}, 'a), t({..}, 'b)) = (mapper, source) => {
+let map: Utils.bifunc(Utils.func('a, 'b), SingleTypes.t({..}, 'a), t({..}, 'b)) = (mapper, source) => {
   pub subscribeWith = (obs) => {
     let state = Cancellable.Linked.make();
 
@@ -777,7 +590,7 @@ let map: Utils.bifunc(Utils.func('a, 'b), t({..}, 'a), t({..}, 'b)) = (mapper, s
   };
 };
 
-let never: Utils.supplier(t({..}, 'a)) = () => {
+let never: Utils.supplier(SingleTypes.t({..}, 'a)) = () => {
   pub subscribeWith = (obs) => {
     obs#onSubscribe({
       pub isCancelled = () => false;
@@ -786,7 +599,7 @@ let never: Utils.supplier(t({..}, 'a)) = () => {
   };
 };
 
-let observeOn: Utils.bifunc(Scheduler.t, t({..}, 'a), t({..}, 'a)) = (scheduler, source) => {
+let observeOn: Utils.bifunc(Scheduler.t, SingleTypes.t({..}, 'a), SingleTypes.t({..}, 'a)) = (scheduler, source) => {
   pub subscribeWith = (obs) => {
     let state = Cancellable.Linked.make();
 
@@ -809,7 +622,7 @@ let observeOn: Utils.bifunc(Scheduler.t, t({..}, 'a), t({..}, 'a)) = (scheduler,
   };
 }
 
-let onErrorResume: Utils.bifunc(Utils.func(exn, t({..}, 'a)), t({..}, 'a), t({..}, 'a)) = (resumeIfError, source) => {
+let onErrorResume: Utils.bifunc(Utils.func(exn, SingleTypes.t({..}, 'a)), SingleTypes.t({..}, 'a), SingleTypes.t({..}, 'a)) = (resumeIfError, source) => {
   pub subscribeWith = (obs) => {
     let state = Cancellable.Linked.make();
 
@@ -842,7 +655,7 @@ let onErrorResume: Utils.bifunc(Utils.func(exn, t({..}, 'a)), t({..}, 'a), t({..
   };
 };
 
-let onErrorResumeNext: Utils.bifunc(t({..}, 'a), t({..}, 'a), t({..}, 'a)) = (resumeIfError, source) => {
+let onErrorResumeNext: Utils.bifunc(SingleTypes.t({..}, 'a), SingleTypes.t({..}, 'a), SingleTypes.t({..}, 'a)) = (resumeIfError, source) => {
   pub subscribeWith = (obs) => {
     let state = Cancellable.Linked.make();
 
@@ -870,7 +683,7 @@ let onErrorResumeNext: Utils.bifunc(t({..}, 'a), t({..}, 'a), t({..}, 'a)) = (re
   };
 };
 
-let onErrorReturn: Utils.bifunc(Utils.func(exn, 'a), t({..}, 'a), t({..}, 'a)) = (resumeFunction, source) => {
+let onErrorReturn: Utils.bifunc(Utils.func(exn, 'a), SingleTypes.t({..}, 'a), SingleTypes.t({..}, 'a)) = (resumeFunction, source) => {
   pub subscribeWith = (obs) => {
     let state = Cancellable.Linked.make();
 
@@ -894,7 +707,7 @@ let onErrorReturn: Utils.bifunc(Utils.func(exn, 'a), t({..}, 'a), t({..}, 'a)) =
   };
 };
 
-let onErrorReturnItem: Utils.bifunc('a, t({..}, 'a), t({..}, 'a)) = (item, source) => {
+let onErrorReturnItem: Utils.bifunc('a, SingleTypes.t({..}, 'a), SingleTypes.t({..}, 'a)) = (item, source) => {
   pub subscribeWith = (obs) => {
     let state = Cancellable.Linked.make();
 
@@ -913,7 +726,7 @@ let onErrorReturnItem: Utils.bifunc('a, t({..}, 'a), t({..}, 'a)) = (item, sourc
   };
 };
 
-let retry: Utils.func(t({..}, 'a), t({..}, 'a)) = (source) => {
+let retry: Utils.func(SingleTypes.t({..}, 'a), SingleTypes.t({..}, 'a)) = (source) => {
   pub subscribeWith = (obs) => {
     let state = Cancellable.Linked.make();
 
@@ -939,7 +752,7 @@ let retry: Utils.func(t({..}, 'a), t({..}, 'a)) = (source) => {
   };
 };
 
-let retryCount: Utils.bifunc(int, t({..}, 'a), t({..}, 'a)) = (count, source) => {
+let retryCount: Utils.bifunc(int, SingleTypes.t({..}, 'a), SingleTypes.t({..}, 'a)) = (count, source) => {
   pub subscribeWith = (obs) => {
     let state = Cancellable.Linked.make();
 
@@ -972,7 +785,7 @@ let retryCount: Utils.bifunc(int, t({..}, 'a), t({..}, 'a)) = (count, source) =>
   };
 };
 
-let retryWhile: Utils.bifunc(Utils.bipredicate(int, exn), t({..}, 'a), t({..}, 'a)) = (checker, source) => {
+let retryWhile: Utils.bifunc(Utils.bipredicate(int, exn), SingleTypes.t({..}, 'a), SingleTypes.t({..}, 'a)) = (checker, source) => {
   pub subscribeWith = (obs) => {
     let state = Cancellable.Linked.make();
 
@@ -1005,7 +818,7 @@ let retryWhile: Utils.bifunc(Utils.bipredicate(int, exn), t({..}, 'a), t({..}, '
   };
 };
 
-let subscribeOn: Utils.bifunc(Scheduler.t, t({..}, 'a), t({..}, 'a)) = (scheduler, source) => {
+let subscribeOn: Utils.bifunc(Scheduler.t, SingleTypes.t({..}, 'a), SingleTypes.t({..}, 'a)) = (scheduler, source) => {
   pub subscribeWith = (obs) => {
     let state = Cancellable.Linked.make();
 
@@ -1028,9 +841,14 @@ let subscribeOn: Utils.bifunc(Scheduler.t, t({..}, 'a), t({..}, 'a)) = (schedule
   };
 };
 
-let takeUntil: Utils.bifunc(t({..}, 'a), t({..}, 'a), t({..}, 'a)) = (other, source) => {
+let takeUntil: Utils.bifunc(SingleTypes.t({..}, 'a), SingleTypes.t({..}, 'a), SingleTypes.t({..}, 'a)) = (other, source) => {
   pub subscribeWith = (obs) => {
     let state = Cancellable.Composite.make();
+
+    obs#onSubscribe({
+      pub isCancelled = state#isCancelled;
+      pub cancel = state#cancel;
+    });
 
     other#subscribeWith({
       pub onSubscribe = state#add;
@@ -1062,7 +880,45 @@ let takeUntil: Utils.bifunc(t({..}, 'a), t({..}, 'a), t({..}, 'a)) = (other, sou
   };
 };
 
-let unsubscribeOn: Utils.bifunc(Scheduler.t, t({..}, 'a), t({..}, 'a)) = (scheduler, source) => {
+let timer: Utils.bifunc(int, Scheduler.t, SingleTypes.t({..}, 'a)) = (time, scheduler) => {
+  pub subscribeWith = (obs) => {
+    obs#onSubscribe(scheduler#timeout(() => {
+      obs#onSuccess(0);
+    }, time));
+  }
+};
+
+let timeout: Utils.trifunc(int, Scheduler.t, SingleTypes.t({..}, 'a), SingleTypes.t({..}, 'a)) = (time, scheduler, source) => {
+  pub subscribeWith = (obs) => {
+    let state = Cancellable.Composite.make();
+
+    obs#onSubscribe({
+      pub isCancelled = state#isCancelled;
+      pub cancel = state#cancel;
+    });
+
+    let clock = state#add(scheduler#timeout(() => {
+      obs#onError(TimeoutException);
+      state#cancel();
+    }, time));
+
+    source#subscribeWith({
+      pub onSubscribe = state#add;
+      
+      pub onSuccess = (x) => {
+        obs#onSuccess(x);
+        state#cancel();
+      };
+      
+      pub onError = (x) => {
+        obs#onError(x);
+        state#cancel();
+      };
+    });
+  };
+};
+
+let unsubscribeOn: Utils.bifunc(Scheduler.t, SingleTypes.t({..}, 'a), SingleTypes.t({..}, 'a)) = (scheduler, source) => {
   pub subscribeWith = (obs) => {
     let state = Cancellable.Linked.make();
 
@@ -1084,7 +940,7 @@ let unsubscribeOn: Utils.bifunc(Scheduler.t, t({..}, 'a), t({..}, 'a)) = (schedu
   };
 };
 
-let zipArray: Utils.bifunc(array(t({..}, 'a)), Utils.func(array('a), 'b), t({..}, 'b)) = (singleArray, combiner) => {
+let zipArray: Utils.bifunc(array(SingleTypes.t({..}, 'a)), Utils.func(array('a), 'b), t({..}, 'b)) = (singleArray, combiner) => {
   pub subscribeWith = (obs) => {
     let state = Cancellable.Composite.make();
 
@@ -1123,7 +979,7 @@ let zipArray: Utils.bifunc(array(t({..}, 'a)), Utils.func(array('a), 'b), t({..}
   };
 }
 
-let zipList: Utils.bifunc(list(t({..}, 'a)), Utils.func(array('a), 'b), t({..}, 'b)) = (singleList, combiner) => {
+let zipList: Utils.bifunc(list(SingleTypes.t({..}, 'a)), Utils.func(array('a), 'b), t({..}, 'b)) = (singleList, combiner) => {
   pub subscribeWith = (obs) => {
     let state = Cancellable.Composite.make();
 
@@ -1163,7 +1019,7 @@ let zipList: Utils.bifunc(list(t({..}, 'a)), Utils.func(array('a), 'b), t({..}, 
   };
 };
 
-let zipWith: Utils.trifunc(t({..}, 'a), Utils.bifunc('a, 'a, 'b), t({..}, 'a), t({..}, 'b)) = (other, combiner, source) => {
+let zipWith: Utils.trifunc(SingleTypes.t({..}, 'a), Utils.bifunc('a, 'a, 'b), SingleTypes.t({..}, 'a), t({..}, 'b)) = (other, combiner, source) => {
   pub subscribeWith = (obs) => {
     let state = Cancellable.Composite.make();
 
@@ -1230,7 +1086,7 @@ type basicObserver('a) = {
   onError: Utils.consumer(exn),
 };
 
-let subscribe: Utils.bifunc(basicObserver('a), t({..}, 'a), subscription) = (obs, source) => {
+let subscribe: Utils.bifunc(basicObserver('a), SingleTypes.t({..}, 'a), subscription) = (obs, source) => {
   let state = Cancellable.Linked.make();
 
   source#subscribeWith({
