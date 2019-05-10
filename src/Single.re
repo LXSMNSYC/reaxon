@@ -31,7 +31,6 @@ let flatMapObservable: Utils.bifunc(Utils.func('a, ObservableTypes.t({..}, 'a)),
 let flattenToObservable: Utils.bifunc(Utils.func('a, list('a)), SingleTypes.t({..}, 'a), ObservableTypes.t({..}, 'a)) = SingleFlattenToObservable.operator;
 let filter: Utils.bifunc(Utils.predicate('a), SingleTypes.t({..}, 'a), MaybeTypes.t({..}, 'a)) = SingleFilter.operator;
 let fromObservable: Utils.func(ObservableTypes.t({..}, 'a), SingleTypes.t({..}, 'a)) = SingleFromObservable.operator;
-let fromPublisher: Utils.func(ReactiveStreams.publisher({..}, {..}, {..}, 'a), SingleTypes.t({..}, 'a)) = SingleFromPublisher.operator;
 let fromSingle: Utils.bifunc(Utils.supplier('a), CompletableTypes.t({..}), SingleTypes.t({..}, 'a)) = SingleFromCompletableSupplier.operator;
 let fromSingleDefault: Utils.bifunc('a, CompletableTypes.t({..}), SingleTypes.t({..}, 'a)) = SingleFromCompletableDefault.operator;
 let fromSupplier: Utils.func(Utils.supplier('a), SingleTypes.t({..}, 'a)) = SingleFromSupplier.operator;
