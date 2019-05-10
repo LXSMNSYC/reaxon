@@ -26,12 +26,14 @@ let equals: Utils.bifunc(SingleTypes.t({..}, 'a), SingleTypes.t({..}, 'a), Singl
 
 let flatMap: Utils.bifunc(Utils.func('a, SingleTypes.t({..}, 'b)), SingleTypes.t({..}, 'a), SingleTypes.t({..}, 'b)) = SingleFlatMap.operator;
 let flatMapCompletable: Utils.bifunc(Utils.func('a, CompletableTypes.t({..})), SingleTypes.t({..}, 'a), CompletableTypes.t({..})) = SingleFlatMapCompletable.operator;
-let flatMapMaybe: Utils.bifunc(Utils.func('a, MaybeTypes.t({..}, 'a)), SingleTypes.t({..}, 'a), MaybeTypes.t({..}, 'a));
+let flatMapMaybe: Utils.bifunc(Utils.func('a, MaybeTypes.t({..}, 'a)), SingleTypes.t({..}, 'a), MaybeTypes.t({..}, 'a)) = SingleFlatMapMaybe.operator;
 let flatMapObservable: Utils.bifunc(Utils.func('a, ObservableTypes.t({..}, 'a)), SingleTypes.t({..}, 'a), ObservableTypes.t({..}, 'a)) = SingleFlatMapObservable.operator;
-let flattenToObservable: Utils.bifunc(Utils.func('a, list('a)), SingleTypes.t({..}, 'a), ObservableTypes.t({..}, 'a)) = (mapper, source);
+let flattenToObservable: Utils.bifunc(Utils.func('a, list('a)), SingleTypes.t({..}, 'a), ObservableTypes.t({..}, 'a)) = SingleFlattenToObservable.operator;
 let filter: Utils.bifunc(Utils.predicate('a), SingleTypes.t({..}, 'a), MaybeTypes.t({..}, 'a)) = SingleFilter.operator;
 let fromObservable: Utils.func(ObservableTypes.t({..}, 'a), SingleTypes.t({..}, 'a)) = SingleFromObservable.operator;
 let fromPublisher: Utils.func(ReactiveStreams.publisher({..}, {..}, {..}, 'a), SingleTypes.t({..}, 'a)) = SingleFromPublisher.operator;
+let fromSingle: Utils.bifunc(Utils.supplier('a), CompletableTypes.t({..}), SingleTypes.t({..}, 'a)) = SingleFromCompletableSupplier.operator;
+let fromSingleDefault: Utils.bifunc('a, CompletableTypes.t({..}), SingleTypes.t({..}, 'a)) = SingleFromCompletableDefault.operator;
 let fromSupplier: Utils.func(Utils.supplier('a), SingleTypes.t({..}, 'a)) = SingleFromSupplier.operator;
 
 let hide: Utils.func(SingleTypes.t({..}, 'a), SingleTypes.t({..}, 'a)) = SingleHide.operator;
