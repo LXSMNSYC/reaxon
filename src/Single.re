@@ -25,14 +25,13 @@ let equals: Utils.bifunc(SingleTypes.t({..}, 'a), SingleTypes.t({..}, 'a), Singl
 
 let flatMap: Utils.bifunc(Utils.func('a, SingleTypes.t({..}, 'b)), SingleTypes.t({..}, 'a), SingleTypes.t({..}, 'b)) = SingleFlatMap.operator;
 let flatMapCompletable: Utils.bifunc(Utils.func('a, CompletableTypes.t({..})), SingleTypes.t({..}, 'a), CompletableTypes.t({..})) = SingleFlatMapCompletable.operator;
-let fromCompletable: Utils.func(Single.t({..}, 'a), Completable.t({..})) = SingleFromCompletable.operator;
 let fromObservable: Utils.func(ObservableTypes.t({..}, 'a), SingleTypes.t({..}, 'a)) = SingleFromObservable.operator;
 let fromPublisher: Utils.func(ReactiveStreams.publisher({..}, {..}, {..}, 'a), SingleTypes.t({..}, 'a)) = SingleFromPublisher.operator;
 let fromSupplier: Utils.func(Utils.supplier('a), SingleTypes.t({..}, 'a)) = SingleFromSupplier.operator;
 
 let hide: Utils.func(SingleTypes.t({..}, 'a), SingleTypes.t({..}, 'a)) = SingleHide.operator;
 
-let ignoreElement: Utils.func(Single.t({..}, 'a), Completable.t({..})) = SingleFromCompletable.operator;
+let ignoreElement: Utils.func(SingleTypes.t({..}, 'a), CompletableTypes.t({..})) = CompletableFromSingle.operator;
 
 let just: Utils.func('a, SingleTypes.t({..}, 'a)) = SingleJust.operator;
 
@@ -59,6 +58,7 @@ let subscribeOn: Utils.bifunc(Scheduler.t, SingleTypes.t({..}, 'a), SingleTypes.
 let takeUntil: Utils.bifunc(SingleTypes.t({..}, 'a), SingleTypes.t({..}, 'a), SingleTypes.t({..}, 'a)) = SingleTakeUntil.operator;
 let timeout: Utils.trifunc(int, Scheduler.t, SingleTypes.t({..}, 'a), SingleTypes.t({..}, 'a)) = SingleTimeout.operator;
 let timer: Utils.bifunc(int, Scheduler.t, SingleTypes.t({..}, 'a)) = SingleTimer.operator;
+let toCompletable: Utils.func(SingleTypes.t({..}, 'a), CompletableTypes.t({..})) = CompletableFromSingle.operator;
 
 let unsubscribeOn: Utils.bifunc(Scheduler.t, SingleTypes.t({..}, 'a), SingleTypes.t({..}, 'a)) = SingleUnsubscribeOn.operator;
 

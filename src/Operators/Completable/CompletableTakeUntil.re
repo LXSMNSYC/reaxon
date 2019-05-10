@@ -12,7 +12,7 @@ let operator: Utils.bifunc(CompletableTypes.t({..}), CompletableTypes.t({..}), C
       pub onSubscribe = state#add;
 
       pub onComplete = () => {
-        obs#onError(CancellationException);
+        obs#onError(Exceptions.Cancellation);
         state#cancel();
       };
 

@@ -1,4 +1,5 @@
-let operator: Utils.func(Single.t({..}, 'a), Completable.t({..})) = (source) => {
+
+let operator: Utils.bifunc(Utils.action, CompletableTypes.t({..}), CompletableTypes.t({..})) = (onComplete, source) => {
   pub subscribeWith = (obs) => {
     let state = Cancellable.Linked.make();
 
@@ -10,8 +11,11 @@ let operator: Utils.func(Single.t({..}, 'a), Completable.t({..})) = (source) => 
     source#subscribeWith({
       pub onSubscribe = state#link;
 
-      pub onSuccess = (x) => obs#onComplete();
-      
+      pub onComplete = () => {
+        onComplete();
+        obs#onComplete();
+      };
+
       pub onError = obs#onError;
     });
   };
