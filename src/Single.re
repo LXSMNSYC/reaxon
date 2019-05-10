@@ -11,6 +11,7 @@ let defer: Utils.func(Utils.supplier(SingleTypes.t({..}, 'a)), SingleTypes.t({..
 let delay: Utils.trifunc(int, Scheduler.t, SingleTypes.t({..}, 'a), SingleTypes.t({..}, 'a)) = SingleDelay.operator;
 let delaySubscription: Utils.trifunc(int, Scheduler.t, SingleTypes.t({..}, 'a), SingleTypes.t({..}, 'a)) = SingleDelaySubscription.operator;
 let delayUntil: Utils.bifunc(SingleTypes.t({..}, 'a), SingleTypes.t({..}, 'a), SingleTypes.t({..}, 'a)) = SingleDelayUntil.operator;
+let dematerialize: Utils.func(SingleTypes.t({..}, Notification.Single.t('a)), SingleTypes.t({..}, 'a)) = SingleDematerialize.operator;
 let doAfterSuccess: Utils.bifunc(Utils.consumer('a), SingleTypes.t({..}, 'a), SingleTypes.t({..}, 'a)) = SingleDoAfterSuccess.operator;
 let doAfterTerminate: Utils.bifunc(Utils.action, SingleTypes.t({..}, 'a), SingleTypes.t({..}, 'a)) = SingleDoAfterTerminate.operator;
 let doFinally: Utils.bifunc(Utils.action, SingleTypes.t({..}, 'a), SingleTypes.t({..}, 'a)) = SingleDoFinally.operator;
@@ -25,6 +26,7 @@ let equals: Utils.bifunc(SingleTypes.t({..}, 'a), SingleTypes.t({..}, 'a), Singl
 
 let flatMap: Utils.bifunc(Utils.func('a, SingleTypes.t({..}, 'b)), SingleTypes.t({..}, 'a), SingleTypes.t({..}, 'b)) = SingleFlatMap.operator;
 let flatMapCompletable: Utils.bifunc(Utils.func('a, CompletableTypes.t({..})), SingleTypes.t({..}, 'a), CompletableTypes.t({..})) = SingleFlatMapCompletable.operator;
+let filter: Utils.bifunc(Utils.predicate('a), SingleTypes.t({..}, 'a), MaybeTypes.t({..}, 'a)) = SingleFilter.operator;
 let fromObservable: Utils.func(ObservableTypes.t({..}, 'a), SingleTypes.t({..}, 'a)) = SingleFromObservable.operator;
 let fromPublisher: Utils.func(ReactiveStreams.publisher({..}, {..}, {..}, 'a), SingleTypes.t({..}, 'a)) = SingleFromPublisher.operator;
 let fromSupplier: Utils.func(Utils.supplier('a), SingleTypes.t({..}, 'a)) = SingleFromSupplier.operator;
@@ -39,7 +41,7 @@ let lift: Utils.bifunc(Utils.func(SingleTypes.observer({..}, 'a), SingleTypes.ob
 
 let make: Utils.func(Utils.consumer(SingleTypes.emitter({..}, 'a)), SingleTypes.t({..}, 'a)) = SingleMake.operator;
 let map: Utils.bifunc(Utils.func('a, 'b), SingleTypes.t({..}, 'a), SingleTypes.t({..}, 'b)) = SingleMap.operator;
-
+let materialize: Utils.func(SingleTypes.t({..}, 'a), SingleTypes.t({..}, Notification.Single.t('a))) = SingleMaterialize.operator;
 let never: Utils.supplier(SingleTypes.t({..}, 'a)) = SingleNever.operator;
 
 let observeOn: Utils.bifunc(Scheduler.t, SingleTypes.t({..}, 'a), SingleTypes.t({..}, 'a)) = SingleObserveOn.operator;
