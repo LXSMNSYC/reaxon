@@ -21,9 +21,11 @@ let instantScheduler: Scheduler.t = {
   };
 };
 
-Single.just("Hello World")
-  |> Single.delay(1000, instantScheduler)
-  |> Single.subscribe({
-    onSuccess: Js.log,
+Completable.fromSupplier(() => {
+  Js.log("Hello World");
+  100
+})
+  |> Completable.subscribe({
+    onComplete: () => Js.log("Completed"),
     onError: Js.log,
   });
