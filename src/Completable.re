@@ -3,6 +3,9 @@ let ambList: Utils.func(list(CompletableTypes.t({..})), CompletableTypes.t({..})
 let ambArray : Utils.func(array(CompletableTypes.t({..})), CompletableTypes.t({..})) = CompletableAmbArray.operator;
 let ambWith: Utils.bifunc(CompletableTypes.t({..}), CompletableTypes.t({..}), CompletableTypes.t({..})) = CompletableAmbWith.operator;
 let andThen: Utils.bifunc(CompletableTypes.t({..}), CompletableTypes.t({..}), CompletableTypes.t({..})) = CompletableConcatWith.operator;
+let andThenMaybe: Utils.bifunc(MaybeTypes.t({..}, 'a), CompletableTypes.t({..}), MaybeTypes.t({..}, 'a)) = CompletableAndThenMaybe.operator;
+let andThenObservable: Utils.bifunc(ObservableTypes.t({..}, 'a), CompletableTypes.t({..}), ObservableTypes.t({..}, 'a)) = CompletableAndThenObservable.operator;
+let andThenSingle: Utils.bifunc(SingleTypes.t({..}, 'a), CompletableTypes.t({..}), SingleTypes.t({..}, 'a)) = CompletableAndThenSingle.operator;
 
 let cache: Utils.func(CompletableTypes.t({..}), CompletableTypes.t({..})) = CompletableCache.operator;
 let complete: Utils.supplier(CompletableTypes.t({..})) = CompletableComplete.operator;
