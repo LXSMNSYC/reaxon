@@ -20,12 +20,3 @@ let instantScheduler: Scheduler.t = {
     state;
   };
 };
-
-Completable.fromSupplier(() => {
-  Js.log("Hello World");
-  100
-})
-  |> Completable.subscribe({
-    onComplete: () => Js.log("Completed"),
-    onError: Js.log,
-  });
