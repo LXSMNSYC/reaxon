@@ -27,10 +27,10 @@ let equals: Utils.bifunc(SingleTypes.t({..}, {..}, 'a), SingleTypes.t({..}, {..}
 let flatMap: Utils.bifunc(Utils.func('a, SingleTypes.t({..}, {..}, 'b)), SingleTypes.t({..}, {..}, 'a), SingleTypes.operator({..}, 'b)) = SingleFlatMap.operator;
 let flatMapCompletable: Utils.bifunc(Utils.func('a, CompletableTypes.t({..}, {..})), SingleTypes.t({..}, {..}, 'a), CompletableTypes.operator({..})) = SingleFlatMapCompletable.operator;
 let flatMapMaybe: Utils.bifunc(Utils.func('a, MaybeTypes.t({..}, {..}, 'a)), SingleTypes.t({..}, {..}, 'a), MaybeTypes.operator({..}, 'a)) = SingleFlatMapMaybe.operator;
-let flatMapObservable: Utils.bifunc(Utils.func('a, ObservableTypes.t({..}, 'a)), SingleTypes.t({..}, {..}, 'a), ObservableTypes.t({..}, 'a)) = SingleFlatMapObservable.operator;
-let flattenToObservable: Utils.bifunc(Utils.func('a, list('a)), SingleTypes.t({..}, {..}, 'a), ObservableTypes.t({..}, 'a)) = SingleFlattenToObservable.operator;
+let flatMapObservable: Utils.bifunc(Utils.func('a, ObservableTypes.t({..}, {..}, 'a)), SingleTypes.t({..}, {..}, 'a), ObservableTypes.operator({..}, 'a)) = SingleFlatMapObservable.operator;
+let flattenToObservable: Utils.bifunc(Utils.func('a, list('a)), SingleTypes.t({..}, {..}, 'a), ObservableTypes.operator({..}, 'a)) = SingleFlattenToObservable.operator;
 let filter: Utils.bifunc(Utils.predicate('a), SingleTypes.t({..}, {..}, 'a), MaybeTypes.operator({..}, 'a)) = SingleFilter.operator;
-let fromObservable: Utils.func(ObservableTypes.t({..}, 'a), SingleTypes.operator({..}, 'a)) = SingleFromObservable.operator;
+let fromObservable: Utils.func(ObservableTypes.t({..}, {..}, 'a), SingleTypes.operator({..}, 'a)) = SingleFromObservable.operator;
 let fromSingle: Utils.bifunc(Utils.supplier('a), CompletableTypes.t({..}, {..}), SingleTypes.operator({..}, 'a)) = SingleFromCompletableSupplier.operator;
 let fromSingleDefault: Utils.bifunc('a, CompletableTypes.t({..}, {..}), SingleTypes.operator({..}, 'a)) = SingleFromCompletableDefault.operator;
 let fromSupplier: Utils.func(Utils.supplier('a), SingleTypes.operator({..}, 'a)) = SingleFromSupplier.operator;
