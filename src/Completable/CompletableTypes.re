@@ -24,3 +24,8 @@ type emitter('emitter) = {
   onComplete: Utils.action,
   onError: Utils.consumer(exn),
 } as 'emitter;
+
+type recordObserver = {
+  onComplete: Utils.action,
+  onError: Utils.consumer(exn),
+};
