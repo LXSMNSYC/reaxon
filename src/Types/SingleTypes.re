@@ -13,7 +13,6 @@ type t('observer,'a) = {
   subscribeWith: Utils.consumer(observer('observer, 'a)),
 };
 
-
 type emitter('emitter, 'a) = {
   ..
   setCancellable: Utils.consumer(Cancellable.t({..})),
