@@ -25,19 +25,19 @@ let doOnTerminate: Utils.bifunc(Utils.action, SingleTypes.t({..}, {..}, 'a), Sin
 let equals: Utils.bifunc(SingleTypes.t({..}, {..}, 'a), SingleTypes.t({..}, {..}, 'a), SingleTypes.operator({..}, bool)) = SingleEquals.operator;
 
 let flatMap: Utils.bifunc(Utils.func('a, SingleTypes.t({..}, {..}, 'b)), SingleTypes.t({..}, {..}, 'a), SingleTypes.operator({..}, 'b)) = SingleFlatMap.operator;
-let flatMapCompletable: Utils.bifunc(Utils.func('a, CompletableTypes.t({..})), SingleTypes.t({..}, {..}, 'a), CompletableTypes.t({..})) = SingleFlatMapCompletable.operator;
+let flatMapCompletable: Utils.bifunc(Utils.func('a, CompletableTypes.t({..}, {..})), SingleTypes.t({..}, {..}, 'a), CompletableTypes.operator({..})) = SingleFlatMapCompletable.operator;
 let flatMapMaybe: Utils.bifunc(Utils.func('a, MaybeTypes.t({..}, 'a)), SingleTypes.t({..}, {..}, 'a), MaybeTypes.t({..}, 'a)) = SingleFlatMapMaybe.operator;
 let flatMapObservable: Utils.bifunc(Utils.func('a, ObservableTypes.t({..}, 'a)), SingleTypes.t({..}, {..}, 'a), ObservableTypes.t({..}, 'a)) = SingleFlatMapObservable.operator;
 let flattenToObservable: Utils.bifunc(Utils.func('a, list('a)), SingleTypes.t({..}, {..}, 'a), ObservableTypes.t({..}, 'a)) = SingleFlattenToObservable.operator;
 let filter: Utils.bifunc(Utils.predicate('a), SingleTypes.t({..}, {..}, 'a), MaybeTypes.t({..}, 'a)) = SingleFilter.operator;
 let fromObservable: Utils.func(ObservableTypes.t({..}, 'a), SingleTypes.operator({..}, 'a)) = SingleFromObservable.operator;
-let fromSingle: Utils.bifunc(Utils.supplier('a), CompletableTypes.t({..}), SingleTypes.operator({..}, 'a)) = SingleFromCompletableSupplier.operator;
-let fromSingleDefault: Utils.bifunc('a, CompletableTypes.t({..}), SingleTypes.operator({..}, 'a)) = SingleFromCompletableDefault.operator;
+let fromSingle: Utils.bifunc(Utils.supplier('a), CompletableTypes.t({..}, {..}), SingleTypes.operator({..}, 'a)) = SingleFromCompletableSupplier.operator;
+let fromSingleDefault: Utils.bifunc('a, CompletableTypes.t({..}, {..}), SingleTypes.operator({..}, 'a)) = SingleFromCompletableDefault.operator;
 let fromSupplier: Utils.func(Utils.supplier('a), SingleTypes.operator({..}, 'a)) = SingleFromSupplier.operator;
 
 let hide: Utils.func(SingleTypes.t({..}, {..}, 'a), SingleTypes.operator({..}, 'a)) = SingleHide.operator;
 
-let ignoreElement: Utils.func(SingleTypes.t({..}, {..}, 'a), CompletableTypes.t({..})) = CompletableFromSingle.operator;
+let ignoreElement: Utils.func(SingleTypes.t({..}, {..}, 'a), CompletableTypes.operator({..})) = CompletableFromSingle.operator;
 
 let just: Utils.func('a, SingleTypes.operator({..}, 'a)) = SingleJust.operator;
 
@@ -66,7 +66,7 @@ let subscribeOn: Utils.bifunc(Scheduler.t, SingleTypes.t({..}, {..}, 'a), Single
 let takeUntil: Utils.bifunc(SingleTypes.t({..}, {..}, 'a), SingleTypes.t({..}, {..}, 'a), SingleTypes.operator({..}, 'a)) = SingleTakeUntil.operator;
 let timeout: Utils.trifunc(int, Scheduler.t, SingleTypes.t({..}, {..}, 'a), SingleTypes.operator({..}, 'a)) = SingleTimeout.operator;
 let timer: Utils.bifunc(int, Scheduler.t, SingleTypes.operator({..}, int)) = SingleTimer.operator;
-let toCompletable: Utils.func(SingleTypes.t({..}, {..}, 'a), CompletableTypes.t({..})) = CompletableFromSingle.operator;
+let toCompletable: Utils.func(SingleTypes.t({..}, {..}, 'a), CompletableTypes.operator({..})) = CompletableFromSingle.operator;
 
 let unsubscribeOn: Utils.bifunc(Scheduler.t, SingleTypes.t({..}, {..}, 'a), SingleTypes.operator({..}, 'a)) = SingleUnsubscribeOn.operator;
 

@@ -11,10 +11,10 @@ type observer('observer) = {
 } as 'observer;
 
 
-type t('observer) = {
-  .
+type t('t, 'observer) = {
+  ..
   subscribeWith: Utils.consumer(observer('observer)),
-};
+} as 't;
 
 
 type emitter('emitter) = {
@@ -29,3 +29,11 @@ type recordObserver = {
   onComplete: Utils.action,
   onError: Utils.consumer(exn),
 };
+
+
+type operator('observer) = t({
+    .
+    subscribeWith: Utils.consumer(observer('observer))
+  }, 
+  observer('observer),
+);

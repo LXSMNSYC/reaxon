@@ -1,4 +1,4 @@
-let operator: Utils.func(CompletableTypes.t({..}), ObservableTypes.t({..}, 'a)) = (single) => {
+let operator: Utils.func(CompletableTypes.t({..}, {..}), ObservableTypes.t({..}, 'a)) = (single) => {
   pub subscribeWith = (obs) => {
     let state = Cancellable.Linked.make();
 

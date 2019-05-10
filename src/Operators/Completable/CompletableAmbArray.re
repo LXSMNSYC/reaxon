@@ -1,5 +1,5 @@
 
-let operator : Utils.func(array(CompletableTypes.t({..})), CompletableTypes.t({..})) = (completableArray) => {
+let operator : Utils.func(array(CompletableTypes.t({..}, {..})), CompletableTypes.operator({..})) = (completableArray) => {
   pub subscribeWith = (obs) => {
     let state = Cancellable.Composite.make();
 

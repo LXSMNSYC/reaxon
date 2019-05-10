@@ -1,5 +1,5 @@
 
-let operator: Utils.func(Utils.consumer(CompletableTypes.emitter({..})), CompletableTypes.t({..})) = (onSubscribe) => {
+let operator: Utils.func(Utils.consumer(CompletableTypes.emitter({..})), CompletableTypes.operator({..})) = (onSubscribe) => {
   pub subscribeWith = (obs) => {
     let state = Cancellable.Linked.make();
 

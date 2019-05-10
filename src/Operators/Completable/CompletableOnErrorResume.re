@@ -1,4 +1,4 @@
-let operator: Utils.bifunc(Utils.func(exn, CompletableTypes.t({..})), CompletableTypes.t({..}), CompletableTypes.t({..})) = (resumeIfError, source) => {
+let operator: Utils.bifunc(Utils.func(exn, CompletableTypes.t({..}, {..})), CompletableTypes.t({..}, {..}), CompletableTypes.operator({..})) = (resumeIfError, source) => {
   pub subscribeWith = (obs) => {
     let state = Cancellable.Linked.make();
 

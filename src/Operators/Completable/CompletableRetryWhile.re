@@ -1,4 +1,4 @@
-let operator: Utils.bifunc(Utils.bipredicate(int, exn), CompletableTypes.t({..}), CompletableTypes.t({..})) = (checker, source) => {
+let operator: Utils.bifunc(Utils.bipredicate(int, exn), CompletableTypes.t({..}, {..}), CompletableTypes.operator({..})) = (checker, source) => {
   pub subscribeWith = (obs) => {
     let state = Cancellable.Linked.make();
 
