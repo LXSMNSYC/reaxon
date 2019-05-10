@@ -28,7 +28,7 @@ let operator: Utils.func(ReactiveStreams.publisher({..}, {..}, {..}, 'a), Single
 
       pub onNext = (x) => {
         if (single^) {
-          obs#onError(IndexOutOfBoundsException);
+          obs#onError(Exceptions.IndexOutOfBounds);
           state#cancel();
         } else {
           single := true;
@@ -40,11 +40,11 @@ let operator: Utils.func(ReactiveStreams.publisher({..}, {..}, {..}, 'a), Single
         if (single^) {
           switch (last^) {
             | Some(item) => obs#onSuccess(item)
-            | None => obs#onError(NoSuchElementException)
+            | None => obs#onError(Exceptions.NoSuchElement)
           };
           state#cancel();
         } else {
-          obs#onError(NoSuchElementException);
+          obs#onError(Exceptions.NoSuchElement);
         }
       };
 
