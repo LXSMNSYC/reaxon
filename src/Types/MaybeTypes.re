@@ -25,6 +25,21 @@ type emitter('emitter, 'a) = {
   onComplete: Utils.action,
 } as 'emitter;
 
+type recordObserver('a) = {
+  onSubscribe: Utils.consumer(subscription),
+  onSuccess: Utils.consumer('a),
+  onError: Utils.consumer(exn),
+  onComplete: Utils.action,
+};
+
+type defaultObserver('a) = {
+  .
+  onSubscribe: Utils.consumer(subscription),
+  onSuccess: Utils.consumer('a),
+  onError: Utils.consumer(exn),
+  onComplete: Utils.action,
+};
+
 type operator('observer, 'a) = t({
     .
     subscribeWith: Utils.consumer(observer('observer, 'a))

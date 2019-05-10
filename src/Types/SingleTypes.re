@@ -26,6 +26,13 @@ type recordObserver('a) = {
   onError: Utils.consumer(exn),
 };
 
+type defaultObserver('a) = {
+  .
+  onSubscribe: Utils.consumer(subscription),
+  onSuccess: Utils.consumer('a),
+  onError: Utils.consumer(exn),
+};
+
 type operator('observer, 'a) = t({
     .
     subscribeWith: Utils.consumer(observer('observer, 'a))
