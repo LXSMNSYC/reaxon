@@ -1,4 +1,4 @@
-let operator: Utils.bifunc(Utils.func('a, MaybeTypes.t({..}, 'a)), SingleTypes.t({..}, {..}, 'a), MaybeTypes.t({..}, 'a)) = (mapper, source) => {
+let operator: Utils.bifunc(Utils.func('a, MaybeTypes.t({..}, {..}, 'a)), SingleTypes.t({..}, {..}, 'a), MaybeTypes.operator({..}, 'a)) = (mapper, source) => {
   pub subscribeWith = (obs) => {
     let state = Cancellable.Linked.make();
 

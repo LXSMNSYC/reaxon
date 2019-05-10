@@ -3,7 +3,7 @@ let ambList: Utils.func(list(CompletableTypes.t({..}, {..})), CompletableTypes.o
 let ambArray : Utils.func(array(CompletableTypes.t({..}, {..})), CompletableTypes.operator({..})) = CompletableAmbArray.operator;
 let ambWith: Utils.bifunc(CompletableTypes.t({..}, {..}), CompletableTypes.t({..}, {..}), CompletableTypes.operator({..})) = CompletableAmbWith.operator;
 let andThen: Utils.bifunc(CompletableTypes.t({..}, {..}), CompletableTypes.t({..}, {..}), CompletableTypes.operator({..})) = CompletableConcatWith.operator;
-let andThenMaybe: Utils.bifunc(MaybeTypes.t({..}, 'a), CompletableTypes.t({..}, {..}), MaybeTypes.t({..}, 'a)) = CompletableAndThenMaybe.operator;
+let andThenMaybe: Utils.bifunc(MaybeTypes.t({..}, {..}, 'a), CompletableTypes.t({..}, {..}), MaybeTypes.operator({..}, 'a)) = CompletableAndThenMaybe.operator;
 let andThenObservable: Utils.bifunc(ObservableTypes.t({..}, 'a), CompletableTypes.t({..}, {..}), ObservableTypes.t({..}, 'a)) = CompletableAndThenObservable.operator;
 let andThenSingle: Utils.bifunc(SingleTypes.t({..}, {..}, 'a), CompletableTypes.t({..}, {..}), SingleTypes.operator({..}, 'a)) = CompletableAndThenSingle.operator;
 
@@ -55,7 +55,7 @@ let subscribeOn: Utils.bifunc(Scheduler.t, CompletableTypes.t({..}, {..}), Compl
 let takeUntil: Utils.bifunc(CompletableTypes.t({..}, {..}), CompletableTypes.t({..}, {..}), CompletableTypes.operator({..})) = CompletableTakeUntil.operator;
 let timeout: Utils.trifunc(int, Scheduler.t, CompletableTypes.t({..}, {..}), CompletableTypes.operator({..})) = CompletableTimeout.operator;
 let timer: Utils.bifunc(int, Scheduler.t, CompletableTypes.operator({..})) = CompletableTimer.operator;
-let toMaybe: Utils.func(CompletableTypes.t({..}, {..}), MaybeTypes.t({..}, 'a)) = MaybeFromCompletable.operator;
+let toMaybe: Utils.func(CompletableTypes.t({..}, {..}), MaybeTypes.operator({..}, 'a)) = MaybeFromCompletable.operator;
 let toSingle: Utils.bifunc(Utils.supplier('a), CompletableTypes.t({..}, {..}), SingleTypes.operator({..}, 'a)) = SingleFromCompletableSupplier.operator;
 let toSingleDefault: Utils.bifunc('a, CompletableTypes.t({..}, {..}), SingleTypes.operator({..}, 'a)) = SingleFromCompletableDefault.operator;
 
