@@ -13,16 +13,16 @@ let operator: Utils.bifunc(Utils.func(exn, CompletableTypes.t({..}, {..})), Comp
       pub onComplete = obs#onComplete;
 
       pub onError = (x) => switch (resumeIfError(x)) {
-          | newSource => {
-            state#unlink();
-            newSource#subscribeWith({
-              pub onSubscribe = state#link;
-              pub onComplete = obs#onComplete;
-              pub onError = obs#onError;
-            });
-          }
-          | exception e => obs#onError(e) 
-        };
+        | newSource => {
+          state#unlink();
+          newSource#subscribeWith({
+            pub onSubscribe = state#link;
+            pub onComplete = obs#onComplete;
+            pub onError = obs#onError;
+          });
+        }
+        | exception e => obs#onError(e) 
+      };
     });
   };
 };
