@@ -11,20 +11,16 @@ let operator: Utils.bifunc(Utils.func('a, SingleTypes.t({..}, {..}, 'b)), Single
     source#subscribeWith({
       pub onSubscribe = state#link;
 
-      pub onSuccess = (x) => {
-        switch(mapper(x)) {
-          | item => {
-            state#unlink();
-            item#subscribeWith({
-              pub onSubscribe = state#link;
-
-              pub onSuccess = obs#onSuccess;
-
-              pub onError = obs#onError;
-            });
-          }
-          | exception e => obs#onError(e)
+      pub onSuccess = (x) => switch(mapper(x)) {
+        | item => {
+          state#unlink();
+          item#subscribeWith({
+            pub onSubscribe = state#link;
+            pub onSuccess = obs#onSuccess;
+            pub onError = obs#onError;
+          });
         }
+        | exception e => obs#onError(e)
       };
 
       pub onError = obs#onError;
