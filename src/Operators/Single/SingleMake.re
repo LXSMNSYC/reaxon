@@ -13,18 +13,14 @@ let operator: Utils.func(Utils.consumer(SingleTypes.emitter({..}, 'a)), SingleTy
   
       pub isCancelled = () => state#isCancelled();
     
-      pub onSuccess = (x: 'a) => {
-        if (!state#isCancelled()) {
-          obs#onSuccess(x);
-          state#cancel();
-        }
+      pub onSuccess = (x: 'a) => if (!state#isCancelled()) {
+        obs#onSuccess(x);
+        state#cancel();
       };
   
-      pub onError = (x: exn) => {
-        if (!state#isCancelled()) {
-          obs#onError(x);
-          state#cancel();
-        }
+      pub onError = (x: exn) => if (!state#isCancelled()) {
+        obs#onError(x);
+        state#cancel();
       };
     };
 
