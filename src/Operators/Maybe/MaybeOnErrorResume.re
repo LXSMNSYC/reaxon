@@ -14,17 +14,17 @@ let operator: Utils.bifunc(Utils.func(exn, MaybeTypes.t({..}, {..}, 'a)), MaybeT
       pub onSuccess = obs#onSuccess;
 
       pub onError = (x) => switch (resumeIfError(x)) {
-          | newSource => {
-            state#unlink();
-            newSource#subscribeWith({
-              pub onSubscribe = state#link;
-              pub onComplete = obs#onComplete;
-              pub onSuccess = obs#onSuccess;
-              pub onError = obs#onError;
-            });
-          }
-          | exception e => obs#onError(e) 
-        };
+        | newSource => {
+          state#unlink();
+          newSource#subscribeWith({
+            pub onSubscribe = state#link;
+            pub onComplete = obs#onComplete;
+            pub onSuccess = obs#onSuccess;
+            pub onError = obs#onError;
+          });
+        }
+        | exception e => obs#onError(e) 
+      };
     });
   };
 };
