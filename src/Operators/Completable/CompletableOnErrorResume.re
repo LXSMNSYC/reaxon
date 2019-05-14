@@ -12,8 +12,7 @@ let operator: Utils.bifunc(Utils.func(exn, CompletableTypes.t({..}, {..})), Comp
 
       pub onComplete = obs#onComplete;
 
-      pub onError = (x) => {
-        switch (resumeIfError(x)) {
+      pub onError = (x) => switch (resumeIfError(x)) {
           | newSource => {
             state#unlink();
             newSource#subscribeWith({
@@ -23,8 +22,7 @@ let operator: Utils.bifunc(Utils.func(exn, CompletableTypes.t({..}, {..})), Comp
             });
           }
           | exception e => obs#onError(e) 
-        }
-      };
+        };
     });
   };
 };
