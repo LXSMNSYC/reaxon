@@ -12,12 +12,8 @@ let operator: Utils.func(CompletableTypes.t({..}, {..}), CompletableTypes.operat
       state#unlink();
       source#subscribeWith({
         pub onSubscribe = state#link;
-
         pub onComplete = obs#onComplete;
-
-        pub onError = (x) => {
-          sub();
-        };
+        pub onError = (x) => sub();
       });
     };
 
