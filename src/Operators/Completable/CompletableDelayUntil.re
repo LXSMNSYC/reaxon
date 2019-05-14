@@ -16,9 +16,7 @@ let operator: Utils.bifunc(CompletableTypes.t({..}, {..}), CompletableTypes.t({.
 
         source#subscribeWith({
           pub onSubscribe = state#link;
-
           pub onComplete = obs#onComplete;
-
           pub onError = obs#onError;
         });
       };
