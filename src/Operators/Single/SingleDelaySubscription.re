@@ -12,9 +12,7 @@ let operator: Utils.trifunc(int, Scheduler.t, SingleTypes.t({..}, {..}, 'a), Sin
       state#unlink();
       source#subscribeWith({
         pub onSubscribe = state#link;
-
         pub onSuccess = obs#onSuccess;
-
         pub onError = obs#onError;
       });
     }, time));
