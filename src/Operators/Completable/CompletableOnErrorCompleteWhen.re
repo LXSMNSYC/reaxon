@@ -13,12 +13,10 @@ let operator: Utils.bifunc(Utils.func(exn, bool), CompletableTypes.t({..}, {..})
 
       pub onComplete = obs#onComplete;
 
-      pub onError = (x) => {
-        switch (checker(x)) {
-          | true => obs#onComplete()
-          | false => obs#onError(x)
-          | exception e => obs#onError(e)
-        };
+      pub onError = (x) => switch (checker(x)) {
+        | true => obs#onComplete()
+        | false => obs#onError(x)
+        | exception e => obs#onError(e)
       };
     });
   };
