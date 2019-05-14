@@ -13,9 +13,7 @@ let operator: Utils.bifunc(Scheduler.t, SingleTypes.t({..}, {..}, 'a), SingleTyp
 
       source#subscribeWith({
         pub onSubscribe = state#link;
-  
         pub onSuccess = obs#onSuccess;
-
         pub onError = obs#onError;
       });
     }));
