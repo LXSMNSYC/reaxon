@@ -10,11 +10,8 @@ let operator: Utils.func(MaybeTypes.t({..}, {..}, 'a), SingleTypes.operator({..}
 
     source#subscribeWith({
       pub onSubscribe = state#link;
-
       pub onComplete = () => obs#onSuccess(0);
-
       pub onSuccess = (x) => obs#onSuccess(1);
-
       pub onError = obs#onError;
     })
   };
