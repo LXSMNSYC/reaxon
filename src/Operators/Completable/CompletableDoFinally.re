@@ -9,15 +9,13 @@ let operator: Utils.bifunc(Utils.action, CompletableTypes.t({..}, {..}), Complet
     });
 
     source#subscribeWith({
-      pub onSubscribe = (sub) => {
-        state#link({
-          pub isCancelled = sub#isCancelled;
-          pub cancel = () => {
-            sub#cancel();
-            onFinally();
-          }
-        });
-      };
+      pub onSubscribe = (sub) => state#link({
+        pub isCancelled = sub#isCancelled;
+        pub cancel = () => {
+          sub#cancel();
+          onFinally();
+        }
+      });
   
       pub onComplete = () => {
         obs#onComplete();
