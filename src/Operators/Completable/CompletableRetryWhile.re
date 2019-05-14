@@ -17,12 +17,10 @@ let operator: Utils.bifunc(Utils.bipredicate(int, exn), CompletableTypes.t({..},
 
         pub onComplete = obs#onComplete;
 
-        pub onError = (x) => {
-          if (checker(retries^, x)) {
-            sub();
-          } else {
-            obs#onError(x);
-          }
+        pub onError = (x) => if (checker(retries^, x)) {
+          sub();
+        } else {
+          obs#onError(x);
         };
       });
     };
