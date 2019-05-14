@@ -1,5 +1,5 @@
 
-let operator: Utils.bifunc(SingleTypes.t({..}, {..}, 'a), SingleTypes.t({..}, {..}, 'a), SingleTypes.operator({..}, bool)) = (a, b) => {
+let operator: Utils.trifunc(SingleTypes.t({..}, {..}, 'a), SingleTypes.t({..}, {..}, 'b), Utils.option(Utils.bipredicate('a, 'b)), SingleTypes.operator({..}, bool)) = (a, b, comparer) => {
   pub subscribeWith = (obs) => {
     let state = Cancellable.Composite.make();
 
@@ -14,16 +14,21 @@ let operator: Utils.bifunc(SingleTypes.t({..}, {..}, 'a), SingleTypes.t({..}, {.
     a#subscribeWith({
       pub onSubscribe = state#add;
 
-      pub onSuccess = (x) => {
-        switch(bValue^) {
-          | Some(bval) => {
-            obs#onSuccess(bval == x);
-            state#cancel();
+      pub onSuccess = (x) => switch(bValue^) {
+        | Some(bval) => {
+          switch(comparer) {
+            | Some(c) => switch(c(x, bval)) {
+              | true => obs#onSuccess(true)
+              | false => obs#onSuccess(false)
+              | exception e => obs#onError(e)
+            }
+            | None => obs#onSucces(bval == x)
           }
-          | None => {
-            aValue := Some(x);
-          }
-        };
+          state#cancel();
+        }
+        | None => {
+          aValue := Some(x);
+        }
       };
 
       pub onError = (x) => {
@@ -35,16 +40,21 @@ let operator: Utils.bifunc(SingleTypes.t({..}, {..}, 'a), SingleTypes.t({..}, {.
     b#subscribeWith({
       pub onSubscribe = state#add;
 
-      pub onSuccess = (x) => {
-        switch(aValue^) {
-          | Some(aval) => {
-            obs#onSuccess(aval == x);
-            state#cancel();
+      pub onSuccess = (x) => switch(aValue^) {
+        | Some(aval) => {
+          switch(comparer) {
+            | Some(c) => switch(c(aval, x)) {
+              | true => obs#onSuccess(true)
+              | false => obs#onSuccess(false)
+              | exception e => obs#onError(e)
+            }
+            | None => obs#onSucces(aval == x)
           }
-          | None => {
-            bValue := Some(x);
-          }
-        };
+          state#cancel();
+        }
+        | None => {
+          bValue := Some(x);
+        }
       };
 
       pub onError = (x) => {
