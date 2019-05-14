@@ -8,15 +8,13 @@ let operator: Utils.bifunc(Utils.action, MaybeTypes.t({..}, {..}, 'a), MaybeType
     });
 
     source#subscribeWith({
-      pub onSubscribe = (sub) => {
-        state#link({
-          pub isCancelled = sub#isCancelled;
-          pub cancel = () => {
-            onCancel();
-            sub#cancel();
-          }
-        });
-      };
+      pub onSubscribe = (sub) => state#link({
+        pub isCancelled = sub#isCancelled;
+        pub cancel = () => {
+          onCancel();
+          sub#cancel();
+        }
+      });
 
       pub onComplete = obs#onComplete;
   
