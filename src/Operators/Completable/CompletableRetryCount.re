@@ -18,13 +18,11 @@ let operator: Utils.bifunc(int, CompletableTypes.t({..}, {..}), CompletableTypes
 
         pub onComplete = obs#onComplete;
 
-        pub onError = (x) => {
-          if (retries^ < count) {
-            sub();
-          } else {
-            obs#onError(x);
-          }
-        };
+        pub onError = (x) => if (retries^ < count) {
+          sub();
+        } else {
+          obs#onError(x);
+        }
       });
     };
 
