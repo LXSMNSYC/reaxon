@@ -17,12 +17,10 @@ let operator: Utils.bifunc(int, SingleTypes.t({..}, {..}, 'a), SingleTypes.opera
 
         pub onSuccess = obs#onSuccess;
 
-        pub onError = (x) => {
-          if (retries^ < count) {
-            sub();
-          } else {
-            obs#onError(x);
-          }
+        pub onError = (x) => if (retries^ < count) {
+          sub();
+        } else {
+          obs#onError(x);
         };
       });
     };
