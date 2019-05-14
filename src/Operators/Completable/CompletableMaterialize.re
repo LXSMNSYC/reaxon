@@ -9,9 +9,7 @@ let operator: Utils.func(CompletableTypes.t({..}, {..}), SingleTypes.operator({.
 
     source#subscribeWith({
       pub onSubscribe = state#link;
-
       pub onComplete = () => obs#onSuccess(Notification.Completable.OnComplete);
-
       pub onError = x => obs#onSuccess(Notification.Completable.OnError(x));
     });
   };
