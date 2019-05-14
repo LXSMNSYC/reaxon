@@ -12,9 +12,7 @@ let operator: Utils.trifunc(int, Scheduler.t, CompletableTypes.t({..}, {..}), Co
       state#unlink();
       source#subscribeWith({
         pub onSubscribe = state#link;
-
         pub onComplete = obs#onComplete;
-
         pub onError = obs#onError;
       });
     }, time));
