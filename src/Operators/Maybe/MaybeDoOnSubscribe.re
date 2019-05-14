@@ -14,9 +14,7 @@ let operator: Utils.bifunc(Utils.consumer(MaybeTypes.subscription), MaybeTypes.t
       };
 
       pub onComplete = obs#onComplete;
-
       pub onSuccess = obs#onSuccess;
-
       pub onError = obs#onError;
     });
   };
