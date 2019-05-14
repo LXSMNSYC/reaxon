@@ -13,9 +13,7 @@ let operator: Utils.bifunc(Scheduler.t, CompletableTypes.t({..}, {..}), Completa
 
     source#subscribeWith({
       pub onSubscribe = state#link;
-
       pub onComplete = obs#onComplete;
-
       pub onError = obs#onError;
     });
   };
