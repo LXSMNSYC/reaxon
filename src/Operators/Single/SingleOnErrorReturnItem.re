@@ -13,7 +13,7 @@ let operator: Utils.bifunc('a, SingleTypes.t({..}, {..}, 'a), SingleTypes.operat
 
       pub onSuccess = obs#onSuccess;
 
-      pub onError = (x) => obs#onSuccess(item);
+      pub onError = x => obs#onSuccess(item);
     });
   };
 };
