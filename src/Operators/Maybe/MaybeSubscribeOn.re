@@ -13,7 +13,6 @@ let operator: Utils.bifunc(Scheduler.t, MaybeTypes.t({..}, {..}, 'a), MaybeTypes
 
       source#subscribeWith({
         pub onSubscribe = state#link;
-  
         pub onComplete = obs#onComplete;
         pub onSuccess = obs#onSuccess;
         pub onError = obs#onError;
