@@ -9,9 +9,7 @@ let operator: Utils.func(CompletableTypes.t({..}, {..}), CompletableTypes.operat
 
     source#subscribeWith({
       pub onSubscribe = state#link;
-
       pub onComplete = obs#onComplete;
-      
       pub onError = obs#onError;
     });
   };
