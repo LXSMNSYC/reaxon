@@ -22,7 +22,7 @@ let doOnSubscribe: Utils.bifunc(Utils.consumer(SingleTypes.subscription), Single
 let doOnSuccess: Utils.bifunc(Utils.consumer('a), SingleTypes.t({..}, {..}, 'a), SingleTypes.operator({..}, 'a)) = SingleDoOnSuccess.operator;
 let doOnTerminate: Utils.bifunc(Utils.action, SingleTypes.t({..}, {..}, 'a), SingleTypes.operator({..}, 'a)) = SingleDoOnTerminate.operator;
 
-let equals: Utils.bifunc(SingleTypes.t({..}, {..}, 'a), SingleTypes.t({..}, {..}, 'a), SingleTypes.operator({..}, bool)) = SingleEquals.operator;
+let equals: Utils.trifunc(SingleTypes.t({..}, {..}, 'a), SingleTypes.t({..}, {..}, 'b), Utils.option(Utils.bipredicate('a, 'b)), SingleTypes.operator({..}, bool)) = SingleEquals.operator;
 
 let flatMap: Utils.bifunc(Utils.func('a, SingleTypes.t({..}, {..}, 'b)), SingleTypes.t({..}, {..}, 'a), SingleTypes.operator({..}, 'b)) = SingleFlatMap.operator;
 let flatMapCompletable: Utils.bifunc(Utils.func('a, CompletableTypes.t({..}, {..})), SingleTypes.t({..}, {..}, 'a), CompletableTypes.operator({..})) = SingleFlatMapCompletable.operator;
