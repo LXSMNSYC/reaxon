@@ -18,12 +18,10 @@ let operator: Utils.bifunc(int, MaybeTypes.t({..}, {..}, 'a), MaybeTypes.operato
         pub onComplete = obs#onComplete;
         pub onSuccess = obs#onSuccess;
 
-        pub onError = (x) => {
-          if (retries^ < count) {
-            sub();
-          } else {
-            obs#onError(x);
-          }
+        pub onError = (x) => if (retries^ < count) {
+          sub();
+        } else {
+          obs#onError(x);
         };
       });
     };
