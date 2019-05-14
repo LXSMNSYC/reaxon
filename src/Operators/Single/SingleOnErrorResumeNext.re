@@ -17,9 +17,7 @@ let operator: Utils.bifunc(SingleTypes.t({..}, {..}, 'a), SingleTypes.t({..}, {.
         state#unlink();
         resumeIfError#subscribeWith({
           pub onSubscribe = state#link;
-    
           pub onSuccess = obs#onSuccess;
-
           pub onError = obs#onError;
         });
       };
