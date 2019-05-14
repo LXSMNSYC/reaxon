@@ -12,20 +12,16 @@ let operator: Utils.bifunc(Utils.func(exn, SingleTypes.t({..}, {..}, 'a)), Singl
 
       pub onSuccess = obs#onSuccess;
 
-      pub onError = (x) => {
-        switch (resumeIfError(x)) {
-          | newSource => {
-            state#unlink();
-            newSource#subscribeWith({
-              pub onSubscribe = state#link;
-        
-              pub onSuccess = obs#onSuccess;
-
-              pub onError = obs#onError;
-            });
-          }
-          | exception e => obs#onError(e) 
+      pub onError = (x) => switch (resumeIfError(x)) {
+        | newSource => {
+          state#unlink();
+          newSource#subscribeWith({
+            pub onSubscribe = state#link;
+            pub onSuccess = obs#onSuccess;
+            pub onError = obs#onError;
+          });
         }
+        | exception e => obs#onError(e) 
       };
     });
   };
