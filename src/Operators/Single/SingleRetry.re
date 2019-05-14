@@ -15,9 +15,7 @@ let operator: Utils.func(SingleTypes.t({..}, {..}, 'a), SingleTypes.operator({..
 
         pub onSuccess = obs#onSuccess;
 
-        pub onError = (x) => {
-          sub();
-        };
+        pub onError = x => sub();
       });
     };
 
