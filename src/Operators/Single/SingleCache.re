@@ -2,7 +2,7 @@ let operator: Utils.func(SingleTypes.t({..}, {..}, 'a), SingleTypes.operator({..
   val cached: ref(bool) = ref(false);
   val subscribed: ref(bool) = ref(false);
   val observers: ref(list(SingleTypes.observer({..}, 'a))) = ref([]);
-  val signal: ref(option(Notification.Single.t('a))) = ref(None);
+  val signal: ref(Utils.option(Notification.Single.t('a))) = ref(Utils.None);
 
   pub subscribeWith = (obs) => {
 
