@@ -9,9 +9,7 @@ let operator: Utils.func(SingleTypes.t({..}, {..}, 'a), SingleTypes.operator({..
 
     source#subscribeWith({
       pub onSubscribe = state#link;
-
       pub onSuccess = obs#onSuccess;
-      
       pub onError = obs#onError;
     });
   };
