@@ -4,9 +4,7 @@ let operator: Utils.bifunc(SingleTypes.recordObserver('a), SingleTypes.t({..}, {
 
   source#subscribeWith({
     pub onSubscribe = state#link;
-
     pub onSuccess = obs.onSuccess;
-
     pub onError = obs.onError;
   });
   {
