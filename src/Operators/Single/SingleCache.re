@@ -1,10 +1,8 @@
-
 let operator: Utils.func(SingleTypes.t({..}, {..}, 'a), SingleTypes.operator({..}, 'a)) = (source) => {
   val cached: ref(bool) = ref(false);
   val subscribed: ref(bool) = ref(false);
   val observers: ref(list(SingleTypes.observer({..}, 'a))) = ref([]);
-  val success = ref(None);
-  val error = ref(None);
+  val signal: ref(option(Notification.Single.t('a))) = ref(None);
 
   pub subscribeWith = (obs) => {
 
@@ -14,12 +12,12 @@ let operator: Utils.func(SingleTypes.t({..}, {..}, 'a), SingleTypes.operator({..
       obs#onSubscribe(state);
 
       if (!state#isCancelled()) {
-        switch (success^) {
-          | Some(x) => obs#onSuccess(x)
-          | None => switch(error^) {
-            | Some(e) => obs#onError(e)
-            | None => () 
+        switch (signal^) {
+          | Some(notif) => switch(notif) {
+            | Notification.Single.OnSuccess(x) => obs#onSuccess(x)
+            | Notification.Single.OnError(x) => obs#onError(x) 
           }
+          | None => ()
         };
   
         state#cancel();
@@ -46,7 +44,7 @@ let operator: Utils.func(SingleTypes.t({..}, {..}, 'a), SingleTypes.operator({..
   
           pub onSuccess = (x) => {
             cached := true;
-            success := Some(x);
+            signal := Some(OnSuccess(x));
 
             observers^ |> List.iter(o => o#onSuccess(x));
             subscription#cancel();
@@ -54,7 +52,7 @@ let operator: Utils.func(SingleTypes.t({..}, {..}, 'a), SingleTypes.operator({..
 
           pub onError = (e) => {
             cached := true;
-            error := Some(e);
+            signal := Some(OnError(e));
 
             observers^ |> List.iter(o => o#onError(e));
             subscription#cancel();
