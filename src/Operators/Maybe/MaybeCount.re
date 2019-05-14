@@ -13,7 +13,7 @@ let operator: Utils.func(MaybeTypes.t({..}, {..}, 'a), SingleTypes.operator({..}
 
       pub onComplete = () => obs#onSuccess(0);
 
-      pub onSuccess = (x) => obs#onSucces(1);
+      pub onSuccess = (x) => obs#onSuccess(1);
 
       pub onError = obs#onError;
     })
