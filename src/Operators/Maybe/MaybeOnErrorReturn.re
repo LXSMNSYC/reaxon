@@ -14,11 +14,9 @@ let operator: Utils.bifunc(Utils.func(exn, 'a), MaybeTypes.t({..}, {..}, 'a), Ma
       pub onComplete = obs#onComplete;
       pub onSuccess = obs#onSuccess;
 
-      pub onError = (x) => {
-        switch (resumeFunction(x)) {
-          | item => obs#onSuccess(item)
-          | exception e => obs#onError(e)
-        };
+      pub onError = (x) => switch (resumeFunction(x)) {
+        | item => obs#onSuccess(item)
+        | exception e => obs#onError(e)
       };
     });
   };
