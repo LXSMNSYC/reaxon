@@ -27,3 +27,11 @@ module Publisher {
     | OnNext('a)
   ;
 }
+
+module Observable {
+  type t('a) =
+    | OnError(exn)
+    | OnComplete
+    | OnNext('a)
+  ;
+}
