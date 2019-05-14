@@ -1,25 +1,23 @@
-
 let operator: Utils.func(CompletableTypes.t({..}, {..}), CompletableTypes.operator({..})) = (source) => {
   val cached: ref(bool) = ref(false);
   val subscribed: ref(bool) = ref(false);
   val observers: ref(list(CompletableTypes.observer({..}))) = ref([]);
-  val complete = ref(false);
-  val error = ref(None);
+  val signal: ref(Utils.option(Notification.Completable.t)) = ref(Utils.None);
 
   pub subscribeWith = (obs) => {
+
     if (cached^) {
       let state = Cancellable.Boolean.make();
 
       obs#onSubscribe(state);
 
       if (!state#isCancelled()) {
-        if (complete^) {
-          obs#onComplete();
-        } else {
-          switch(error^) {
-            | Some(e) => obs#onError(e)
-            | None => () 
-          };
+        switch (signal^) {
+          | Some(notif) => switch(notif) {
+            | Notification.Completable.OnComplete => obs#onComplete()
+            | Notification.Completable.OnError(x) => obs#onError(x) 
+          }
+          | None => ()
         };
   
         state#cancel();
@@ -42,11 +40,11 @@ let operator: Utils.func(CompletableTypes.t({..}, {..}), CompletableTypes.operat
       if (!subscribed^) {
         subscribed := true;
         source#subscribeWith({
-          pub onSubscribe = sub => ();
+          pub onSubscribe = (sub) => ();
   
           pub onComplete = () => {
             cached := true;
-            complete := true;
+            signal := Some(OnComplete);
 
             observers^ |> List.iter(o => o#onComplete());
             subscription#cancel();
@@ -54,7 +52,7 @@ let operator: Utils.func(CompletableTypes.t({..}, {..}), CompletableTypes.operat
 
           pub onError = (e) => {
             cached := true;
-            error := Some(e);
+            signal := Some(OnError(e));
 
             observers^ |> List.iter(o => o#onError(e));
             subscription#cancel();
