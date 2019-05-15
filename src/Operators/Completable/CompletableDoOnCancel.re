@@ -1,5 +1,5 @@
 
-let operator: Utils.bifunc(Utils.action, CompletableTypes.t({..}, {..}), CompletableTypes.operator({..})) = (onCancel, source) => {
+let operator: (unit => unit) => CompletableTypes.t('source, 'upstream) => CompletableTypes.operator('downstream) = (onCancel, source) => {
   pub subscribeWith = (obs) => {
     let state = Cancellable.Linked.make();
 
