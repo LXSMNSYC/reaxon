@@ -1,5 +1,5 @@
 
-let operator: Utils.func(Utils.action, CompletableTypes.operator({..})) = (action) => {
+let operator: (unit => unit) => CompletableTypes.operator('downstream) = (action) => {
   pub subscribeWith = (obs) => {
     let state = Cancellable.Boolean.make();
 
