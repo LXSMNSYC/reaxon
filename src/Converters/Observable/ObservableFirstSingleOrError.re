@@ -7,8 +7,6 @@ let operator: ObservableTypes.t('source, 'upstream, 'a) => SingleTypes.operator(
       pub cancel = state#cancel;
     });
 
-    let i = ref(0);
-
     source#subscribeWith({
       pub onSubscribe = state#link;
 
