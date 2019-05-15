@@ -1,4 +1,4 @@
-let operator: Utils.bifunc(Utils.consumer('a), SingleTypes.t({..}, {..}, 'a), SingleTypes.operator({..}, 'a)) = (onSuccess, source) => {
+let operator: ('a => unit) => SingleTypes.t('source, 'upstream, 'a) => SingleTypes.operator('downstream, 'a) = (onSuccess, source) => {
   pub subscribeWith = (obs) => {
     let state = Cancellable.Linked.make();
 
