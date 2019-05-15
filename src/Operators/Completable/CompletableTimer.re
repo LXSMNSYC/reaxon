@@ -1,4 +1,4 @@
-let operator: Utils.bifunc(int, Scheduler.t, CompletableTypes.operator({..})) = (time, scheduler) => {
+let operator: int => Scheduler.t => CompletableTypes.operator('downstream) = (time, scheduler) => {
   pub subscribeWith = (obs) => {
     obs#onSubscribe(scheduler#timeout(obs#onComplete, time));
   }

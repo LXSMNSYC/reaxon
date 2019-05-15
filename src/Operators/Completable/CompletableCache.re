@@ -1,4 +1,4 @@
-let operator: Utils.func(CompletableTypes.t({..}, {..}), CompletableTypes.operator({..})) = (source) => {
+let operator: CompletableTypes.t('source, 'upstream) => CompletableTypes.operator('downstream) = (source) => {
   val cached: ref(bool) = ref(false);
   val subscribed: ref(bool) = ref(false);
   val observers: ref(list(CompletableTypes.observer({..}))) = ref([]);
