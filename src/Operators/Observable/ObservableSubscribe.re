@@ -1,5 +1,5 @@
 
-let operator: Utils.bifunc(ObservableTypes.recordObserver('a), ObservableTypes.t({..}, {..}, 'a), ObservableTypes.subscription) = (obs, source) => {
+let operator: ObservableTypes.recordObserver('a) => ObservableTypes.t('source, 'upstream, 'a) => ObservableTypes.subscription = (obs, source) => {
   let state = Cancellable.Linked.make();
 
   source#subscribeWith({
