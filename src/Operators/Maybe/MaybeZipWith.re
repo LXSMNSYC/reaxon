@@ -1,5 +1,5 @@
 
-let operator: Utils.trifunc(MaybeTypes.t({..}, {..}, 'a), Utils.bifunc('a, 'a, 'b), MaybeTypes.t({..}, {..}, 'a), MaybeTypes.operator({..}, 'b)) = (other, combiner, source) => {
+let operator: MaybeTypes.t('other, 'ostream, 'a) => ('a => 'a => 'b) => MaybeTypes.t('source, 'upstream, 'a) => MaybeTypes.operator('downstream, 'a) = (other, combiner, source) => {
   pub subscribeWith = (obs) => {
     let state = Cancellable.Composite.make();
 
