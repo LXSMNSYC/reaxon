@@ -1,5 +1,5 @@
 
-let operator: Utils.trifunc(int, Scheduler.t, ObservableTypes.t({..}, {..}, 'a), ObservableTypes.operator({..}, 'a)) = (time, scheduler, source) => {
+let operator: int => Scheduler.t => ObservableTypes.t('source, 'upstream, 'a) => ObservableTypes.operator('downstream, 'a) = (time, scheduler, source) => {
   pub subscribeWith = (obs) => {
     let state = Cancellable.Linked.make();
 
