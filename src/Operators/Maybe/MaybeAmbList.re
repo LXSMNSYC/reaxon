@@ -1,4 +1,4 @@
-let operator: Utils.func(list(MaybeTypes.t({..}, {..}, 'a)), MaybeTypes.operator({..}, 'a)) = (singleList) => {
+let operator: list(MaybeTypes.t('source, 'upstream, 'a)) => MaybeTypes.operator('downstream, 'a) = (singleList) => {
   pub subscribeWith = (obs) => {
     let state = Cancellable.Composite.make();
 
