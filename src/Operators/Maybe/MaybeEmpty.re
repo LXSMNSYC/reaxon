@@ -1,5 +1,5 @@
 
-let operator: Utils.supplier(MaybeTypes.operator({..}, 'a)) = () => {
+let instance = {
   pub subscribeWith = (obs) => {
     let state = Cancellable.Boolean.make();
 
@@ -14,3 +14,5 @@ let operator: Utils.supplier(MaybeTypes.operator({..}, 'a)) = () => {
     }
   };  
 };
+
+let operator: unit => MaybeTypes.operator('downstream, 'a) = () => instance;
