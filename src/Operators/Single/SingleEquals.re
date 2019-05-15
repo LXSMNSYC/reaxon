@@ -1,5 +1,5 @@
 
-let operator: Utils.trifunc(SingleTypes.t({..}, {..}, 'a), SingleTypes.t({..}, {..}, 'b), Utils.option(Utils.bipredicate('a, 'b)), SingleTypes.operator({..}, bool)) = (a, b, comparer) => {
+let operator: SingleTypes.t('left, 'lupstream, 'a) => SingleTypes.t('right, 'rupstream, 'b) => option('a => 'b => bool) => SingleTypes.operator('downstream, bool) = (a, b, comparer) => {
   pub subscribeWith = (obs) => {
     let state = Cancellable.Composite.make();
 
