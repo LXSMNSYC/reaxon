@@ -1,0 +1,23 @@
+let operator: ObservableTypes.t('source, 'upstream, 'a) => SingleTypes.operator('downstream, 'a) = (source) => {
+  pub subscribeWith = (obs) => {
+    let state = Cancellable.Linked.make();
+
+    obs#onSubscribe({
+      pub isCancelled = state#isCancelled;
+      pub cancel = state#cancel;
+    });
+
+    let i = ref(0);
+
+    source#subscribeWith({
+      pub onSubscribe = state#link;
+
+      pub onComplete = () => obs#onError(Exceptions.NoSuchElement);
+      pub onError = obs#onError;
+      pub onNext = x => {
+        obs#onSuccess(x);
+        state#cancel();
+      };
+    });
+  };
+};
