@@ -1,4 +1,4 @@
-let operator: Utils.func(array(ObservableTypes.t({..}, {..}, 'a)), ObservableTypes.operator({..}, 'a)) = (sources) => {
+let operator: array(ObservableTypes.t('source', 'upstream, 'a)) => ObservableTypes.operator('downstream, 'a) = (sources) => {
   pub subscribeWith = (obs) => {
     let state = Cancellable.Composite.make();
 
