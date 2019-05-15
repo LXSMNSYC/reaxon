@@ -1,5 +1,5 @@
 
-let operator: Utils.func(array(SingleTypes.t({..}, {..}, 'a)), SingleTypes.operator({..}, 'a)) = (singleArray) => {
+let operator = (singleArray) => {
   pub subscribeWith = (obs) => {
     let state = Cancellable.Composite.make();
 
