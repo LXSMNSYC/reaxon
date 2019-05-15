@@ -3,8 +3,8 @@
  */
 type t('a) = {
   ..
-  cancel: Utils.action,
-  isCancelled: Utils.supplier(bool),
+  cancel: unit => unit,
+  isCancelled: unit => bool,
 } as 'a;
 
 /**
@@ -14,8 +14,8 @@ type t('a) = {
 module Boolean {
   type i = t({
     .
-    cancel: Utils.action,
-    isCancelled: Utils.supplier(bool),
+    cancel: unit => unit,
+    isCancelled: unit => bool,
   });
   /**
    * Creates a Boolean Cancellable
@@ -85,7 +85,7 @@ module Composite {
      * If this Cancellable is already cancelled, the given
      * Cancellable is cancelled as well.
      */
-    pub add: Utils.consumer(t({..})) = (c) => {
+    pub add: t({..}) => unit = (c) => {
       if (flag^) {
         c#cancel();
       } else {
@@ -96,7 +96,7 @@ module Composite {
     /**
      * Removes a Cancellable instance from the container
      */
-    pub remove: Utils.consumer(t({..})) = (c) => {
+    pub remove: t({..}) => unit = (c) => {
       if (!flag^) {
         container := container^ |> List.filter(x => x != c);
       }
@@ -145,7 +145,7 @@ module Linked {
     /**
      * Unlinks this Cancellable to its linked Cancellable
      */
-    pub unlink: Utils.action = () => {
+    pub unlink: unit => unit = () => {
       if (!flag^ && next^ != None) {
         next := None;
       }
@@ -157,7 +157,7 @@ module Linked {
      * If this Cancellable is already cancelled, the other
      * Cancellable is also cancelled, vice-versa.
      */
-    pub link: Utils.consumer(t({..})) = (c) => {
+    pub link: t({..}) => unit = (c) => {
       if (c#isCancelled()) {
         this#cancel();
       } else if (flag^) {
