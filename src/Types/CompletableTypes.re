@@ -3,42 +3,42 @@ type subscription = Cancellable.Boolean.i;
 
 type observer('observer) = {
   ..
-  onSubscribe: Utils.consumer(subscription),
-  onComplete: Utils.action,
-  onError: Utils.consumer(exn),
+  onSubscribe: subscription => unit,
+  onComplete: unit => unit,
+  onError: exn => unit,
 } as 'observer;
 
 
 type t('t, 'observer) = {
   ..
-  subscribeWith: Utils.consumer(observer('observer)),
+  subscribeWith: observer('observer) => unit,
 } as 't;
 
 
 type emitter('emitter) = {
   ..
-  setCancellable: Utils.consumer(Cancellable.t({..})),
-  isCancelled: Utils.supplier(bool),
-  onComplete: Utils.action,
-  onError: Utils.consumer(exn),
+  setCancellable: Cancellable.t({..}) => unit,
+  isCancelled: unit => bool,
+  onComplete: unit => unit,
+  onError: exn => unit,
 } as 'emitter;
 
 type recordObserver = {
-  onComplete: Utils.action,
-  onError: Utils.consumer(exn),
+  onComplete: unit => unit,
+  onError: exn => unit,
 };
 
 type defaultObserver('a) = {
   .
-  onSubscribe: Utils.consumer(subscription),
-  onComplete: Utils.action,
-  onError: Utils.consumer(exn),
+  onSubscribe: subscription => unit,
+  onComplete: unit => unit,
+  onError: exn => unit,
 };
 
 
 type operator('observer) = t({
     .
-    subscribeWith: Utils.consumer(observer('observer))
+    subscribeWith: observer('observer) => unit
   }, 
   observer('observer),
 );
