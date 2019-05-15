@@ -1,5 +1,5 @@
 
-let operator: Utils.func(exn, SingleTypes.operator({..}, 'a)) = (err) => {
+let operator: exn => SingleTypes.operator('downstream, 'a) = (err) => {
   pub subscribeWith = (obs) => {
     let state = Cancellable.Boolean.make();
 
