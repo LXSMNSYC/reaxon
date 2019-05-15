@@ -1,5 +1,5 @@
 
-let operator: Utils.trifunc('a, Utils.option(Utils.bipredicate('a, 'a)), MaybeTypes.t({..}, {..}, 'a), SingleTypes.operator({..}, bool)) = (item, comparer, source) => {
+let operator: 'a => option('a => 'a => bool) => MaybeTypes.t('source, 'upstream, 'a) => SingleTypes.operator('downstream, bool) = (item, comparer, source) => {
   pub subscribeWith = (obs) => {
     let state = Cancellable.Linked.make();
 
