@@ -46,12 +46,10 @@ let jsTimeoutScheduler: Scheduler.t = {
   };
 };
 
-Single.just(Single.just("Hello"))
-  |> Single.merge
-  |> Single.subscribeOn(jsTimeoutScheduler)
-  |> Single.subscribe({
-    onSuccess: Js.log,
+Observable.range(1, 10, 1)
+  |> Observable.subscribe({
+    onNext: x => Js.log("Next: " ++ string_of_int(x)),
     onError: Js.log,
+    onComplete: () => Js.log("Completed"),
   });
-
 Js.log("Hello World");
