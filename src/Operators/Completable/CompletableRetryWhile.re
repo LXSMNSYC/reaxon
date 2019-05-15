@@ -1,4 +1,4 @@
-let operator: Utils.bifunc(Utils.bipredicate(int, exn), CompletableTypes.t({..}, {..}), CompletableTypes.operator({..})) = (checker, source) => {
+let operator: (int => exn => bool) => CompletableTypes.t('source, 'upstream) => CompletableTypes.operator('downstream) = (checker, source) => {
   pub subscribeWith = (obs) => {
     let state = Cancellable.Linked.make();
 
@@ -17,10 +17,10 @@ let operator: Utils.bifunc(Utils.bipredicate(int, exn), CompletableTypes.t({..},
 
         pub onComplete = obs#onComplete;
 
-        pub onError = (x) => if (checker(retries^, x)) {
-          sub();
-        } else {
-          obs#onError(x);
+        pub onError = (x) => switch(checker(retries^, x)) {
+          | true => sub()
+          | false => obs#onError(x)
+          | exception e => obs#onError(e)
         };
       });
     };
