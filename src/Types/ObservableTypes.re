@@ -26,7 +26,6 @@ type emitter('emitter, 'a) = {
 } as 'emitter;
 
 type recordObserver('a) = {
-  onSubscribe: subscription => unit,
   onError: exn => unit,
   onNext: 'a => unit,
   onComplete: unit => unit,
