@@ -10,8 +10,8 @@ let operator: MaybeTypes.t('source, 'upstream, 'a) => SingleTypes.operator('down
 
     source#subscribeWith({
       pub onSubscribe = state#link;
-      pub onComplete = () => obs#onSuccess(false);
-      pub onSuccess = (x) => obs#onSucces(true);
+      pub onComplete = () => obs#onSuccess(true);
+      pub onSuccess = (x) => obs#onSuccess(false);
       pub onError = obs#onError;
     })
   };
