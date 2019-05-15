@@ -1,11 +1,10 @@
-let operator: Utils.func(SingleTypes.t({..}, {..}, 'a), SingleTypes.operator({..}, 'a)) = (source) => {
-  val cached: ref(bool) = ref(false);
-  val subscribed: ref(bool) = ref(false);
-  val observers: ref(list(SingleTypes.observer({..}, 'a))) = ref([]);
+let operator = (source) => {
+  val cached = ref(false);
+  val subscribed = ref(false);
+  val observers = ref([]);
   val signal = ref(None);
 
   pub subscribeWith = (obs) => {
-
     if (cached^) {
       let state = Cancellable.Boolean.make();
 
