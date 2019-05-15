@@ -21,10 +21,37 @@ let jsInstantScheduler: Scheduler.t = {
   };
 };
 
-Single.just("Hello")
-  |> Single.delay(1000, jsInstantScheduler)
-  |> Single.map(x => x ++ " World")
+let jsTimeoutScheduler: Scheduler.t = {
+  pub run = (fn) => {
+    let state = Cancellable.Boolean.make();
+    setTimeout(() => {
+      fn();
+      state#cancel();
+    }, 0);
+    state;
+  };
+
+  pub timeout = (fn, time) => {
+    let state = Cancellable.Boolean.make();
+
+    setTimeout(() => {
+      setTimeout(() => {
+        if (!state#isCancelled()) {
+          fn();
+        }
+      }, time);
+    }, 0);
+
+    state;
+  };
+};
+
+Single.just(Single.just("Hello"))
+  |> Single.merge
+  |> Single.subscribeOn(jsTimeoutScheduler)
   |> Single.subscribe({
     onSuccess: Js.log,
     onError: Js.log,
   });
+
+Js.log("Hello World");
