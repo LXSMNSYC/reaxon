@@ -1,4 +1,4 @@
-let operator: Utils.func(list('a), ObservableTypes.operator({..}, 'a)) = (list) => {
+let operator: list('a) => ObservableTypes.operator('downstream, 'a) = (list) => {
   pub subscribeWith = (obs) => {
     let state = Cancellable.Boolean.make();
 
