@@ -19,10 +19,10 @@ let operator: Utils.bifunc(Utils.bipredicate(int, exn), MaybeTypes.t({..}, {..},
         pub onComplete = obs#onComplete;
         pub onSuccess = obs#onSuccess;
 
-        pub onError = (x) => if (checker(retries^, x)) {
-          sub();
-        } else {
-          obs#onError(x);
+        pub onError = (x) => switch(checker(retries^, x)) {
+          | true => sub()
+          | false => obs#onError(x)
+          | exception e => obs#onError(e)
         };
       });
     };

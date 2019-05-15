@@ -1,4 +1,4 @@
-let operator: Utils.bifunc(int, MaybeTypes.t({..}, {..}, 'a), MaybeTypes.operator({..}, 'a)) = (count, source) => {
+let operator: int => MaybeTypes.t('source, 'upstream, 'a) => MaybeTypes.operator('downstream, 'a) = (count, source) => {
   pub subscribeWith = (obs) => {
     let state = Cancellable.Linked.make();
 
