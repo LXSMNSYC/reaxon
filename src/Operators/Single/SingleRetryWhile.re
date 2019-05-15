@@ -1,5 +1,5 @@
 
-let operator: Utils.bifunc(Utils.bipredicate(int, exn), SingleTypes.t({..}, {..}, 'a), SingleTypes.operator({..}, 'a)) = (checker, source) => {
+let operator: (int => exn => bool) => SingleTypes.t('source, 'upstream, 'a) => SingleTypes.operator('downstream, 'a) = (checker, source) => {
   pub subscribeWith = (obs) => {
     let state = Cancellable.Linked.make();
 
@@ -18,10 +18,10 @@ let operator: Utils.bifunc(Utils.bipredicate(int, exn), SingleTypes.t({..}, {..}
 
         pub onSuccess = obs#onSuccess;
 
-        pub onError = (x) => if (checker(retries^, x)) {
-          sub();
-        } else {
-          obs#onError(x);
+        pub onError = (x) => switch (checker(retries^, x)) {
+          | true => sub();
+          | false => obs#onError(x)
+          | exception e => obs#onError(e)
         };
       });
     };
