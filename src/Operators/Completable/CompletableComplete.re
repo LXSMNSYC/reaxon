@@ -15,4 +15,4 @@ let instance = {
   };  
 };
 
-let operator: Utils.supplier(CompletableTypes.operator({..})) = () => instance;
+let operator: unit => CompletableTypes.operator('downstream) = () => instance;

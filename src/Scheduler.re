@@ -1,12 +1,12 @@
 type t = {
   .
-  run: Utils.func(Utils.action, Cancellable.t({.
-    isCancelled: Utils.supplier(bool),
-    cancel: Utils.action,
-  })),
+  run: (unit => unit) => Cancellable.t({.
+    isCancelled: unit => bool,
+    cancel: unit => unit,
+  }),
 
-  timeout: Utils.bifunc(Utils.action, int, Cancellable.t({.
-    isCancelled: Utils.supplier(bool),
-    cancel: Utils.action,
-  })),
+  timeout: (unit => unit) => int => Cancellable.t({.
+    isCancelled: unit => bool,
+    cancel: unit => unit,
+  }),
 };
