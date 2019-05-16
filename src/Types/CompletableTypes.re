@@ -9,9 +9,9 @@ type observer('observer) = {
 } as 'observer;
 
 
-type t('t, 'observer) = {
+type t('t) = {
   ..
-  subscribeWith: observer('observer) => unit,
+  subscribeWith: observer({..}) => unit,
 } as 't;
 
 
@@ -37,8 +37,6 @@ type defaultObserver('a) = {
 
 
 type operator('observer) = t({
-    .
-    subscribeWith: observer('observer) => unit
-  }, 
-  observer('observer),
-);
+  .
+  subscribeWith: observer('observer) => unit
+});

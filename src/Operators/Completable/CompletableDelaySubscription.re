@@ -1,5 +1,5 @@
 
-let operator: int => Scheduler.t => CompletableTypes.t('source, 'upstream) => CompletableTypes.operator('downstream) = (time, scheduler, source) => {
+let operator: int => Scheduler.t => CompletableTypes.t('source) => CompletableTypes.operator('downstream) = (time, scheduler, source) => {
   pub subscribeWith = (obs) => {
     let state = Cancellable.Linked.make();
 

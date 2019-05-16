@@ -1,4 +1,4 @@
-let operator: CompletableTypes.t('source, 'upstream) => MaybeTypes.operator('downstream, 'a) = (completable) => {
+let operator: CompletableTypes.t('source) => MaybeTypes.operator('downstream, 'a) = (completable) => {
   pub subscribeWith = (obs) => {
     let state = Cancellable.Linked.make();
 

@@ -1,4 +1,4 @@
-let operator: (exn => CompletableTypes.t('result, 'rstream)) => CompletableTypes.t('source, 'upstream) => CompletableTypes.operator('downstream) = (resumeIfError, source) => {
+let operator: (exn => CompletableTypes.t('result)) => CompletableTypes.t('source) => CompletableTypes.operator('downstream) = (resumeIfError, source) => {
   pub subscribeWith = (obs) => {
     let state = Cancellable.Linked.make();
 
