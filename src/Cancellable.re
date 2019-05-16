@@ -20,7 +20,7 @@ module Boolean {
   /**
    * Creates a Boolean Cancellable
    */
-  let make : Utils.supplier(i) = () => {
+  let make : unit => i = () => {
     /**
      * Represents the state
      */
@@ -49,7 +49,7 @@ module Composite {
   /**
    * Creates a Composite Cancellable
    */
-  let make : Utils.supplier(t({..})) = () => {
+  let make : unit => t({..}) = () => {
     /**
      * Holds all event listeners
      */
@@ -107,7 +107,7 @@ module Composite {
  * A Linked Cancellable allows sharing states with another Cancellable instance.
  */
 module Linked {
-  let make : Utils.supplier(t({..})) = () => {
+  let make : unit => t({..}) = () => {
     /**
      * References the listener registered to the linked Cancellable
      */
