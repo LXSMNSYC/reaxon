@@ -14,7 +14,7 @@ type subscriber('subscriber, 'subscription, 'a) = {
 
 type publisher('publisher, 'subscriber, 'subscription, 'a) = {
   ..
-  subscribe:subscriber('subscriber, 'subscription, 'a) => unit,
+  subscribe: subscriber('subscriber, 'subscription, 'a) => unit,
 } as 'publisher;
 
 type processor('processor, 'subscriber, 'subscription, 'a) = {
