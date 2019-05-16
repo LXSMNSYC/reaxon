@@ -30,7 +30,6 @@
   },
   "devDependencies": {
     "@glennsl/bs-jest": "^0.4.8",
-    "bs-platform": "^5.0.2",
-    "bsdoc": "^6.0.2-alpha"
+    "bs-platform": "^5.0.2"
   }
 }
