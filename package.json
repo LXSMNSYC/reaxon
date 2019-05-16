@@ -6,7 +6,8 @@
   "scripts": {
     "build": "./node_modules/.bin/bsb -make-world",
     "start": "./node_modules/.bin/bsb -make-world -w",
-    "clean": "./node_modules/.bin/bsb -clean-world"
+    "clean": "./node_modules/.bin/bsb -clean-world",
+    "docs": "./node_modules/.bin/bsdoc build Reaxon"
   },
   "repository": {
     "type": "git",
@@ -29,6 +30,7 @@
   },
   "devDependencies": {
     "@glennsl/bs-jest": "^0.4.8",
-    "bs-platform": "^5.0.2"
+    "bs-platform": "^5.0.2",
+    "bsdoc": "^6.0.2-alpha"
   }
 }
