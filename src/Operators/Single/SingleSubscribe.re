@@ -1,5 +1,5 @@
 
-let operator: SingleTypes.recordObserver('a) => SingleTypes.t('source, 'upstream, 'a) => SingleTypes.subscription = (obs, source) => {
+let operator: SingleTypes.recordObserver('a) => SingleTypes.t('source, 'a) => SingleTypes.subscription = (obs, source) => {
   let state = Cancellable.Linked.make();
 
   source#subscribeWith({

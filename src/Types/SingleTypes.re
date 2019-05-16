@@ -8,9 +8,9 @@ type observer('observer, 'a) = {
 } as 'observer;
 
 
-type t('t, 'observer,'a) = {
+type t('t, 'a) = {
   ..
-  subscribeWith: observer('observer, 'a) => unit,
+  subscribeWith: observer({..}, 'a) => unit,
 } as 't;
 
 type emitter('emitter, 'a) = {
@@ -37,6 +37,5 @@ type operator('observer, 'a) = t({
     .
     subscribeWith: observer('observer, 'a) => unit
   }, 
-  observer('observer, 'a),
   'a,
 );
