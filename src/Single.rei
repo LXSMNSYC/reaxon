@@ -28,6 +28,16 @@ let ambWith: SingleTypes.s('other, 'a) => SingleTypes.s('source, 'a) => SingleTy
  */
 let cache: SingleTypes.s('source, 'a) => SingleTypes.operator('downstream, 'a);
 /**
+ * Concatenates an array of Single sources into
+ * an Observable
+ */
+let concatArray: array(SingleTypes.s('source, 'a)) => ObservableTypes.operator('downstream, 'a);
+/**
+ * Concatenates a list of Single sources into
+ * an Observable
+ */
+let concatList: list(SingleTypes.s('source, 'a)) => ObservableTypes.operator('downstream, 'a);
+/**
  * Signals true if the current Single signals a
  * success value that is equal with the value
  * provided by calling a bi-predicate. 
@@ -303,6 +313,14 @@ let materialize: SingleTypes.s('source, 'a) => SingleTypes.operator('downstream,
  * without any transformation. 
  */
 let merge: SingleTypes.s('source, SingleTypes.s('result, 'a)) => SingleTypes.operator('downstream, 'a);
+/**
+ * Merges an array of Single sources into an Observable.
+ */
+let mergeArray: array(SingleTypes.s('source, 'a)) => SingleTypes.operator('downstream, 'a);
+/**
+ * Merges a list of Single sources into an Observable.
+ */
+let mergeList: list(SingleTypes.s('source, 'a)) => SingleTypes.operator('downstream, 'a);
 /**
  * Returns a singleton instance of a never-signalling
  * Single (only calls onSubscribe). 
