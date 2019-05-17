@@ -41,7 +41,7 @@ let concatList: list(SingleTypes.s('source, 'a)) => ObservableTypes.operator('do
  * Concatenates a given Single source with this
  * Single source into an Observable.
  */
-let concatWith: SingleTypes.s('other, 'a) => SingleTypes.s('source, 'a) => SingleTypes.operator('downstream, 'a)
+let concatWith: SingleTypes.s('other, 'a) => SingleTypes.s('source, 'a) => ObservableTypes.operator('downstream, 'a)
 /**
  * Signals true if the current Single signals a
  * success value that is equal with the value
@@ -321,16 +321,16 @@ let merge: SingleTypes.s('source, SingleTypes.s('result, 'a)) => SingleTypes.ope
 /**
  * Merges an array of Single sources into an Observable.
  */
-let mergeArray: array(SingleTypes.s('source, 'a)) => SingleTypes.operator('downstream, 'a);
+let mergeArray: array(SingleTypes.s('source, 'a)) => ObservableTypes.operator('downstream, 'a);
 /**
  * Merges a list of Single sources into an Observable.
  */
-let mergeList: list(SingleTypes.s('source, 'a)) => SingleTypes.operator('downstream, 'a);
+let mergeList: list(SingleTypes.s('source, 'a)) => ObservableTypes.operator('downstream, 'a);
 /**
  * Merges this Single source with a given Single source into
  * an Observable.
  */
-let mergeWith: SingleTypes.s('other, 'a) => SingleTypes.s('source, 'a) => SingleTypes.operator('downstream, 'a)
+let mergeWith: SingleTypes.s('other, 'a) => SingleTypes.s('source, 'a) => ObservableTypes.operator('downstream, 'a)
 /**
  * Returns a singleton instance of a never-signalling
  * Single (only calls onSubscribe). 
@@ -419,6 +419,21 @@ let onErrorReturn: (exn => 'a) => SingleTypes.s('source, 'a) => SingleTypes.oper
  */
 let onErrorReturnItem: 'a => SingleTypes.s('source, 'a) => SingleTypes.operator('downstream, 'a);
 /**
+ * Repeatedly re-subscribes to the current Single and
+ * emits each success value. 
+ */
+let repeat: SingleTypes.s('source, 'a) => ObservableTypes.operator('downstream, 'a);
+/**
+ * Re-subscribes to the current Single at most the
+ * given number of times and emits each success value. 
+ */
+let repeatCount: int => SingleTypes.s('source, 'a) => ObservableTypes.operator('downstream, 'a);
+/**
+ * Re-subscribes to the current Single until the
+ * given predicate returns true. 
+ */
+let repeatUntil: (int => bool) => SingleTypes.s('source, 'a) => ObservableTypes.operator('downstream, 'a);
+/**
  * Repeatedly re-subscribes to the current Single
  * indefinitely if it fails with an onError. 
  */
@@ -429,6 +444,12 @@ let retry: SingleTypes.s('source, 'a) => SingleTypes.operator('downstream, 'a);
  * onError. 
  */
 let retryCount: int => SingleTypes.s('source, 'a) => SingleTypes.operator('downstream, 'a);
+/**
+ * Repeatedly re-subscribe to the current Single if
+ * the given predicate return false when the Single
+ * fails with an onError.
+ */
+let retryUntil: (int => bool) => SingleTypes.s('source, 'a) => SingleTypes.operator('downstream, 'a);
 /**
  * Re-subscribe to the current Single if the given
  * predicate returns true when the Single fails with
