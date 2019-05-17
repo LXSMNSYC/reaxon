@@ -5,6 +5,9 @@ let ambList = SingleAmbList.operator;
 let ambWith = SingleAmbWith.operator;
 
 let cache = SingleCache.operator;
+let concatArray = SingleConcatArray.operator;
+let concatList = SingleConcatList.operator;
+let concatWith = SingleConcatWith.operator;
 let contains = SingleContains.operator;
 
 let error = SingleError.operator;
@@ -30,10 +33,12 @@ let flatMap = SingleFlatMap.operator;
 let flatMapCompletable = SingleFlatMapCompletable.operator;
 let flatMapMaybe = SingleFlatMapMaybe.operator;
 let flatMapObservable = SingleFlatMapObservable.operator;
-let flattenToObservable = SingleFlattenToObservable.operator;
+let flattenToArrayObservable = SingleFlattenToArrayObservable.operator;
+let flattenToListObservable = SingleFlattenToListObservable.operator;
 let filter = SingleFilter.operator;
-let fromCompletable = SingleFromCompletableSupplier.operator;
+let fromCompletable = SingleFromCompletable.operator;
 let fromCompletableDefault = SingleFromCompletableDefault.operator;
+let fromCompletableSupplier = SingleFromCompletableSupplier.operator;
 let fromMaybe = SingleFromMaybe.operator;
 let fromMaybeDefault = SingleFromMaybeDefault.operator;
 let fromObservable = SingleFromObservable.operator;
@@ -51,6 +56,9 @@ let make = SingleMake.operator;
 let map = SingleMap.operator;
 let materialize = SingleMaterialize.operator;
 let merge = SingleMerge.operator;
+let mergeArray = SingleMergeArray.operator;
+let mergeList = SingleMergeList.operator;
+let mergeWith = SingleMergeWith.operator;
 
 let never = SingleNever.operator;
 
@@ -58,11 +66,14 @@ let observeOn = SingleObserveOn.operator;
 let onErrorResume = SingleOnErrorResume.operator;
 let onErrorResumeNext = SingleOnErrorResumeNext.operator;
 let onErrorReturn = SingleOnErrorReturn.operator;
-
 let onErrorReturnItem = SingleOnErrorReturnItem.operator;
 
+let repeat = SingleRepeat.operator;
+let repeatCount = SingleRepeatCount.operator;
+let repeatUntil = SingleRepeatUntil.operator;
 let retry = SingleRetry.operator;
 let retryCount = SingleRetryCount.operator;
+let retryUntil = SingleRetryUntil.operator;
 let retryWhile = SingleRetryWhile.operator;
 
 let subscribeOn = SingleSubscribeOn.operator;
