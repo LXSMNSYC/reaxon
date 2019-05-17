@@ -38,6 +38,11 @@ let concatArray: array(SingleTypes.s('source, 'a)) => ObservableTypes.operator('
  */
 let concatList: list(SingleTypes.s('source, 'a)) => ObservableTypes.operator('downstream, 'a);
 /**
+ * Concatenates a given Single source with this
+ * Single source into an Observable.
+ */
+let concatWith: SingleTypes.s('other, 'a) => SingleTypes.s('source, 'a) => SingleTypes.operator('downstream, 'a)
+/**
  * Signals true if the current Single signals a
  * success value that is equal with the value
  * provided by calling a bi-predicate. 
@@ -321,6 +326,11 @@ let mergeArray: array(SingleTypes.s('source, 'a)) => SingleTypes.operator('downs
  * Merges a list of Single sources into an Observable.
  */
 let mergeList: list(SingleTypes.s('source, 'a)) => SingleTypes.operator('downstream, 'a);
+/**
+ * Merges this Single source with a given Single source into
+ * an Observable.
+ */
+let mergeWith: SingleTypes.s('other, 'a) => SingleTypes.s('source, 'a) => SingleTypes.operator('downstream, 'a)
 /**
  * Returns a singleton instance of a never-signalling
  * Single (only calls onSubscribe). 
