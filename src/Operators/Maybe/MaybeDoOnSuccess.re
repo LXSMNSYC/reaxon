@@ -1,4 +1,4 @@
-let operator: ('a => unit) => MaybeTypes.t('source, 'upstream, 'a) => MaybeTypes.operator('downstream, 'a) = (onSuccess, source) => {
+let operator = (onSuccess, source) => {
   pub subscribeWith = (obs) => {
     let state = Cancellable.Linked.make();
 

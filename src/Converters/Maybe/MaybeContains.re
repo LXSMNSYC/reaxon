@@ -1,5 +1,5 @@
 
-let operator: 'a => option('a => 'a => bool) => MaybeTypes.t('source, 'upstream, 'a) => SingleTypes.operator('downstream, bool) = (item, comparer, source) => {
+let operator = (item, comparer, source) => {
   pub subscribeWith = (obs) => {
     let state = Cancellable.Linked.make();
 
@@ -13,14 +13,9 @@ let operator: 'a => option('a => 'a => bool) => MaybeTypes.t('source, 'upstream,
 
       pub onComplete = () => obs#onSuccess(false);
 
-      pub onSuccess = (x) => switch(comparer) {
-        | Some(cmp) => {
-          switch (cmp(x, item)) {
-            | result => obs#onSuccess(result)
-            | exception e => obs#onError(e);
-          };
-        }
-        | None => obs#onSuccess(x == item)
+      pub onSuccess = (x) => switch (comparer(x, item)) {
+        | result => obs#onSuccess(result)
+        | exception e => obs#onError(e);
       };
 
       pub onError = obs#onError;

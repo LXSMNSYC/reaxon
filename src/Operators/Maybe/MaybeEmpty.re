@@ -15,4 +15,4 @@ let instance = {
   };  
 };
 
-let operator: unit => MaybeTypes.operator('downstream, 'a) = () => instance;
+let operator = () => instance;

@@ -1,5 +1,5 @@
 
-let operator: MaybeTypes.t('left, 'lstream, 'a) => MaybeTypes.t('right, 'rstream, 'b) => option('a => 'b => bool) => SingleTypes.operator('downstream, bool) = (a, b, comparer) => {
+let operator = (a, b, comparer) => {
   pub subscribeWith = (obs) => {
     let state = Cancellable.Composite.make();
 
@@ -21,13 +21,10 @@ let operator: MaybeTypes.t('left, 'lstream, 'a) => MaybeTypes.t('right, 'rstream
 
       pub onSuccess = (x) => switch(bValue^) {
         | Some(bval) => {
-          switch(comparer) {
-            | Some(c) => switch(c(x, bval)) {
-              | true => obs#onSuccess(true)
-              | false => obs#onSuccess(false)
-              | exception e => obs#onError(e)
-            }
-            | None => obs#onSucces(bval == x)
+          switch(comparer(x, bval)) {
+            | true => obs#onSuccess(true)
+            | false => obs#onSuccess(false)
+            | exception e => obs#onError(e)
           }
           state#cancel();
         }
@@ -52,13 +49,10 @@ let operator: MaybeTypes.t('left, 'lstream, 'a) => MaybeTypes.t('right, 'rstream
 
       pub onSuccess = (x) => switch(aValue^) {
         | Some(aval) => {
-          switch(comparer) {
-            | Some(c) => switch(c(aval, x)) {
-              | true => obs#onSuccess(true)
-              | false => obs#onSuccess(false)
-              | exception e => obs#onError(e)
-            }
-            | None => obs#onSucces(aval == x)
+          switch(comparer(aval, x)) {
+            | true => obs#onSuccess(true)
+            | false => obs#onSuccess(false)
+            | exception e => obs#onError(e)
           }
           state#cancel();
         }

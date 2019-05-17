@@ -1,5 +1,5 @@
 
-let operator: (unit => unit) => MaybeTypes.operator('downstream, 'a) = (action) => {
+let operator = (action) => {
   pub subscribeWith = (obs) => {
     let state = Cancellable.Boolean.make();
 

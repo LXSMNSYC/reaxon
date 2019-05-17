@@ -1,7 +1,17 @@
 
-let operator: (unit => MaybeTypes.t('source, 'upstream, 'a)) => MaybeTypes.operator('downstream, 'a) = (supplier) => {
+let operator = (supplier) => {
   pub subscribeWith = (obs) => switch (supplier()) {
-    | source => source#subscribeWith(obs)
-    | exception e => CompletableError.operator(e)#subscribeWith(obs);  
+    | source => source#subscribeWith({
+      pub onSubscribe = obs#onSubscribe;
+      pub onComplete = obs#onComplete;
+      pub onSuccess = obs#onSuccess;
+      pub onError = obs#onError;
+    })
+    | exception e => CompletableError.operator(e)#subscribeWith({
+      pub onSubscribe = obs#onSubscribe;
+      pub onComplete = obs#onComplete;
+      pub onSuccess = obs#onSuccess;
+      pub onError = obs#onError;
+    });  
   };
 };

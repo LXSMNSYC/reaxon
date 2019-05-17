@@ -10,9 +10,9 @@ type observer('observer, 'a) = {
 } as 'observer;
 
 
-type t('t, 'observer,'a) = {
+type t('t, 'a) = {
   ..
-  subscribeWith: observer('observer, 'a) => unit,
+  subscribeWith: observer({..}, 'a) => unit,
 } as 't;
 
 
@@ -40,10 +40,12 @@ type defaultObserver('a) = {
   onComplete: unit => unit,
 };
 
-type operator('observer, 'a) = t({
-    .
-    subscribeWith: observer('observer, 'a) => unit
-  }, 
-  observer('observer, 'a),
-  'a,
-);
+type s('s, 'a) = {
+  ..
+  subscribeWith: defaultObserver('a) => unit
+} as 's;
+
+type operator('observer, 'a) = {
+  .
+  subscribeWith: observer('observer, 'a) => unit
+};

@@ -1,5 +1,5 @@
 
-let operator: MaybeTypes.t('other, 'ostream, 'a) => MaybeTypes.t('source, 'upstream, 'a) => MaybeTypes.operator('downstream, 'a) = (other, source) => {
+let operator = (other, source) => {
   pub subscribeWith = (obs) => {
     let state = Cancellable.Composite.make();
 

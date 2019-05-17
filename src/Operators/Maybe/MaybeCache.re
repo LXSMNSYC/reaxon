@@ -1,4 +1,4 @@
-let operator: MaybeTypes.t('source, 'upstream, 'a) => MaybeTypes.operator('downstream, 'a) = (source) => {
+let operator = (source) => {
   val cached: ref(bool) = ref(false);
   val subscribed: ref(bool) = ref(false);
   val observers: ref(list(MaybeTypes.observer({..}, 'a))) = ref([]);

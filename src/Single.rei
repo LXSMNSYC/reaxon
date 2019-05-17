@@ -330,7 +330,7 @@ let mergeList: list(SingleTypes.s('source, 'a)) => ObservableTypes.operator('dow
  * Merges this Single source with a given Single source into
  * an Observable.
  */
-let mergeWith: SingleTypes.s('other, 'a) => SingleTypes.s('source, 'a) => ObservableTypes.operator('downstream, 'a)
+let mergeWith: SingleTypes.s('other, 'a) => SingleTypes.s('source, 'a) => ObservableTypes.operator('downstream, 'a);
 /**
  * Returns a singleton instance of a never-signalling
  * Single (only calls onSubscribe). 
