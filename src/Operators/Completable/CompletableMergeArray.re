@@ -16,6 +16,11 @@ let operator: array(CompletableTypes.t('source)) => CompletableTypes.operator('d
       pub onComplete = () => if (!finished^) {
         finished := true;
         size := size^ - 1;
+
+        if (size^ == 0) {
+          obs#onComplete();
+          state#cancel();
+        }
       };
 
       pub onError = e => {
