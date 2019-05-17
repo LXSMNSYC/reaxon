@@ -88,11 +88,11 @@ let doAfterSuccess: ('a => unit) => SingleTypes.s('source, 'a) => SingleTypes.op
 let doAfterTerminate: (unit => unit) => SingleTypes.s('source, 'a) => SingleTypes.operator('downstream, 'a)
 /**
  * Calls the specified action after this Single
- * signals onSuccess or onError or gets disposed
+ * signals onSuccess or onError or gets cancelled
  * by the downstream.
  * 
  * In case of a race between a terminal event and
- * a dispose call, the provided onFinally action
+ * a cancel call, the provided onFinally action
  * is executed once per subscription. 
  */
 let doFinally: (unit => unit) => SingleTypes.s('source, 'a) => SingleTypes.operator('downstream, 'a);
