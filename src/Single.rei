@@ -198,7 +198,7 @@ let fromCompletableSupplier: (unit => 'a) => CompletableTypes.s('source) => Sing
  * If the Maybe is empty, an Exceptions.NoSuchElement
  * is signalled.
  */
-let fromMaybe: MaybeTypes.s('source, 'a) => SingleTypes.operator('downstream ,'t);
+let fromMaybe: MaybeTypes.s('source, 'a) => SingleTypes.operator('downstream ,'a);
 /**
  * Wraps an specific Maybe into a Single and signals
  * its single element or the given default element
@@ -437,6 +437,20 @@ let timeout: int => Scheduler.t => SingleTypes.s('source, 'a) => SingleTypes.ope
  * for each Single.observer.
  */
 let timer: int => Scheduler.t => SingleTypes.operator('downstream, int);
+/**
+ * Returns a Completable that discards result of the
+ * Single and calls onComplete when this source Single
+ * calls onSuccess. Error terminal event is propagated. 
+ */
+let toCompletable: SingleTypes.s('source, 'a) => CompletableTypes.operator('downstream);
+/**
+ * Converts this Single into a Maybe.
+ */
+let toMaybe: SingleTypes.s('source, 'a) => MaybeTypes.operator('downstream, 'a);
+/**
+ * Converts this Singoe into an Observable.
+ */
+let toObservable: SingleTypes.s('source, 'a) => ObservableTypes.operator('downstream, 'a);
 /**
  * Returns a Single which makes sure when a Single.observer
  * cancels the Cancellable, that call is propagated up
