@@ -1,5 +1,5 @@
 
-let operator: (CompletableTypes.emitter('upstream) => unit) => CompletableTypes.operator('downstream) = (onSubscribe) => {
+let operator = (onSubscribe) => {
   pub subscribeWith = (obs) => {
     let state = Cancellable.Linked.make();
 

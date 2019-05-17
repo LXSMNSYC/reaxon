@@ -1,5 +1,5 @@
 
-let operator: CompletableTypes.recordObserver => CompletableTypes.t('source) => CompletableTypes.subscription = (obs, source) => {
+let operator = (obs: CompletableTypes.recordObserver, source) => {
   let state = Cancellable.Linked.make();
 
   source#subscribeWith({

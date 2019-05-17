@@ -1,4 +1,4 @@
-let operator: SingleTypes.t('source, Notification.Completable.t) => CompletableTypes.operator('downstream) = (source) => {
+let operator = (source) => {
   pub subscribeWith = (obs) => {
     let state = Cancellable.Linked.make();
 

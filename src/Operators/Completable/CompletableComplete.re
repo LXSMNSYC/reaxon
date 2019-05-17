@@ -15,4 +15,4 @@ let instance = {
   };  
 };
 
-let operator: unit => CompletableTypes.operator('downstream) = () => instance;
+let operator = () => instance;

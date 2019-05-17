@@ -1,4 +1,4 @@
-let operator: array(CompletableTypes.t('source)) => CompletableTypes.operator('downstream) = (sources) => {
+let operator = (sources) => {
   pub subscribeWith = (obs) => {
     let state = Cancellable.Composite.make();
 

@@ -28,13 +28,17 @@ type recordObserver = {
   onError: exn => unit,
 };
 
-type defaultObserver('a) = {
+type defaultObserver = {
   .
   onSubscribe: subscription => unit,
   onComplete: unit => unit,
   onError: exn => unit,
 };
 
+type s('s) = {
+  ..
+  subscribeWith: defaultObserver => unit
+} as 's;
 
 type operator('observer) = t({
   .
