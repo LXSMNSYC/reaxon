@@ -1,4 +1,4 @@
-let operator: SingleTypes.t('source, 'a) => SingleTypes.operator('downstream, 'a) = (source) => {
+let operator = (source) => {
   val cached = ref(false);
   val subscribed = ref(false);
   val observers = ref([]);

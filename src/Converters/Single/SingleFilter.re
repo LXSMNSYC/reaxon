@@ -1,4 +1,4 @@
-let operator: ('a => bool) => SingleTypes.t('source, 'a) => MaybeTypes.operator('downstream, 'a) = (predicate, source) => {
+let operator = (predicate, source) => {
   pub subscribeWith = (obs) => {
     let state = Cancellable.Linked.make();
 

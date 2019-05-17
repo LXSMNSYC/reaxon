@@ -1,5 +1,5 @@
 
-let operator: int => Scheduler.t => SingleTypes.t('source, 'a) => SingleTypes.operator('downstream, 'a) = (time, scheduler, source) => {
+let operator = (time, scheduler, source) => {
   pub subscribeWith = (obs) => {
     let state = Cancellable.Composite.make();
 

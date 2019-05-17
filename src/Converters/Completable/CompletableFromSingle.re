@@ -1,5 +1,5 @@
 
-let operator: SingleTypes.t('source, 'a) => CompletableTypes.operator('downstream) = (single) => {
+let operator = (single) => {
   pub subscribeWith = (obs) => {
     let state = Cancellable.Linked.make();
 
@@ -10,7 +10,6 @@ let operator: SingleTypes.t('source, 'a) => CompletableTypes.operator('downstrea
 
     single#subscribeWith({
       pub onSubscribe = state#link;
-
       pub onSuccess = (x) => obs#onComplete();
       pub onError = obs#onError;
     })

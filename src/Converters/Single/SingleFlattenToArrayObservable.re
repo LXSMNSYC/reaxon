@@ -1,4 +1,3 @@
-
 let operator = (mapper, source) => {
   pub subscribeWith = (obs) => {
     let state = Cancellable.Linked.make();
@@ -13,18 +12,20 @@ let operator = (mapper, source) => {
 
       pub onSuccess = (x) => switch(mapper(x)) {
         | item => {
-          state#unlink();
-          item#subscribeWith({
-            pub onSubscribe = state#link;
-            pub onSuccess = obs#onSuccess;
-            pub onError = obs#onError;
+          item |> Array.iter(i => {
+            if (!state#isCancelled()) {
+              obs#onNext(i);
+            }
           });
+
+          if (!state#isCancelled()) {
+            obs#onComplete();
+          }
         }
         | exception e => obs#onError(e)
       };
 
       pub onError = obs#onError;
     });
-    
   };
 };

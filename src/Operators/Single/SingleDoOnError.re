@@ -1,5 +1,5 @@
 
-let operator: (exn => unit) => SingleTypes.t('source, 'a) => SingleTypes.operator('downstream, 'a) = (onError, source) => {
+let operator = (onError, source) => {
   pub subscribeWith = (obs) => {
     let state = Cancellable.Linked.make();
 

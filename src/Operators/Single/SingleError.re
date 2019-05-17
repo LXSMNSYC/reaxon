@@ -1,5 +1,5 @@
 
-let operator: exn => SingleTypes.operator('downstream, 'a) = (err) => {
+let operator = (err) => {
   pub subscribeWith = (obs) => {
     let state = Cancellable.Boolean.make();
 

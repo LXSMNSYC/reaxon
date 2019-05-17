@@ -1,19 +1,15 @@
-
-let operator = (scheduler, source) => {
+let operator= (completable) => {
   pub subscribeWith = (obs) => {
     let state = Cancellable.Linked.make();
 
     obs#onSubscribe({
       pub isCancelled = state#isCancelled;
-      pub cancel = () => {
-        scheduler#run(state#cancel);
-        ();
-      };
+      pub cancel = state#cancel;
     });
 
-    source#subscribeWith({
+    completable#subscribeWith({
       pub onSubscribe = state#link;
-      pub onSuccess = obs#onSuccess;
+      pub onComplete = () => obs#onError(Exceptions.NoSuchElement);
       pub onError = obs#onError;
     });
   };

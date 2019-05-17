@@ -1,5 +1,5 @@
 
-let operator: SingleTypes.t('other, 'a) => SingleTypes.t('source, 'a) => SingleTypes.operator('downstream, 'a) = (other, source) => {
+let operator = (other, source) => {
   pub subscribeWith = (obs) => {
     let state = Cancellable.Composite.make();
 

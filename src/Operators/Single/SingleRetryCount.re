@@ -1,4 +1,4 @@
-let operator: int => SingleTypes.t('source, 'a) => SingleTypes.operator('downstream, 'a) = (count, source) => {
+let operator = (count, source) => {
   pub subscribeWith = (obs) => {
     let state = Cancellable.Linked.make();
 

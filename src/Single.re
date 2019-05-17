@@ -1,3 +1,5 @@
+
+
 let ambArray = SingleAmbArray.operator;
 let ambList = SingleAmbList.operator;
 let ambWith = SingleAmbWith.operator;
@@ -30,9 +32,11 @@ let flatMapMaybe = SingleFlatMapMaybe.operator;
 let flatMapObservable = SingleFlatMapObservable.operator;
 let flattenToObservable = SingleFlattenToObservable.operator;
 let filter = SingleFilter.operator;
+let fromCompletable = SingleFromCompletableSupplier.operator;
+let fromCompletableDefault = SingleFromCompletableDefault.operator;
+let fromMaybe = SingleFromMaybe.operator;
+let fromMaybeDefault = SingleFromMaybeDefault.operator;
 let fromObservable = SingleFromObservable.operator;
-let fromSingle = SingleFromCompletableSupplier.operator;
-let fromSingleDefault = SingleFromCompletableDefault.operator;
 let fromSupplier = SingleFromSupplier.operator;
 
 let hide = SingleHide.operator;
@@ -67,6 +71,8 @@ let takeUntil = SingleTakeUntil.operator;
 let timeout = SingleTimeout.operator;
 let timer = SingleTimer.operator;
 let toCompletable = CompletableFromSingle.operator;
+let toMaybe = MaybeFromSingle.operator;
+let toObservable = ObservableFromSingle.operator;
 
 let unsubscribeOn = SingleUnsubscribeOn.operator;
 

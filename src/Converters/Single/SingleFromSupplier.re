@@ -1,4 +1,4 @@
-let operator: (unit => 'a) => SingleTypes.operator('downstream, 'a) = (supplier) => {
+let operator = (supplier) => {
   pub subscribeWith = (obs) => {
     let state = Cancellable.Boolean.make();
 

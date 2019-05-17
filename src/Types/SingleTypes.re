@@ -33,9 +33,12 @@ type defaultObserver('a) = {
   onError: exn => unit,
 };
 
-type operator('observer, 'a) = t({
-    .
-    subscribeWith: observer('observer, 'a) => unit
-  }, 
-  'a,
-);
+type s('s, 'a) = {
+  ..
+  subscribeWith: defaultObserver('a) => unit
+} as 's;
+
+type operator('observer, 'a) = {
+  .
+  subscribeWith: observer('observer, 'a) => unit
+};
