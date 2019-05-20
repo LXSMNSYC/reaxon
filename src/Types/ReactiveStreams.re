@@ -4,24 +4,24 @@ type subscription('subscription) = {
   cancel: unit => unit,
 } as 'subscription;
 
-type subscriber('subscriber, 'subscription, 'a) = {
+type subscriber('subscriber, 'a) = {
   ..
-  onSubscribe: subscription('subscription) => unit,
+  onSubscribe: subscription({..}) => unit,
   onNext: 'a => unit,
   onError: exn => unit,
   onComplete: unit => unit,
 } as 'subscriber;
 
-type publisher('publisher, 'subscriber, 'subscription, 'a) = {
+type publisher('publisher, 'a) = {
   ..
-  subscribe: subscriber('subscriber, 'subscription, 'a) => unit,
+  subscribe: subscriber({..}, 'a) => unit,
 } as 'publisher;
 
-type processor('processor, 'subscriber, 'subscription, 'a) = {
+type processor('processor,'a) = {
   ..
-  onSubscribe: subscription('subscription) => unit,
+  onSubscribe: subscription({..}) => unit,
   onNext: 'a => unit,
   onError: exn => unit,
   onComplete: unit => unit,
-  subscribe:subscriber('subscriber, 'subscription, 'a) => unit,
+  subscribe: subscriber({..}, 'a) => unit,
 } as 'processor;
