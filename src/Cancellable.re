@@ -140,7 +140,15 @@ module Linked {
     /**
      * Checks if this Cancellable instance is cancelled.
      */
-    pub isCancelled = () => flag^;
+    pub isCancelled = () => flag^ || switch (next^) {
+      | Some(n) => if (n#isCancelled()) {
+        this#cancel();
+        true;
+      } else {
+        false;
+      }
+      | None => false
+    };
 
     /**
      * Unlinks this Cancellable to its linked Cancellable
@@ -163,15 +171,7 @@ module Linked {
       } else if (flag^) {
         c#cancel();
       } else {
-        let source = this;
-        next := Some({
-          pub isCancelled = c#isCancelled;
-
-          pub cancel = () => {
-            source#cancel();
-            c#cancel();
-          };
-        })
+        next := Some(c);
       }
     };
   }
