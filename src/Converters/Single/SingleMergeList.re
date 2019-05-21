@@ -1,4 +1,4 @@
-let operator: list(SingleTypes.s('source, 'a)) => SingleTypes.operator('downstream, 'a) = (sources) => {
+let operator = (sources) => {
   pub subscribeWith = (obs) => {
     let state = Cancellable.Composite.make();
 
@@ -9,27 +9,32 @@ let operator: list(SingleTypes.s('source, 'a)) => SingleTypes.operator('downstre
 
     let size = ref(List.length(sources));
 
-    sources |> List.iter(x => x#subscribeWith({
-      val finished = ref(false);
-      pub onSubscribe = state#add;
-
-      pub onSuccess = x => {
-        obs#onNext(x);
-        if (!finished^) {
-          finished := true;
-          size := size^ - 1;
-
-          if (size^ == 0) {
-            obs#onComplete();
-            state#cancel();
+    if (size^ > 0) {
+      sources |> List.iter(x => x#subscribeWith({
+        val finished = ref(false);
+        pub onSubscribe = state#add;
+  
+        pub onSuccess = x => {
+          obs#onNext(x);
+          if (!finished^) {
+            finished := true;
+            size := size^ - 1;
+  
+            if (size^ == 0) {
+              obs#onComplete();
+              state#cancel();
+            }
           }
-        }
-      };
-
-      pub onError = e => {
-        obs#onError(e);
-        state#cancel();
-      };
-    }));
+        };
+  
+        pub onError = e => {
+          obs#onError(e);
+          state#cancel();
+        };
+      }));
+    } else {
+      obs#onComplete();
+      state#cancel();
+    }
   };
 };
