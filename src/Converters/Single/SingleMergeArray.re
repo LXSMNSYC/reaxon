@@ -8,28 +8,32 @@ let operator = (sources) => {
     });
 
     let size = ref(Array.length(sources));
+    if (size^ > 0) {
+      sources |> Array.iter(x => x#subscribeWith({
+        val finished = ref(false);
 
-    sources |> Array.iter(x => x#subscribeWith({
-      val finished = ref(false);
+        pub onSubscribe = state#add;
+        pub onSuccess = x => {
+          obs#onNext(x);
+          if (!finished^) {
+            finished := true;
+            size := size^ - 1;
 
-      pub onSubscribe = state#add;
-      pub onSuccess = x => {
-        obs#onNext(x);
-        if (!finished^) {
-          finished := true;
-          size := size^ - 1;
-
-          if (size^ == 0) {
-            obs#onComplete();
-            state#cancel();
+            if (size^ == 0) {
+              obs#onComplete();
+              state#cancel();
+            }
           }
-        }
-      };
+        };
 
-      pub onError = e => {
-        obs#onError(e);
-        state#cancel();
-      };
-    }));
+        pub onError = e => {
+          obs#onError(e);
+          state#cancel();
+        };
+      }));
+    } else {
+      obs#onComplete();
+      state#cancel();
+    }
   };
 };
