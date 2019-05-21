@@ -1,5 +1,5 @@
 
-let operator: ObservableTypes.t('source, 'upstream, 'a) => SingleTypes.operator('downstream, bool) = (source) => {
+let operator: ObservableTypes.t('source, 'a) => SingleTypes.operator('downstream, bool) = (source) => {
   pub subscribeWith = (obs) => {
     let state = Cancellable.Linked.make();
 

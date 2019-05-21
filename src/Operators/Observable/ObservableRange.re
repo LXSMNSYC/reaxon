@@ -6,12 +6,15 @@ let operator: int => int => int => ObservableTypes.operator('downstream, int) = 
   pub subscribeWith = (obs) => {
     let state = Cancellable.Boolean.make();
 
+    obs#onSubscribe(state);
+
     this#produce(x => if (!state#isCancelled()) {
       obs#onNext(x);
     }, start);
 
     if (!state#isCancelled()) {
       obs#onComplete();
+      state#cancel();
     }
   };
 };

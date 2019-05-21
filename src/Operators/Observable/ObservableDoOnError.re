@@ -1,5 +1,5 @@
 
-let operator: (exn => unit) => ObservableTypes.t('source, 'upstream, 'a) => ObservableTypes.operator('downstream, 'a) = (onError, source) => {
+let operator: (exn => unit) => ObservableTypes.s('source, 'a) => ObservableTypes.operator('downstream, 'a) = (onError, source) => {
   pub subscribeWith = (obs) => {
     let state = Cancellable.Linked.make();
 

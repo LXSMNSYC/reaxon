@@ -1,4 +1,4 @@
-let operator: ObservableTypes.t('other, 'ostream, 'a) => ObservableTypes.t('source, 'upstream, 'a) => ObservableTypes.operator('downstream, 'a) = (other, source) => {
+let operator: ObservableTypes.s('other, 'a) => ObservableTypes.s('source, 'a) => ObservableTypes.operator('downstream, 'a) = (other, source) => {
   pub subscribeWith = (obs) => {
     let state = Cancellable.Composite.make();
 
