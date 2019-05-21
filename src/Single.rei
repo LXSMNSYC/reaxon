@@ -67,7 +67,8 @@ let delay: int => Scheduler.t => SingleTypes.s('source, 'a) => SingleTypes.opera
 let delaySubscription: int => Scheduler.t => SingleTypes.s('source, 'a) => SingleTypes.operator('downstream, 'a)
 /**
  * Delays the actual subscription to the current
- * Single until the given time delay elapsed. 
+ * Single until the other Single has emitted a
+ * success item.
  */
 let delayUntil: SingleTypes.s('other, 'a) => SingleTypes.s('source, 'a) => SingleTypes.operator('downstream, 'a);
 /**
