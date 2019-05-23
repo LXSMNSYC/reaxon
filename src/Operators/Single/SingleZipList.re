@@ -1,23 +1,21 @@
 
-let operator = (singleList, combiner) => {
+let operator = (sources, combiner) => {
   pub subscribeWith = (obs) => {
     let state = Cancellable.Composite.make();
 
-    let pending = ref(singleList |> List.length);
-    let container = [||];
+    let pending = ref(sources |> List.length);
+    let container = Array.make(pending^, None);
 
     obs#onSubscribe({
       pub isCancelled = state#isCancelled;
       pub cancel = state#cancel;
     });
 
-    let index = ref(0);
-
-    singleList |> List.iter(item => item#subscribeWith({
+    sources |> List.iteri((index, item) => item#subscribeWith({
       pub onSubscribe = state#add;
 
       pub onSuccess = (x) => {
-        Array.set(container, index^, x);
+        Array.set(container, index, x);
         pending := pending^ - 1;
 
         if (pending^ == 0) {
@@ -34,5 +32,6 @@ let operator = (singleList, combiner) => {
         state#cancel();
       }
     }));
+
   };
 };
