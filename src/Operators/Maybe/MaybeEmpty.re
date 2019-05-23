@@ -3,10 +3,7 @@ let instance = {
   pub subscribeWith = (obs) => {
     let state = Cancellable.Boolean.make();
 
-    obs#onSubscribe({
-      pub isCancelled = state#isCancelled;
-      pub cancel = state#cancel;
-    });
+    obs#onSubscribe(state);
 
     if (!state#isCancelled()) {
       obs#onComplete();

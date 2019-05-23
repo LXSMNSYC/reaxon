@@ -6,10 +6,7 @@ let operator = (sources, combiner) => {
     let pending = ref(sources |> Array.length);
     let container = Array.make(pending^, None);
 
-    obs#onSubscribe({
-      pub isCancelled = state#isCancelled;
-      pub cancel = state#cancel;
-    });
+    obs#onSubscribe(Utils.c2sub(state));
 
     sources |> Array.iteri((index, item) => item#subscribeWith({
       pub onSubscribe = state#add;

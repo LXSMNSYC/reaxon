@@ -2,10 +2,7 @@ let operator = (supplier, source) => {
   pub subscribeWith = (obs) => {
     let state = Cancellable.Linked.make();
 
-    obs#onSubscribe({
-      pub isCancelled = state#isCancelled;
-      pub cancel = state#cancel;
-    });
+    obs#onSubscribe(Utils.c2sub(state));
 
     let retries = ref(-1);
 
@@ -14,7 +11,6 @@ let operator = (supplier, source) => {
       state#unlink();
       source#subscribeWith({
         pub onSubscribe = state#link;
-
         pub onSuccess = obs#onSuccess;
         pub onComplete = obs#onComplete;
 
