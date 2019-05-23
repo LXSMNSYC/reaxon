@@ -2,10 +2,7 @@ let operator: int => ObservableTypes.t('source, 'a) => ObservableTypes.operator(
   pub subscribeWith = (obs) => {
     let state = Cancellable.Linked.make();
 
-    obs#onSubscribe({
-      pub isCancelled = state#isCancelled;
-      pub cancel = state#cancel;
-    });
+    obs#onSubscribe(Utils.c2sub(state));
 
     let size = ref(count);
     let list = ref([]);

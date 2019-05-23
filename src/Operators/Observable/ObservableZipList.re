@@ -7,11 +7,7 @@ let operator: list(ObservableTypes.s('source, 'a)) => (array('a) => 'b) => Obser
     let pending = ref(length);
     let container = ref(Array.make(length, None));
 
-    obs#onSubscribe({
-      pub isCancelled = state#isCancelled;
-      pub cancel = state#cancel;
-    });
-
+    obs#onSubscribe(Utils.c2sub(state));
 
     sources |> List.iteri((index, item) => item#subscribeWith({
       val emitted = ref(false);
@@ -20,6 +16,11 @@ let operator: list(ObservableTypes.s('source, 'a)) => (array('a) => 'b) => Obser
 
       pub onComplete = () => {
         obs#onComplete();
+        state#cancel();
+      };
+
+      pub onError = (x) => {
+        obs#onError(x);
         state#cancel();
       };
 
@@ -34,7 +35,7 @@ let operator: list(ObservableTypes.s('source, 'a)) => (array('a) => 'b) => Obser
         if (pending^ == 0) {
           switch (combiner(Utils.fromOptionArray(container^))) {
             | item => obs#onNext(item)
-            | exception e => obs#onError(e)
+            | exception e => this#onError(e)
           };
 
           container := Array.make(length, None);
@@ -42,11 +43,6 @@ let operator: list(ObservableTypes.s('source, 'a)) => (array('a) => 'b) => Obser
           emitted := false;
         }
       };
-
-      pub onError = (x) => {
-        obs#onError(x);
-        state#cancel();
-      }
     }));
 
   };

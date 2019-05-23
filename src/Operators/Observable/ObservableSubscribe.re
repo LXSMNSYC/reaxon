@@ -8,8 +8,5 @@ let operator: ObservableTypes.recordObserver('a) => ObservableTypes.s('source, '
     pub onError = obs.onError;
     pub onNext = obs.onNext;
   });
-  {
-    pub isCancelled = state#isCancelled;
-    pub cancel = state#cancel;
-  }
+  Utils.c2sub(state);
 };

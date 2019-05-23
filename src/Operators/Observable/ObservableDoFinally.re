@@ -3,10 +3,7 @@ let operator: (unit => unit) => ObservableTypes.s('source, 'a) => ObservableType
   pub subscribeWith = (obs) => {
     let state = Cancellable.Linked.make();
 
-    obs#onSubscribe({
-      pub isCancelled = state#isCancelled;
-      pub cancel = state#cancel;
-    });
+    obs#onSubscribe(Utils.c2sub(state));
 
     source#subscribeWith({
       pub onSubscribe = (sub) => state#link({

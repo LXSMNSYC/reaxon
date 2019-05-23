@@ -3,10 +3,7 @@ let operator: int => Scheduler.t => ObservableTypes.s('source, 'a) => Observable
   pub subscribeWith = (obs) => {
     let state = Cancellable.Composite.make();
 
-    obs#onSubscribe({
-      pub isCancelled = state#isCancelled;
-      pub cancel = state#cancel;
-    });
+    obs#onSubscribe(Utils.c2sub(state));
 
     source#subscribeWith({
       pub onSubscribe = state#add;

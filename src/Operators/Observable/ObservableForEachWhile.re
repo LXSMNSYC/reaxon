@@ -10,8 +10,5 @@ let operator: ('a => bool) => ObservableTypes.s('source, 'a) => ObservableTypes.
       state#cancel();
     };
   });
-  {
-    pub isCancelled = state#isCancelled;
-    pub cancel = state#cancel;
-  }
+  Utils.c2sub(state);
 };

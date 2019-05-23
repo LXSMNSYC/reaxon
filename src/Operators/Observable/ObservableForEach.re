@@ -8,8 +8,5 @@ let operator: ('a => unit) => ObservableTypes.s('source, 'a) => ObservableTypes.
     pub onError = raise;
     pub onNext = onNext;
   });
-  {
-    pub isCancelled = state#isCancelled;
-    pub cancel = state#cancel;
-  }
+  Utils.c2sub(state);
 };
