@@ -20,11 +20,11 @@ let operator = (sources, combiner) => {
       };
 
       pub onSuccess = (x) => {
-        Array.set(container, index, x);
+        Array.set(container, index, Some(x));
         pending := pending^ - 1;
 
         if (pending^ == 0) {
-          switch (combiner(container)) {
+          switch (combiner(Utils.fromOptionArray(container))) {
             | item => obs#onSuccess(item)
             | exception e => obs#onError(e)
           };
