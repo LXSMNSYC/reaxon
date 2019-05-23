@@ -1,5 +1,5 @@
 
-let operator: array(ObservableTypes.s('source, 'a)) => (array(option('a)) => 'b) => ObservableTypes.operator('downstream, 'b) = (sources, combiner) => {
+let operator: array(ObservableTypes.s('source, 'a)) => (array('a) => 'b) => ObservableTypes.operator('downstream, 'b) = (sources, combiner) => {
   pub subscribeWith = (obs) => {
     let state = Cancellable.Composite.make();
 
@@ -32,7 +32,7 @@ let operator: array(ObservableTypes.s('source, 'a)) => (array(option('a)) => 'b)
         }
 
         if (pending^ == 0) {
-          switch (combiner(container^)) {
+          switch (combiner(Utils.fromOptionArray(container^))) {
             | item => obs#onNext(item)
             | exception e => obs#onError(e)
           };
