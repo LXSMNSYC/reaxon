@@ -2,10 +2,7 @@ let operator = (item, maybe) => {
   pub subscribeWith = (obs) => {
     let state = Cancellable.Linked.make();
 
-    obs#onSubscribe({
-      pub isCancelled = state#isCancelled;
-      pub cancel = state#cancel;
-    });
+    obs#onSubscribe(Utils.c2sub(state));
 
     maybe#subscribeWith({
       pub onSubscribe = state#link;

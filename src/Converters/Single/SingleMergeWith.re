@@ -2,13 +2,20 @@ let operator = (other, source) => {
   pub subscribeWith = (obs) => {
     let state = Cancellable.Composite.make();
 
-    obs#onSubscribe({
-      pub isCancelled = state#isCancelled;
-      pub cancel = state#cancel;
-    });
+    obs#onSubscribe(Utils.c2sub(state));
 
     let left = ref(false);
     let right = ref(false);
+
+    let completion = () => if (left^ && right^) {
+      obs#onComplete();
+      state#cancel();
+    };
+
+    let error = e => {
+      obs#onError(e);
+      state#cancel();
+    };
 
     source#subscribeWith({
       pub onSubscribe = state#add;
@@ -16,16 +23,10 @@ let operator = (other, source) => {
       pub onSuccess = (x) => {
         left := true;
         obs#onNext(x);
-        if (left^ && right^) {
-          obs#onComplete();
-          state#cancel();
-        }
+        completion();
       };
 
-      pub onError = e => {
-        obs#onError(e);
-        state#cancel();
-      };
+      pub onError = error;
     });
 
     other#subscribeWith({
@@ -34,16 +35,10 @@ let operator = (other, source) => {
       pub onSuccess = (x) => {
         right := true;
         obs#onNext(x);
-        if (left^ && right^) {
-          obs#onComplete();
-          state#cancel();
-        }
+        completion();
       };
 
-      pub onError = e => {
-        obs#onError(e);
-        state#cancel();
-      };
+      pub onError = error;
     });
   };
 };
