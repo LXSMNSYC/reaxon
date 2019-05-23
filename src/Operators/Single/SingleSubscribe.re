@@ -7,8 +7,6 @@ let operator = (observer: SingleTypes.recordObserver('a), source) => {
     pub onSuccess = observer.onSuccess;
     pub onError = observer.onError;
   });
-  {
-    pub isCancelled = state#isCancelled;
-    pub cancel = state#cancel;
-  }
+  
+  Utils.c2sub(state);
 };
