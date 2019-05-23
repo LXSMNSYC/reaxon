@@ -3,10 +3,8 @@ let operator = (sources)=> {
   pub subscribeWith = (obs) => {
     let state = Cancellable.Linked.make();
 
-    obs#onSubscribe({
-      pub isCancelled = state#isCancelled;
-      pub cancel = state#cancel;
-    });
+    obs#onSubscribe(Utils.c2sub(state));
+
     if (!state#isCancelled()) {
       let index = ref(0);
       let max = sources |> List.length;
