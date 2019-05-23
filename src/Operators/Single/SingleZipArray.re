@@ -1,17 +1,17 @@
 
-let operator = (singleArray, combiner) => {
+let operator = (sources, combiner) => {
   pub subscribeWith = (obs) => {
     let state = Cancellable.Composite.make();
 
-    let pending = ref(singleArray |> Array.length);
-    let container = [||];
+    let pending = ref(sources |> Array.length);
+    let container = Array.make(pending^, None);
 
     obs#onSubscribe({
       pub isCancelled = state#isCancelled;
       pub cancel = state#cancel;
     });
 
-    singleArray |> Array.iteri((index, item) => item#subscribeWith({
+    sources |> Array.iteri((index, item) => item#subscribeWith({
       pub onSubscribe = state#add;
 
       pub onSuccess = (x) => {
