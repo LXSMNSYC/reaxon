@@ -2,10 +2,7 @@ let operator: ('b => 'a => 'b) => option('b) => ObservableTypes.t('source, 'a) =
   pub subscribeWith = (obs) => {
     let state = Cancellable.Linked.make();
 
-    obs#onSubscribe({
-      pub isCancelled = state#isCancelled;
-      pub cancel = state#cancel;
-    });
+    obs#onSubscribe(Utils.c2sub(state));
 
     let current = ref(start);
 

@@ -2,10 +2,7 @@ let operator: MaybeTypes.t('source, 'a) => ObservableTypes.operator('downstream,
   pub subscribeWith = (obs) => {
     let state = Cancellable.Linked.make();
 
-    obs#onSubscribe({
-      pub isCancelled = state#isCancelled;
-      pub cancel = state#cancel;
-    });
+    obs#onSubscribe(Utils.c2sub(state));
 
     maybe#subscribeWith({
       pub onSubscribe = state#link;
@@ -16,7 +13,6 @@ let operator: MaybeTypes.t('source, 'a) => ObservableTypes.operator('downstream,
       };
 
       pub onComplete = obs#onComplete;
-
       pub onError = obs#onError;
     });
   };
