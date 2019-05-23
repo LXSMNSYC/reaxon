@@ -2,10 +2,7 @@ let operator = (onSubscribe, source) => {
   pub subscribeWith = (obs) => {
     let state = Cancellable.Linked.make();
 
-    obs#onSubscribe({
-      pub isCancelled = state#isCancelled;
-      pub cancel = state#cancel;
-    });
+    obs#onSubscribe(Utils.c2sub(state));
 
     source#subscribeWith({
       pub onSubscribe = (sub) => {
@@ -14,7 +11,6 @@ let operator = (onSubscribe, source) => {
       };
 
       pub onComplete = obs#onComplete;
-
       pub onError = obs#onError;
     });
   };

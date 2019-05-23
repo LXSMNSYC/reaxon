@@ -7,8 +7,5 @@ let operator = (obs: CompletableTypes.recordObserver, source) => {
     pub onComplete = obs.onComplete;
     pub onError = obs.onError;
   });
-  {
-    pub isCancelled = state#isCancelled;
-    pub cancel = state#cancel;
-  }
+  Utils.c2sub(state);
 };

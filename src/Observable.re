@@ -10,4 +10,4 @@ let filter = ObservableFilter.operator;
 let map = ObservableMap.operator;
 let bufferCount = ObservableBufferCount.operator;
 let delay = ObservableDelay.operator;
-let just = ObservableJust.operator;
+let just = ObservableJust.operator;    e#onNext(2);

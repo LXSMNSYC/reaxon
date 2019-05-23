@@ -2,10 +2,7 @@ let operator = (sources) => {
   pub subscribeWith = (obs) => {
     let state = Cancellable.Composite.make();
 
-    obs#onSubscribe({
-      pub isCancelled = state#isCancelled;
-      pub cancel = state#cancel;
-    });
+    obs#onSubscribe(Utils.c2sub(state));
 
     let size = ref(Array.length(sources));
 

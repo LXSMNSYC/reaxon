@@ -8,8 +8,5 @@ let operator = (onSuccess, onComplete, onError, source) => {
     pub onSuccess = onSuccess;
     pub onError = onError;
   });
-  {
-    pub isCancelled = state#isCancelled;
-    pub cancel = state#cancel;
-  }
+  Utils.c2sub(state);
 };
