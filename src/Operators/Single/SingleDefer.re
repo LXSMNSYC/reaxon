@@ -1,12 +1,12 @@
 
 let operator = (supplier) => {
   pub subscribeWith = obs => switch (supplier()) {
-    | source => source#subscribeWith({
+    | source => Utils.makeCSO(source, {
       pub onSubscribe = obs#onSubscribe;
       pub onSuccess = obs#onSuccess;
       pub onError = obs#onError;
     })
-    | exception e => SingleError.operator(e)#subscribeWith({
+    | exception e => Utils.makeCSO(SingleError.operator(e), {
       pub onSubscribe = obs#onSubscribe;
       pub onSuccess = obs#onSuccess;
       pub onError = obs#onError;

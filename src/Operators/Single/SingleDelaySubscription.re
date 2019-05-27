@@ -1,17 +1,49 @@
 
 let operator = (time, scheduler, source) => {
-  pub subscribeWith = (obs) => {
-    let state = Cancellable.Linked.make();
+  pub subscribeWith = (observer) => {
+    let innerState = ref(None);
+    let cancelled = ref(false);
+    let withSubscription = ref(false);
 
-    obs#onSubscribe(Utils.c2sub(state));
+    let subscription = {
+      pub cancel = () => 
+        if (!cancelled^) {
+          switch (innerState^) {
+            | Some(sub) => sub#cancel()
+            | None => () 
+          };
+          cancelled := true;
+        }
+    };
 
-    state#link(scheduler#timeout(() => {
-      state#unlink();
-      source#subscribeWith({
-        pub onSubscribe = state#link;
-        pub onSuccess = obs#onSuccess;
-        pub onError = obs#onError;
-      });
-    }, time));
+    observer#onSubscribe(subscription);
+
+    scheduler#timeout(() =>
+      if(!cancelled^) {
+        source#subscribeWith({
+          pub onSubscribe = (state) =>
+            if (withSubscription^) {
+              state#cancel();
+            } else {
+              innerState := Some(state);
+              withSubscription := true;
+            };
+
+          pub onSuccess = (x) => 
+            if (withSubscription^ && !cancelled^) {
+              observer#onSuccess(x);
+              subscription#cancel();
+            };
+      
+          pub onError = (e) => 
+            if (withSubscription^ && !cancelled^) {
+              observer#onError(e);
+              subscription#cancel();
+            } else {
+              raise(e);
+            };
+        });
+      }
+    , time);
   };
 };
