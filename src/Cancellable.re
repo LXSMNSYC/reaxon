@@ -51,10 +51,6 @@ module Composite {
    */
   let make : unit => t({..}) = () => {
     /**
-     * Holds all event listeners
-     */
-    val listeners = ref([]);
-    /**
      * Holds all Cancellable instances
      */
     val container = ref([]);
@@ -69,7 +65,6 @@ module Composite {
     pub cancel = () => {
       if (!flag^) {
         container^ |> List.iter(x => x#cancel())
-        listeners^ |> List.iter(x => x());
         flag := true;
       }
     };

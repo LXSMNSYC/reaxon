@@ -213,7 +213,7 @@ let lift: (CompletableTypes.observer('downstream) => CompletableTypes.observer('
 let make: (CompletableTypes.emitter({
   .
   isCancelled: unit => bool,
-  setCancellable: Cancellable.t({..}) => unit,
+  addCleanup: (unit => unit) => unit,
   onComplete: unit => unit,
   onError: exn => unit,
 }) => unit) => CompletableTypes.operator('downstream);

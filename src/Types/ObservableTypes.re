@@ -15,7 +15,7 @@ type t('t, 'a) = {
 
 type emitter('emitter, 'a) = {
   ..
-  setCancellable: Cancellable.t({..}) => unit,
+  addCleanup: (unit => unit) => unit,
   isCancelled: unit => bool,
   onError: exn => unit,
   onNext: 'a => unit,

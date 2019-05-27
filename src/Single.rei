@@ -297,7 +297,7 @@ let lift: (SingleTypes.observer('downstream, 'a) => SingleTypes.observer('result
 let make: (SingleTypes.emitter({
   .
   isCancelled: unit => bool,
-  setCancellable: Cancellable.t({..}) => unit,
+  addCleanup: (unit => unit) => unit,
   onSuccess: 'a => unit,
   onError: exn => unit,
 }, 'a) => unit) => SingleTypes.operator('downstream, 'a);

@@ -293,7 +293,7 @@ let lift: (MaybeTypes.observer('downstream, 'a) => MaybeTypes.observer('result, 
 let make: (MaybeTypes.emitter({
   .
   isCancelled: unit => bool,
-  setCancellable: Cancellable.t({..}) => unit,
+  addCleanup: (unit => unit) => unit,
   onComplete: unit => unit,
   onSuccess: 'a => unit,
   onError: exn => unit,

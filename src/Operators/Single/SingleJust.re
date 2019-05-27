@@ -1,13 +1,16 @@
-
 let operator = (value) => {
   pub subscribeWith = (obs) => {
-    let state = Cancellable.Boolean.make();
+    let cancelled = ref(false);
 
-    obs#onSubscribe(state);
+    obs#onSubscribe({
+      pub cancel = () => {
+        cancelled := true;
+      };
+    });
 
-    if (!state#isCancelled()) {
+    if (!cancelled^) {
       obs#onSuccess(value);
-      state#cancel();
+      cancelled := true;
     }
   };
 };

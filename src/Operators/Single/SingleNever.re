@@ -1,5 +1,4 @@
 let subscription = {
-  pub isCancelled = () => false;
   pub cancel = () => ();
 };
 

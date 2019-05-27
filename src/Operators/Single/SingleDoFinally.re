@@ -1,30 +1,24 @@
-
 let operator = (onFinally, source) => {
-  pub subscribeWith = (obs) => {
-    let state = Cancellable.Linked.make();
-
-    obs#onSubscribe(Utils.c2sub(state));
-
-    source#subscribeWith({
-      pub onSubscribe = (sub) => {
-        state#link({
-          pub isCancelled = sub#isCancelled;
-          pub cancel = () => {
-            sub#cancel();
+  pub subscribeWith = (obs) => 
+    Utils.makeCSO(source, {
+      pub onSubscribe = (state) => obs#onSubscribe({
+        val cancelled = ref(false);
+        pub cancel = () => 
+          if (!cancelled^) {
+            state#cancel();
             onFinally();
-          }
-        });
-      };
-  
+            cancelled := true;
+          };
+      });
+
       pub onSuccess = (x) => {
         obs#onSuccess(x);
         onFinally();
       };
-  
+
       pub onError  = (x) => {
         obs#onError(x);
         onFinally();
       };
     });
-  };
 };

@@ -1,12 +1,8 @@
 
 let operator = (scheduler, source) => {
-  pub subscribeWith = (obs) => {
-    let state = Cancellable.Linked.make();
-
-    obs#onSubscribe(Utils.c2sub(state));
-
-    source#subscribeWith({
-      pub onSubscribe = state#link;
+  pub subscribeWith = (obs) => 
+    Utils.makeCSO(scheduler, {
+      pub onSubscribe = obs#onSubscribe;
 
       pub onSuccess = (x) => state#link(scheduler#run(() => {
         obs#onSuccess(x);
@@ -16,5 +12,4 @@ let operator = (scheduler, source) => {
         obs#onError(x);
       }));
     })
-  };
 };
