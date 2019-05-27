@@ -1,15 +1,54 @@
 
 let operator = (scheduler, source) => {
-  pub subscribeWith = (obs) => 
-    Utils.makeCSO(scheduler, {
-      pub onSubscribe = obs#onSubscribe;
+  pub subscribeWith = (observer) => {
 
-      pub onSuccess = (x) => state#link(scheduler#run(() => {
-        obs#onSuccess(x);
-      }));
+    let innerState = ref(None);
+    let cancelled = ref(false);
+    let withSubscription = ref(false);
 
-      pub onError = (x) => state#link(scheduler#run(() => {
-        obs#onError(x);
-      }));
-    })
+    let subscription = {
+      pub cancel = () => 
+        if (!cancelled^) {
+          switch (innerState^) {
+            | Some(sub) => sub#cancel()
+            | None => () 
+          };
+          cancelled := true;
+        }
+    };
+
+    observer#onSubscribe(subscription);
+
+    source#subscribeWith({
+      pub onSubscribe = (state) => 
+        if (withSubscription^) {
+          state#cancel();
+        } else {
+          innerState := Some(state);
+          withSubscription := true;
+        };
+
+      pub onSuccess = (x) => 
+        if (withSubscription^ && !cancelled^) {
+          scheduler#run(() => 
+            if (withSubscription^ && !cancelled^) {
+              observer#onSuccess(x);
+              subscription#cancel();
+            }
+          );
+        };
+
+      pub onError = (e) => 
+        if (withSubscription^ && !cancelled^) {
+          scheduler#run(() => 
+            if (withSubscription^ && !cancelled^) {
+              observer#onError(e);
+              subscription#cancel();
+            }
+          );
+        } else {
+          raise(e);
+        };
+    });
+  }
 };
