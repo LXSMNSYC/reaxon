@@ -14,6 +14,5 @@ let fromOptionArray = opt => {
 };
 
 let c2sub = c => {
-  pub isCancelled = c#isCancelled;
   pub cancel = c#cancel;
 };
