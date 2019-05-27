@@ -1,12 +1,48 @@
 
-let operator: ObservableTypes.recordObserver('a) => ObservableTypes.s('source, 'a) => ObservableTypes.subscription = (obs, source) => {
-  let state = Cancellable.Linked.make();
+let operator: ObservableTypes.recordObserver('a) => ObservableTypes.s('source, 'a) => Subscription.s = (obs, source) => {
+  let innerState = ref(None);
+  let cancelled = ref(false);
+  let withSubscription = ref(false);
+
+  let subscription = {
+    pub cancel = () => 
+      if (!cancelled^) {
+        switch (innerState^) {
+          | Some(sub) => sub#cancel()
+          | None => () 
+        };
+        cancelled := true;
+      }
+  };
 
   source#subscribeWith({
-    pub onSubscribe = state#link;
-    pub onComplete = obs.onComplete;
-    pub onError = obs.onError;
-    pub onNext = obs.onNext;
+    pub onSubscribe = (state) => 
+      if (withSubscription^) {
+        state#cancel();
+      } else {
+        innerState := Some(state);
+        withSubscription := true;
+      };
+
+    pub onComplete = () => 
+      if (!cancelled^) {
+        obs.onComplete()
+        subscription#cancel();
+      };
+
+    pub onError = (e) => 
+      if (!cancelled^) {
+        obs.onError(e)
+        subscription#cancel();
+      } else {
+        raise(e);
+      };
+
+    pub onNext = (x) => 
+      if (!cancelled^) {
+        obs.onNext(x)
+      };
   });
-  Utils.c2sub(state);
+
+  subscription;
 };

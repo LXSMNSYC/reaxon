@@ -1,14 +1,45 @@
+let operator: ('a => bool) => ObservableTypes.s('source, 'a) => Subscription.s = (onNext, source) => {
+  let innerState = ref(None);
+  let cancelled = ref(false);
+  let withSubscription = ref(false);
 
-let operator: ('a => bool) => ObservableTypes.s('source, 'a) => ObservableTypes.subscription = (onNext, source) => {
-  let state = Cancellable.Linked.make();
+  let subscription = {
+    pub cancel = () => 
+      if (!cancelled^) {
+        switch (innerState^) {
+          | Some(sub) => sub#cancel()
+          | None => () 
+        };
+        cancelled := true;
+      }
+  };
 
   source#subscribeWith({
-    pub onSubscribe = state#link;
-    pub onComplete = () => ();
-    pub onError = raise;
-    pub onNext = x => if (!onNext(x)) {
-      state#cancel();
-    };
+    pub onSubscribe = (state) => 
+      if (withSubscription^) {
+        state#cancel();
+      } else {
+        innerState := Some(state);
+        withSubscription := true;
+      };
+
+    pub onComplete = () => 
+      if (!cancelled^) {
+        subscription#cancel();
+      };
+
+    pub onError = (e) => 
+      if (!cancelled^) {
+        subscription#cancel();
+      } else {
+        raise(e);
+      };
+
+    pub onNext = (x) => 
+      if (!cancelled^ && !onNext(x)) {
+        subscription#cancel();
+      };
   });
-  Utils.c2sub(state);
+
+  subscription;
 };
