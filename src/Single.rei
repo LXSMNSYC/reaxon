@@ -121,7 +121,7 @@ let doOnEvent: (option('a) => option(exn) => unit) => SingleTypes.s('source, 'a)
  * sent through the onSubscribe for each Single.observer
  * that subscribes to the current Single. 
  */
-let doOnSubscribe: (SingleTypes.subscription => unit) => SingleTypes.s('source, 'a) => SingleTypes.operator('downstream, 'a);
+let doOnSubscribe: (Subscription.t('subscription) => unit) => SingleTypes.s('source, 'a) => SingleTypes.operator('downstream, 'a);
 /**
  * Calls the shared consumer with the success value
  * sent via onSuccess for each Single.observer that
@@ -462,7 +462,7 @@ let retryWhile: (int => exn => bool) => SingleTypes.s('source, 'a) => SingleType
  * handle the item it emits or any error notification
  * it issues. 
  */
-let subscribe: SingleTypes.recordObserver('a) => SingleTypes.s('source, 'a) => SingleTypes.subscription;
+let subscribe: SingleTypes.recordObserver('a) => SingleTypes.s('source, 'a) => Subscription.s;
 /**
  * Asynchronously subscribes subscribers to this Single
  * on the specified Scheduler.

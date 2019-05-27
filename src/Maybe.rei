@@ -142,7 +142,7 @@ let doOnEvent: (option('a) => option(exn) => unit) => MaybeTypes.s('source, 'a) 
  * sent through the onSubscribe for each MaybeObserver
  * that subscribes to the current Maybe. 
  */
-let doOnSubscribe: (MaybeTypes.subscription => unit) => MaybeTypes.s('source, 'a) => MaybeTypes.operator('downstream, 'a);
+let doOnSubscribe: (Subscription.t('subscription) => unit) => MaybeTypes.s('source, 'a) => MaybeTypes.operator('downstream, 'a);
 /**
  * Calls the shared consumer with the success
  * value sent via onSuccess for each MaybeObserver
@@ -353,7 +353,7 @@ let retry: MaybeTypes.s('source, 'a) => MaybeTypes.operator('downstream, 'a);
 let retryCount: int => MaybeTypes.s('source, 'a) => MaybeTypes.operator('downstream, 'a);
 let retryUntil: (int => bool) => MaybeTypes.s('source, 'a) => MaybeTypes.operator('downstream, 'a) ;
 let retryWhile: (int => exn => bool) => MaybeTypes.s('source, 'a) => MaybeTypes.operator('downstream, 'a);
-let subscribe: ('a => unit) => (unit => unit) => (exn => unit) => MaybeTypes.s('source, 'a) => MaybeTypes.subscription;
+let subscribe: ('a => unit) => (unit => unit) => (exn => unit) => MaybeTypes.s('source, 'a) => Subscription.s;
 let subscribeOn: Scheduler.t => MaybeTypes.s('source, 'a) => MaybeTypes.operator('downstream, 'a);
 let switchIfEmpty: MaybeTypes.s('other, 'a) => MaybeTypes.s('source, 'a) => MaybeTypes.operator('downstream, 'a);
 let switchIfEmptySingle: SingleTypes.s('other, 'a) => MaybeTypes.s('source, 'a) => SingleTypes.operator('downstream, 'a);

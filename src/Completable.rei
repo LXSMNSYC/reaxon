@@ -142,7 +142,7 @@ let doOnEvent: (option(exn) => unit) => CompletableTypes.s('source) => Completab
  * onSubscribe callback with the Cancellable that child
  * subscribers receive on subscription. 
  */
-let doOnSubscribe: (CompletableTypes.subscription => unit) => CompletableTypes.s('source) => CompletableTypes.operator('downstream);
+let doOnSubscribe: (Subscription.t('subscription) => unit) => CompletableTypes.s('source) => CompletableTypes.operator('downstream);
 /**
  * Returns a Completable instance that calls the given
  * onTerminate callback just before this Completable
@@ -325,7 +325,7 @@ let retryWhile: (int => exn => bool) => CompletableTypes.s('source) => Completab
  * Cancellable which can be used to cancel the
  * subscription. 
  */
-let subscribe: CompletableTypes.recordObserver => CompletableTypes.s('source) => CompletableTypes.subscription;
+let subscribe: CompletableTypes.recordObserver => CompletableTypes.s('source) => Subscription.s;
 /**
  * Returns a Completable which subscribes the child
  * subscriber on the specified scheduler, making sure

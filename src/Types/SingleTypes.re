@@ -1,8 +1,6 @@
-type subscription = Cancellable.Boolean.i;
-
 type observer('observer, 'a) = {
   ..
-  onSubscribe: subscription => unit,
+  onSubscribe: Subscription.t({..}) => unit,
   onSuccess: 'a => unit,
   onError: exn => unit,
 } as 'observer;
@@ -26,16 +24,16 @@ type recordObserver('a) = {
   onError: exn => unit,
 };
 
-type defaultObserver('a) = {
+type defaultObserver('subscription, 'a) = {
   .
-  onSubscribe: subscription => unit,
+  onSubscribe: Subscription.t('subscription) => unit,
   onSuccess: 'a => unit,
   onError: exn => unit,
 };
 
 type s('s, 'a) = {
   ..
-  subscribeWith: defaultObserver('a) => unit
+  subscribeWith: defaultObserver({..}, 'a) => unit
 } as 's;
 
 type operator('observer, 'a) = {
