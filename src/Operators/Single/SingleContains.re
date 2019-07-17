@@ -1,5 +1,5 @@
 let operator = (item: 'a, comparer: ('a, 'a) => bool, source: Types.Single.t('a)): Types.Single.t(bool) => {
-  subscribeWith: (obs: Types.Single.Observer.t('a)) => {
+  subscribeWith: (obs: Types.Single.Observer.t(bool)) => {
     let subscribed = ref(false);
     let finished = ref(false);
     let subRef: ref(option(Types.Subscription.t)) = ref(None);
