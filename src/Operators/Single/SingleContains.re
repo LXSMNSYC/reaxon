@@ -1,19 +1,50 @@
+let operator = (item: 'a, comparer: ('a, 'a) => bool, source: Types.Single.t('a)): Types.Single.t(bool) => {
+  subscribeWith: (obs: Types.Single.Observer.t('a)) => {
+    let subscribed = ref(false);
+    let finished = ref(false);
+    let subRef: ref(option(Types.Subscription.t)) = ref(None);
 
-let operator = (item, comparer, source) => {
-  pub subscribeWith = (obs) => {
-    let state = Cancellable.Linked.make();
+    let subscription: Types.Subscription.t = {
+      cancel: () => {
+        if (subscribed^ && !finished^) {
+          switch (subRef^) {
+            | Some(c) => c.cancel()
+            | None => ()
+          };
+        }
+        finished := true;
+      }
+    };
 
-    obs#onSubscribe(Utils.c2sub(state));
+    let observer: Types.Single.Observer.t('a) = {
+      onSubscribe: (sub: Types.Subscription.t) => {
+        if (finished^ || subscribed^) {
+          sub.cancel();
+        } else {
+          subscribed := true;
+          subRef := Some(sub);
+        }
+      },
 
-    source#subscribeWith({
-      pub onSubscribe = state#link;
+      onSuccess: (x: 'a) => {
+        if (subscribed^ && !finished^) {
+          switch (comparer(x, item)) {
+            | result => obs.onSuccess(result)
+            | exception e => obs.onError(e);
+          };
+          subscription.cancel();
+        }
+      },
 
-      pub onSuccess = (x) => switch (comparer(x, item)) {
-        | result => obs#onSuccess(result)
-        | exception e => obs#onError(e);
-      };
+      onError: (x: exn) => {
+        if (subscribed^ && !finished^) {
+          obs.onError(x);
+          subscription.cancel();
+        }
+      },
+    }
 
-      pub onError = obs#onError;
-    })
-  };
+    obs.onSubscribe(subscription);
+    source.subscribeWith(observer);
+  }
 };
