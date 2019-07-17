@@ -40,12 +40,14 @@ let operator = (sources: array(Types.Single.t('a))): Types.Single.t('a) => {
     };
 
     sources |> Array.iter((source: Types.Single.t('a)) => {
+      let subscribed = ref(false);
       source.subscribeWith({
         onSubscribe: (sub: Types.Subscription.t) => {
-          if (finished^) {
+          if (finished^ || subscribed^) {
             sub.cancel();
           } else {
             subRef := [sub] @ subRef^;
+            subscribed := true;
           }
         },
         onSuccess: (x: 'a) => {
