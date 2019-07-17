@@ -25,7 +25,7 @@
  * @author Alexis Munsayac <alexis.munsayac@gmail.com>
  * @copyright Alexis Munsayac 2019
  */
-let operator = (sources: list(Types.Single.t('a))): Types.Single.t('a) => {
+let operator = (sources: array(Types.Single.t('a))): Types.Single.t('a) => {
   subscribeWith: (obs: Types.Single.Observer.t('a)) => {
     let finished = ref(false);
     let subRef: ref(list(Types.Subscription.t)) = ref([]);
@@ -39,13 +39,15 @@ let operator = (sources: list(Types.Single.t('a))): Types.Single.t('a) => {
       }
     };
 
-    sources |> List.iter((source: Types.Single.t('a)) => {
+    sources |> Array.iter((source: Types.Single.t('a)) => {
+      let subscribed = ref(false);
       source.subscribeWith({
         onSubscribe: (sub: Types.Subscription.t) => {
-          if (finished^) {
+          if (finished^ || subscribed^) {
             sub.cancel();
           } else {
             subRef := [sub] @ subRef^;
+            subscribed := true;
           }
         },
         onSuccess: (x: 'a) => {
