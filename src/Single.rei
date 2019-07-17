@@ -42,12 +42,8 @@ let concatList: list(SingleTypes.s('source, 'a)) => ObservableTypes.operator('do
  * Single source into an Observable.
  */
 let concatWith: SingleTypes.s('other, 'a) => SingleTypes.s('source, 'a) => ObservableTypes.operator('downstream, 'a)
-/**
- * Signals true if the current Single signals a
- * success value that is equal with the value
- * provided by calling a bi-predicate. 
- */
-let contains: 'a => ('a => 'a => bool) => SingleTypes.s('source, 'a) => SingleTypes.operator('downstream, bool);
+
+let contains: 'a => (('a, 'a) => bool) => Types.Single.t('a) => Types.Single.t(bool);
 /**
  * Calls a supplier for each individual Single.observer
  * to return the actual Single to be subscribed
@@ -246,7 +242,7 @@ let fromSupplier: (unit => 'a) => SingleTypes.operator('downstream, 'a);
  * including the Cancellable that is sent to the
  * downstream via onSubscribe(). 
  */
-let hide: SingleTypes.s('source, 'a) => SingleTypes.operator('downstream, 'a);
+let hide: Types.Single.t('a) => Types.Single.t('a);
 /**
  * Returns a Completable that ignores the success
  * value of this Single and calls onComplete instead
@@ -260,7 +256,7 @@ let ignoreElement: SingleTypes.s('source, 'a) => CompletableTypes.operator('down
  * that object, pass that object into the just
  * method. 
  */
-let just: 'a => SingleTypes.operator('downstream, 'a);
+let just: 'a => Types.Single.t('a);
 /**
  * This method requires advanced knowledge about
  * building operators, please consider other
@@ -294,25 +290,19 @@ let lift: (SingleTypes.observer('downstream, 'a) => SingleTypes.observer('result
  * Provides an API (via a cold Single) that bridges
  * the reactive world with the callback-style world. 
  */
-let make: (SingleTypes.emitter({
-  .
-  isCancelled: unit => bool,
-  setCancellable: Cancellable.t({..}) => unit,
-  onSuccess: 'a => unit,
-  onError: exn => unit,
-}, 'a) => unit) => SingleTypes.operator('downstream, 'a);
+let make: (Types.Single.Emitter.t('a) => unit) => Types.Single.t('a);
 /**
  * Returns a Single that applies a specified function
  * to the item emitted by the source Single and emits
  * the result of this function application. 
  */
-let map: ('a => 'b) => SingleTypes.s('source, 'a) => SingleTypes.operator('downstream, 'b);
+let map: ('a => 'b) => Types.Single.t('a) => Types.Single.t('b);
 /**
  * Maps the signal types of this Single into a Notification
  * of the same kind and emits it as a single success
  * value to downstream.
  */
-let materialize: SingleTypes.s('source, 'a) => SingleTypes.operator('downstream, Notification.Single.t('a));
+let materialize: Types.Single.t('a) => Types.Single.t(Types.Single.Notification.t('a));
 /**
  * Flattens a Single that emits a Single into a single
  * Single that emits the item emitted by the nested Single,
