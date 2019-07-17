@@ -1,15 +1,8 @@
-
-let operator = (operator, source) => {
-  pub subscribeWith = (obs) => switch(operator(obs)) {
-    | newObserver => source#subscribeWith({
-      pub onSubscribe = newObserver#onSubscribe;
-      pub onComplete = newObserver#onComplete;
-      pub onError = newObserver#onError;
-    })
-    | exception e => SingleError.operator(e)#subscribeWith({
-      pub onSubscribe = obs#onSubscribe;
-      pub onComplete = obs#onComplete;
-      pub onError = obs#onError;
-    })
-  };
+let operator = (operator: Types.Completable.Observer.t => Types.Completable.Observer.t, source: Types.Completable.t): Types.Completable.t => {
+  subscribeWith: (obs: Types.Completable.Observer.t) => {
+    switch (operator(obs)) {
+      | result => source.subscribeWith(result)
+      | exception exn => CompletableError.operator(exn).subscribeWith(obs);
+    };
+  }
 };
