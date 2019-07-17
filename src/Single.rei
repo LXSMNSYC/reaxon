@@ -49,7 +49,7 @@ let contains: 'a => (('a, 'a) => bool) => Types.Single.t('a) => Types.Single.t(b
  * to return the actual Single to be subscribed
  * to. 
  */
-let defer: (unit => SingleTypes.s('source, 'a)) => SingleTypes.operator('downstream, 'a);
+let defer: (unit => Types.Single.t('a)) => Types.Single.t('a);
 /**
  * Delays the emission of the success signal from
  * the current Single by the specified amount. An
@@ -77,7 +77,7 @@ let dematerialize: SingleTypes.s('source, Notification.Single.t('a)) => SingleTy
  * item after this item has been emitted to the
  * downstream.
  */
-let doAfterSuccess: ('a => unit) => SingleTypes.s('source, 'a) => SingleTypes.operator('downstream, 'a);
+let doAfterSuccess: ('a => unit) => Types.Single.t('a) => Types.Single.t('a);
 /**
  * Registers an action to be called after this
  * Single invokes either onSuccess or onError. 
@@ -141,7 +141,7 @@ let equals: SingleTypes.s('left, 'a) => SingleTypes.s('right, 'b) => ('a => 'b =
  * onError method when the subscriber subscribes
  * to it. 
  */
-let error: exn => SingleTypes.operator('downstream, 'a);
+let error: exn => Types.Single.t('a);
 /**
  * Filters the success item of the Single via a
  * predicate function and emitting it if the
@@ -285,7 +285,7 @@ let just: 'a => Types.Single.t('a);
  * additional actions depending on the same business
  * logic requirements.
  */
-let lift: (SingleTypes.observer('downstream, 'a) => SingleTypes.observer('result, 'b)) => SingleTypes.s('source, 'a) => SingleTypes.operator('downstream, 'b);
+let lift: (Types.Single.Observer.t('b) => Types.Single.Observer.t('a)) => Types.Single.t('a) => Types.Single.t('b);
 /**
  * Provides an API (via a cold Single) that bridges
  * the reactive world with the callback-style world. 
@@ -452,7 +452,7 @@ let retryWhile: (int => exn => bool) => SingleTypes.s('source, 'a) => SingleType
  * handle the item it emits or any error notification
  * it issues. 
  */
-let subscribe: SingleTypes.recordObserver('a) => SingleTypes.s('source, 'a) => SingleTypes.subscription;
+let subscribe: Types.Single.Observer.Lambda.t('a) => Types.Single.t('a) => Types.Subscription.t;
 /**
  * Asynchronously subscribes subscribers to this Single
  * on the specified Scheduler.
