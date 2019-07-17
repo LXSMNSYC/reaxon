@@ -1,5 +1,5 @@
 let operator = (mapper: 'a => 'b, source: Types.Single.t('a)): Types.Single.t('b) => {
-  subscribeWith: (obs: Types.Single.Observer.t('a)) => {
+  subscribeWith: (obs: Types.Single.Observer.t('b)) => {
     let subscribed = ref(false);
     let finished = ref(false);
     let subRef: ref(option(Types.Subscription.t)) = ref(None);
