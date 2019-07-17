@@ -64,7 +64,7 @@ let defaultIfEmpty: 'a => MaybeTypes.s('source, 'a) => SingleTypes.operator('dow
  * to return the actual MaybeSource source to be
  * subscribed to. 
  */
-let defer: (unit => MaybeTypes.s('source, 'a)) => MaybeTypes.operator('downstream, 'a);
+let defer: (unit => Types.Maybe.t('a)) => Types.Maybe.t('a);
 /**
  * Returns a Maybe that signals the events emitted
  * by the source Maybe shifted forward in time by
@@ -166,7 +166,7 @@ let equals: MaybeTypes.s('left, 'a) => MaybeTypes.s('right, 'b) => ('a => 'b => 
  * onError method when the subscriber subscribes
  * to it. 
  */
-let error: exn => MaybeTypes.operator('downstream, 'a);
+let error: exn => Types.Maybe.t('a);
 /**
  * Filters the success item of the Maybe via a
  * predicate function and emitting it if the
@@ -285,7 +285,7 @@ let just: 'a => MaybeTypes.operator('downstream, 'a);
  * perform additional actions depending on the same
  * business logic requirements. 
  */
-let lift: (MaybeTypes.observer('downstream, 'a) => MaybeTypes.observer('result, 'b)) => MaybeTypes.s('source, 'a) => MaybeTypes.operator('downstream, 'b);
+let lift: (Types.Maybe.Observer.t('b) => Types.Maybe.Observer.t('a)) => Types.Maybe.t('a) => Types.Maybe.t('b);
 /**
  * Provides an API (via a cold Maybe) that bridges
  * the reactive world with the callback-style world. 
