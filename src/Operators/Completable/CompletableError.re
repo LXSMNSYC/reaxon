@@ -1,13 +1,28 @@
+let operator = (value: exn): Types.Completable.t => {
+  subscribeWith: (obs: Types.Completable.Observer.t) => {
+    let subscribed = ref(false);
+    let finished = ref(false);
+    let subRef: ref(option(Types.Subscription.t)) = ref(None);
+    
+    let subscription: Types.Subscription.t = {
+      cancel: () => {
+        if (!finished^) {
+          if (subscribed^) {
+            switch (subRef^) {
+            | Some(ref) => ref.cancel()
+            | None => ()
+            }
+          }
+          finished := true;
+        }
+      }
+    };
 
-let operator = (err) => {
-  pub subscribeWith = (obs) => {
-    let state = Cancellable.Boolean.make();
+    obs.onSubscribe(subscription);
 
-    obs#onSubscribe(state);
-
-    if (!state#isCancelled()) {
-      obs#onError(err);
-      state#cancel();
+    if (!finished^) {
+      obs.onError(value);
+      subscription.cancel();
     }
-  };
+  }
 };
