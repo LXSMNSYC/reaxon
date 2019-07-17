@@ -1,63 +1,102 @@
-let operator = (source) => {
-  val cached = ref(false);
-  val subscribed = ref(false);
-  val observers = ref([]);
-  val signal = ref(None);
+/**
+ * @license
+ * MIT License
+ *
+ * Copyright (c) 2019 Alexis Munsayac
+ * Permission is hereby granted, free of charge, to any person obtaining a copy
+ * of this software and associated documentation files (the "Software"), to deal
+ * in the Software without restriction, including without limitation the rights
+ * to use, copy, modify, merge, publish, distribute, sublicense, and/or sell
+ * copies of the Software, and to permit persons to whom the Software is
+ * furnished to do so, subject to the following conditions:
+ *
+ * The above copyright notice and this permission notice shall be included in all
+ * copies or substantial portions of the Software.
+ *
+ * THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND, EXPRESS OR
+ * IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF MERCHANTABILITY,
+ * FITNESS FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT. IN NO EVENT SHALL THE
+ * AUTHORS OR COPYRIGHT HOLDERS BE LIABLE FOR ANY CLAIM, DAMAGES OR OTHER
+ * LIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING FROM,
+ * OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE
+ * SOFTWARE.
+ *
+ *
+ * @author Alexis Munsayac <alexis.munsayac@gmail.com>
+ * @copyright Alexis Munsayac 2019
+ */
+let operator = (source: Types.Single.t('a)): Types.Single.t('a) => {
+  let cached = ref(false);
+  let subscribed = ref(false);
+  let observers = ref([]);
+  let signal = ref(None);
 
-  pub subscribeWith = (obs) => {
-    if (cached^) {
-      let state = Cancellable.Boolean.make();
-
-      obs#onSubscribe(state);
-
-      if (!state#isCancelled()) {
-        switch (signal^) {
-          | Some(notif) => switch(notif) {
-            | Notification.Single.OnSuccess(x) => obs#onSuccess(x)
-            | Notification.Single.OnError(x) => obs#onError(x) 
+  {
+    subscribeWith: (obs: Types.Single.Observer.t('a)) => {
+      if (cached^) {
+        let state = ref(false);
+        let subscription: Types.Subscription.t = {
+          cancel: () => {
+            state := true;
           }
-          | None => ()
+        };
+
+        obs.onSubscribe(subscription);
+  
+        if (!state^) {
+          switch (signal^) {
+            | Some(notif) => switch(notif) {
+              | Types.Single.Notification.OnSuccess(x) => obs.onSuccess(x)
+              | Types.Single.Notification.OnError(x) => obs.onError(x) 
+            }
+            | None => ()
+          };
+    
+          subscription.cancel();
+        }
+      } else {
+        let state = ref(false);
+        let subscription: Types.Subscription.t = {
+          cancel: () => {
+            state := true;
+          }
+        }
+  
+        observers := [obs] @ observers^;
+  
+        let newSub: Types.Subscription.t = {
+          cancel: () => {
+            observers := observers^ |> List.filter(x => x != obs);
+            subscription.cancel();
+          }
         };
   
-        state#cancel();
-      }
-    } else {
-      let state = Cancellable.Boolean.make();
-
-      observers := [obs] @ observers^;
-
-      let subscription = {
-        pub isCancelled = state#isCancelled;
-        pub cancel = () => {
-          observers := observers^ |> List.filter(x => x != obs);
-          state#cancel();
-        };
-      };
-
-      obs#onSubscribe(subscription);
-
-      if (!subscribed^) {
-        subscribed := true;
-        source#subscribeWith({
-          pub onSubscribe = (sub) => ();
+        obs.onSubscribe(newSub);
   
-          pub onSuccess = (x) => {
-            cached := true;
-            signal := Some(OnSuccess(x));
+        if (!subscribed^) {
+          subscribed := true;
 
-            observers^ |> List.iter(o => o#onSuccess(x));
-            subscription#cancel();
-          };
-
-          pub onError = (e) => {
-            cached := true;
-            signal := Some(OnError(e));
-
-            observers^ |> List.iter(o => o#onError(e));
-            subscription#cancel();
-          };
-        });
+          source.subscribeWith({
+            onSubscribe: (sub) => (),
+    
+            onSuccess: (x: 'a) => {
+              cached := true;
+              signal := Some(OnSuccess(x));
+  
+              observers^ |> List.iter((o: Types.Single.Observer.t('a)) => o.onSuccess(x));
+              newSub.cancel();
+            },
+  
+            onError: (e) => {
+              cached := true;
+              signal := Some(OnError(e));
+  
+              observers^ |> List.iter((o: Types.Single.Observer.t('a)) => o.onError(e));
+              newSub.cancel();
+            },
+          });
+        }
       }
     }
-  };
+  }
 };
