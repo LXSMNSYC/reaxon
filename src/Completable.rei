@@ -79,7 +79,7 @@ let concatWith: CompletableTypes.s('other) => CompletableTypes.s('source) => Com
  * Defers the subscription to a Completable instance
  * returned by a supplier. 
  */
-let defer: (unit => CompletableTypes.s('source)) => CompletableTypes.operator('downstream);
+let defer: (unit => Types.Completable.t) => Types.Completable.t;
 /**
  * Returns a Completable which delays the emission of
  * the completion event by the given time. 
@@ -153,7 +153,7 @@ let doOnTerminate: (unit => unit) => CompletableTypes.s('source) => CompletableT
  * Creates a Completable instance that emits the given
  * exception to subscribers. 
  */
-let error: exn => CompletableTypes.operator('downstream);
+let error: exn => Types.Completable.t;
 /**
  * Returns a Completable instance that runs the given
  * action for each subscriber and emits either an unchecked
@@ -204,7 +204,7 @@ let hide: CompletableTypes.s('source) => CompletableTypes.operator('downstream);
  * intended business logic, that will be used in the
  * subscription process going further upstream. 
  */
-let lift: (CompletableTypes.observer('downstream) => CompletableTypes.observer('result)) => CompletableTypes.s('source) => CompletableTypes.operator('downstream);
+let lift: (Types.Completable.Observer.t => Types.Completable.Observer.t) => Types.Completable.t => Types.Completable.t;
 /**
  * Provides an API (via a cold Completable) that
  * bridges the reactive world with the callback-style
