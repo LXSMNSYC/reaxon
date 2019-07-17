@@ -18,6 +18,13 @@ module Single {
       onSuccess: 'a => unit,
       onError: exn => unit,
     }
+
+    module Lambda {
+      type t('a) = {
+        onSuccess: 'a => unit,
+        onError: exn => unit,
+      }
+    }
   }
 
   module Emitter {
@@ -49,6 +56,13 @@ module Completable {
       onSubscribe: Subscription.t => unit,
       onComplete: unit => unit,
       onError: exn => unit,
+    };
+
+    module Lambda {
+      type t = {
+        onComplete: unit => unit,
+        onError: exn => unit,
+      }
     }
   }
 
@@ -68,7 +82,7 @@ module Completable {
     ;
   }
 
-  type t('a) = {
+  type t = {
     subscribeWith: Observer.t => unit
   };
 }
@@ -80,6 +94,14 @@ module Maybe {
       onComplete: unit => unit,
       onSuccess: 'a => unit,
       onError: exn => unit,
+    }
+
+    module Lambda {
+      type t('a) = {
+        onComplete: unit => unit,
+        onSuccess: 'a => unit,
+        onError: exn => unit,
+      }
     }
   }
 
@@ -113,6 +135,14 @@ module Observable {
       onComplete: unit => unit,
       onError: exn => unit,
       onNext: 'a => unit,
+    }
+
+    module Lambda {
+      type t('a) = {
+        onComplete: unit => unit,
+        onError: exn => unit,
+        onNext: 'a => unit,
+      }
     }
   }
 
