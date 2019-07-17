@@ -1,17 +1,8 @@
-
-let operator = (operator, source) => {
-  pub subscribeWith = (obs) => switch(operator(obs)) {
-    | newObserver => source#subscribeWith({
-      pub onSubscribe = newObserver#onSubscribe;
-      pub onComplete = newObserver#onComplete;
-      pub onSuccess = newObserver#onSuccess;
-      pub onError = newObserver#onError;
-    })
-    | exception e => SingleError.operator(e)#subscribeWith({
-      pub onSubscribe = obs#onSubscribe;
-      pub onComplete = obs#onComplete;
-      pub onSuccess = obs#onSuccess;
-      pub onError = obs#onError;
-    })
-  };
+let operator = (operator: Types.Maybe.Observer.t('b) => Types.Maybe.Observer.t('a), source: Types.Maybe.t('a)): Types.Maybe.t('b) => {
+  subscribeWith: (obs: Types.Maybe.Observer.t('b)) => {
+    switch (operator(obs)) {
+      | result => source.subscribeWith(result)
+      | exception exn => MaybeError.operator(exn).subscribeWith(obs);
+    };
+  }
 };
