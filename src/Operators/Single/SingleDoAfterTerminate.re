@@ -1,22 +1,61 @@
+let operator = (afterTerminate: unit => unit, source: Types.Single.t('a)): Types.Single.t('a) => {
+  subscribeWith: (obs: Types.Single.Observer.t('a)) => {
+    let subscribed = ref(false);
+    let finished = ref(false);
+    let subRef: ref(option(Types.Subscription.t)) = ref(None);
+    
+    let subscription: Types.Subscription.t = {
+      cancel: () => {
+        if (!finished^) {
+          if (subscribed^) {
+            switch (subRef^) {
+            | Some(ref) => ref.cancel()
+            | None => ()
+            }
+          }
+          finished := true;
+        }
+      }
+    };
 
-let operator = (onTerminate, source) => {
-  pub subscribeWith = (obs) => {
-    let state = Cancellable.Linked.make();
+    let observer: Types.Single.Observer.t('a) = {
+      onSubscribe: (sub: Types.Subscription.t) => {
+        if (finished^ || subscribed^) {
+          sub.cancel();
+        } else {
+          subscribed := true;
+          subRef := Some(sub);
+        }
+      },
+      onSuccess: (x: 'a) => {
+        if (!finished^ && subscribed^) {
+          obs.onSuccess(x);
+          try (afterTerminate()) {
+            | err => {
+              subscription.cancel();
+              raise(err);
+            }
+          }
+          subscription.cancel();
+        }
+      },
+      onError: (x: exn) => {
+        if (!finished^ && subscribed^) {
+          obs.onError(x);
+          try (afterTerminate()) {
+            | err => {
+              subscription.cancel();
+              raise(err);
+            }
+          }
+          subscription.cancel();
+        } else {
+          raise(x);
+        }
+      },
+    };
 
-    obs#onSubscribe(Utils.c2sub(state));
-
-    source#subscribeWith({
-      pub onSubscribe = state#link;
-  
-      pub onSuccess = (x) => {
-        obs#onSuccess(x);
-        onTerminate();
-      };
-  
-      pub onError  = (x) => {
-        obs#onError(x);
-        onTerminate();
-      };
-    });
-  };
+    obs.onSubscribe(subscription);
+    source.subscribeWith(observer);
+  }
 };
