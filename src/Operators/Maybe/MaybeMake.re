@@ -80,6 +80,8 @@ let operator = (onSubscribe: Types.Maybe.Emitter.t('a) => unit): Types.Maybe.t('
       },
     };
 
+    obs.onSubscribe(subscription);
+
     try (onSubscribe(emitter)) {
       | e => emitter.onError(e)
     }
