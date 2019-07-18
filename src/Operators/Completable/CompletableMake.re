@@ -61,18 +61,20 @@ let operator = (onSubscribe: Types.Completable.Emitter.t => unit): Types.Complet
       },
       isCancelled: () => finished^,
       onComplete: () => {
-        if (subscribed^ && !finished^) {
+        if (!finished^) {
           obs.onComplete();
           subscription.cancel();
         }
       },
       onError: (x: exn) => {
-        if (subscribed^ && !finished^) {
+        if (!finished^) {
           obs.onError(x);
           subscription.cancel();
         }
       },
     };
+
+    obs.onSubscribe(subscription);
 
     try (onSubscribe(emitter)) {
       | e => emitter.onError(e)
