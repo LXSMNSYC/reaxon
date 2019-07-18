@@ -60,7 +60,7 @@ let operator = (source: Types.Maybe.t('a)): Types.Completable.t => {
           subscription.cancel();
         }
       },
-      onSuccess: (x: 'a) => {
+      onSuccess: () => {
         if (!finished^ && subscribed^) {
           obs.onComplete();
           subscription.cancel();
