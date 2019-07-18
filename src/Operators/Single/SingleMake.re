@@ -74,6 +74,8 @@ let operator = (onSubscribe: Types.Single.Emitter.t('a) => unit): Types.Single.t
       },
     };
 
+    obs.onSubscribe(subscription);
+
     try (onSubscribe(emitter)) {
       | e => emitter.onError(e)
     }
