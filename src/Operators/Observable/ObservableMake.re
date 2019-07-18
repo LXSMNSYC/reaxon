@@ -1,32 +1,86 @@
-
-let operator: (ObservableTypes.emitter('upstream, 'a) => unit) => ObservableTypes.operator('downstream, 'a) = (onSubscribe) => {
-  pub subscribeWith = (obs) => {
-    let state = Cancellable.Linked.make();
-
-    obs#onSubscribe(Utils.c2sub(state));
-
-    let e = {
-      pub setCancellable = state#link;
+/**
+ * @license
+ * MIT License
+ *
+ * Copyright (c) 2019 Alexis Munsayac
+ * Permission is hereby granted, free of charge, to any person obtaining a copy
+ * of this software and associated documentation files (the "Software"), to deal
+ * in the Software without restriction, including without limitation the rights
+ * to use, copy, modify, merge, publish, distribute, sublicense, and/or sell
+ * copies of the Software, and to permit persons to whom the Software is
+ * furnished to do so, subject to the following conditions:
+ *
+ * The above copyright notice and this permission notice shall be included in all
+ * copies or substantial portions of the Software.
+ *
+ * THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND, EXPRESS OR
+ * IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF MERCHANTABILITY,
+ * FITNESS FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT. IN NO EVENT SHALL THE
+ * AUTHORS OR COPYRIGHT HOLDERS BE LIABLE FOR ANY CLAIM, DAMAGES OR OTHER
+ * LIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING FROM,
+ * OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE
+ * SOFTWARE.
+ *
+ *
+ * @author Alexis Munsayac <alexis.munsayac@gmail.com>
+ * @copyright Alexis Munsayac 2019
+ */
+let operator = (onSubscribe: Types.Observable.Emitter.t('a) => unit): Types.Observable.t('a) => {
+  subscribeWith: (obs: Types.Observable.Observer.t('a)) => {
+    let subscribed = ref(false);
+    let finished = ref(false);
+    let subRef: ref(option(Types.Subscription.t)) = ref(None);
   
-      pub isCancelled = state#isCancelled;
+    let cancelRef = () => {
+      if (subscribed^) {
+        switch (subRef^) {
+          | Some(ref) => ref.cancel()
+          | None => ()
+        }
+      }
+    };
     
-      pub onComplete = () => if (!state#isCancelled()) {
-        obs#onComplete();
-        state#cancel();
-      };
-
-      pub onNext = (x: 'a) => if (!state#isCancelled()) {
-        obs#onNext(x);
-      };
-  
-      pub onError = (x: exn) => if (!state#isCancelled()) {
-        obs#onError(x);
-        state#cancel();
-      };
+    let subscription: Types.Subscription.t = {
+      cancel: () => {
+        if (!finished^) {
+          cancelRef();
+          finished := true;
+        }
+      }
     };
 
-    try(onSubscribe(e)) {
-      | err => e#onError(err)
+    let emitter: Types.Observable.Emitter.t('a) = {
+      setSubscription: (sub: Types.Subscription.t) => {
+        if (!finished^) {
+          cancelRef();
+          subscribed := true;
+          subRef := Some(sub);
+        } else {
+          sub.cancel();
+        }
+      },
+      isCancelled: () => finished^,
+      onComplete: () => {
+        if (subscribed^ && !finished^) {
+          obs.onComplete();
+          subscription.cancel();
+        }
+      },
+      onError: (x: exn) => {
+        if (subscribed^ && !finished^) {
+          obs.onError(x);
+          subscription.cancel();
+        }
+      },
+      onNext: (x: 'a) => {
+        if (subscribed^ && !finished^) {
+          obs.onNext(x);
+        }
+      },
     };
-  };
+
+    try (onSubscribe(emitter)) {
+      | e => emitter.onError(e)
+    }
+  }
 };
