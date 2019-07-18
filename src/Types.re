@@ -168,3 +168,10 @@ module Observable {
     subscribeWith: Observer.t('a) => unit
   };
 }
+
+module Scheduler {
+  type t = {
+    run: (unit => unit) => Subscription.t,
+    timeout: (unit => unit) => int => Subscription.t,
+  }
+}
