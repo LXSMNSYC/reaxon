@@ -54,7 +54,7 @@ let operator = (source: Types.Single.t('a)): Types.Completable.t => {
           subRef := Some(sub);
         }
       },
-      onSuccess: () => {
+      onSuccess: (x: 'a) => {
         if (!finished^ && subscribed^) {
           obs.onComplete();
           subscription.cancel();
