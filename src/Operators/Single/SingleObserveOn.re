@@ -30,7 +30,7 @@ let operator = (scheduler: Types.Scheduler.t, source: Types.Single.t('a)): Types
     let subscribed = ref(false);
     let finished = ref(false);
     let subRef: ref(option(Types.Subscription.t)) = ref(None);
-    
+
     let subscription: Types.Subscription.t = {
       cancel: () => {
         if (!finished^) {
@@ -45,6 +45,8 @@ let operator = (scheduler: Types.Scheduler.t, source: Types.Single.t('a)): Types
       }
     };
 
+    obs.onSubscribe(subscription);
+
     let observer: Types.Single.Observer.t('a) = {
       onSubscribe: (sub: Types.Subscription.t) => {
         if (finished^ || subscribed^) {
@@ -56,21 +58,38 @@ let operator = (scheduler: Types.Scheduler.t, source: Types.Single.t('a)): Types
       },
       onSuccess: (x: 'a) => {
         if (!finished^ && subscribed^) {
-          obs.onSuccess(x);
-          subscription.cancel();
+          let oldRef = subRef^;
+
+          subRef := Some(scheduler.run(() => {
+            obs.onSuccess(x);
+            subscription.cancel();
+          }));
+          
+          switch (oldRef) {
+          | Some(ref) => ref.cancel()
+          | None => ()
+          }
         }
       },
       onError: (x: exn) => {
         if (!finished^ && subscribed^) {
-          obs.onError(x);
-          subscription.cancel();
+          let oldRef = subRef^;
+
+          subRef := Some(scheduler.run(() => {
+            obs.onError(x);
+            subscription.cancel();
+          }));
+          
+          switch (oldRef) {
+          | Some(ref) => ref.cancel()
+          | None => ()
+          }
         } else {
           raise(x);
         }
       },
     };
 
-    obs.onSubscribe(subscription);
     source.subscribeWith(observer);
   }
-};
+}
