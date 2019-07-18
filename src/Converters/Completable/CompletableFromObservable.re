@@ -60,7 +60,7 @@ let operator = (source: Types.Observable.t('a)): Types.Completable.t => {
           subscription.cancel();
         }
       },
-      onNext: () => (),
+      onNext: (x: 'a) => (),
       onError: (x: exn) => {
         if (!finished^ && subscribed^) {
           obs.onError(x);
