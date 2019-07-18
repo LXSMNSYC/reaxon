@@ -25,8 +25,8 @@
  * @author Alexis Munsayac <alexis.munsayac@gmail.com>
  * @copyright Alexis Munsayac 2019
  */
-let operator = (source: Types.Completable.t): Types.Maybe.t('a) => {
-  subscribeWith: (obs: Types.Maybe.Observer.t('a)) => {
+let operator = (source: Types.Completable.t): Types.Maybe.t(unit) => {
+  subscribeWith: (obs: Types.Maybe.Observer.t(unit)) => {
     let subscribed = ref(false);
     let finished = ref(false);
     let subRef: ref(option(Types.Subscription.t)) = ref(None);
