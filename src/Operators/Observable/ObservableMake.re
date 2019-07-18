@@ -79,6 +79,8 @@ let operator = (onSubscribe: Types.Observable.Emitter.t('a) => unit): Types.Obse
       },
     };
 
+    obs.onSubscribe(subscription);
+
     try (onSubscribe(emitter)) {
       | e => emitter.onError(e)
     }
