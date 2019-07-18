@@ -36,7 +36,7 @@ let operator = (mapper: 'a => 'b, source: Types.Maybe.t('a)): Types.Maybe.t('b) 
           subscription.cancel();
         }
       },
-      onComplete: (x: 'a) => {
+      onComplete: () => {
         if (!finished^ && subscribed^) {
           obs.onComplete();
           subscription.cancel();
