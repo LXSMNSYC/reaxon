@@ -1,19 +1,80 @@
-let operator = (source) => {
-  pub subscribeWith = (obs) => {
-    let state = Cancellable.Linked.make();
+/**
+ * @license
+ * MIT License
+ *
+ * Copyright (c) 2019 Alexis Munsayac
+ * Permission is hereby granted, free of charge, to any person obtaining a copy
+ * of this software and associated documentation files (the "Software"), to deal
+ * in the Software without restriction, including without limitation the rights
+ * to use, copy, modify, merge, publish, distribute, sublicense, and/or sell
+ * copies of the Software, and to permit persons to whom the Software is
+ * furnished to do so, subject to the following conditions:
+ *
+ * The above copyright notice and this permission notice shall be included in all
+ * copies or substantial portions of the Software.
+ *
+ * THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND, EXPRESS OR
+ * IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF MERCHANTABILITY,
+ * FITNESS FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT. IN NO EVENT SHALL THE
+ * AUTHORS OR COPYRIGHT HOLDERS BE LIABLE FOR ANY CLAIM, DAMAGES OR OTHER
+ * LIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING FROM,
+ * OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE
+ * SOFTWARE.
+ *
+ *
+ * @author Alexis Munsayac <alexis.munsayac@gmail.com>
+ * @copyright Alexis Munsayac 2019
+ */
+let operator = (source: Types.Single.t(Types.Maybe.Notification.t('a))): Types.Maybe.t('a) => {
+  subscribeWith: (obs: Types.Maybe.Observer.t('a)) => {
+    let subscribed = ref(false);
+    let finished = ref(false);
+    let subRef: ref(option(Types.Subscription.t)) = ref(None);
+    
+    let subscription: Types.Subscription.t = {
+      cancel: () => {
+        if (!finished^) {
+          if (subscribed^) {
+            switch (subRef^) {
+            | Some(ref) => ref.cancel()
+            | None => ()
+            }
+          }
+          finished := true;
+        }
+      }
+    };
 
-    obs#onSubscribe(Utils.c2sub(state));
+    let observer: Types.Single.Observer.t(Types.Maybe.Notification.t('a)) = {
+      onSubscribe: (sub: Types.Subscription.t) => {
+        if (finished^ || subscribed^) {
+          sub.cancel();
+        } else {
+          subscribed := true;
+          subRef := Some(sub);
+        }
+      },
+      onSuccess: (x: Types.Maybe.Notification.t('a)) => {
+        if (!finished^ && subscribed^) {
+          switch (x) {
+            | Types.Maybe.Notification.OnSuccess(item) => obs.onSuccess(item)
+            | Types.Maybe.Notification.OnError(item) => obs.onError(item)
+            | Types.Maybe.Notification.OnComplete => obs.onComplete()
+          };
+          subscription.cancel();
+        }
+      },
+      onError: (x: exn) => {
+        if (!finished^ && subscribed^) {
+          obs.onError(x);
+          subscription.cancel();
+        } else {
+          raise(x);
+        }
+      },
+    };
 
-    source#subscribeWith({
-      pub onSubscribe = state#link;
-
-      pub onSuccess = x => switch (x) {
-        | Notification.Maybe.OnSuccess(item) => obs#onSuccess(item)
-        | Notification.Maybe.OnComplete => obs#onComplete()
-        | Notification.Maybe.OnError(item) => obs#onError(item)
-      };
-
-      pub onError = obs#onError;
-    });
-  };
+    obs.onSubscribe(subscription);
+    source.subscribeWith(observer);
+  },
 };
