@@ -28,30 +28,10 @@
 
 let instance: Types.Maybe.t('a) = {
   subscribeWith: (obs: Types.Maybe.Observer.t('a)) => {
-    let subscribed = ref(false);
-    let finished = ref(false);
-    let subRef: ref(option(Types.Subscription.t)) = ref(None);
-    
-    let subscription: Types.Subscription.t = {
-      cancel: () => {
-        if (!finished^) {
-          if (subscribed^) {
-            switch (subRef^) {
-            | Some(ref) => ref.cancel()
-            | None => ()
-            }
-          }
-          finished := true;
-        }
-      }
-    };
+    let safe: Types.Maybe.Observer.t('a) = SafeMaybeObserver.make(obs);
 
-    obs.onSubscribe(subscription);
-
-    if (!finished^) {
-      obs.onComplete();
-      subscription.cancel();
-    }
+    safe.onSubscribe(EmptySubscription.instance);
+    safe.onComplete();
   }
 };
 
