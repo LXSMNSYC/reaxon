@@ -29,8 +29,6 @@ let operator = (low: int, high: int, step: int): Types.Observable.t(int) => {
   subscribeWith: (obs: Types.Observable.Observer.t(int)) => {
     let safe: Types.Observable.Observer.t(int) = SafeObservableObserver.make(obs);
 
-    let finished = ref(false);
-
     safe.onSubscribe(EmptySubscription.instance);
 
     let rec generate = (current: int) => {
