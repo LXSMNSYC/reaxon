@@ -31,11 +31,7 @@ let operator = (low: int, high: int, step: int): Types.Observable.t(int) => {
 
     let finished = ref(false);
 
-    safe.onSubscribe({
-      cancel: () => {
-        finished := true;
-      }
-    })
+    safe.onSubscribe(EmptySubscription.instance);
 
     let rec generate = (current: int) => {
       if ((step < 0 && current >= high) || (step > 0 && current <= high)) {
