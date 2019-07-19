@@ -28,18 +28,15 @@
 
 let operator = (count: int, source: Types.Maybe.t('a)): Types.Maybe.t('a) => {
   subscribeWith: (obs: Types.Maybe.Observer.t('a)) => {
-    let subscribed = ref(false);
     let finished = ref(false);
     let subRef: ref(option(Types.Subscription.t)) = ref(None);
 
     let subscription: Types.Subscription.t = {
       cancel: () => {
         if (!finished^) {
-          if (subscribed^) {
-            switch (subRef^) {
-            | Some(ref) => ref.cancel()
-            | None => ()
-            }
+          switch (subRef^) {
+          | Some(ref) => ref.cancel()
+          | None => ()
           }
           finished := true;
         }
@@ -49,35 +46,38 @@ let operator = (count: int, source: Types.Maybe.t('a)): Types.Maybe.t('a) => {
     let retries = ref(-1);
 
     let rec retry = () => {
-      subscribed := false;
       subRef := None;
       retries := retries^ + 1;
 
-      let observer: Types.Maybe.Observer.t('a) = {
+      source.subscribeWith(ProtectedMaybeObserver.make({
         onSubscribe: (sub: Types.Subscription.t) => {
-          if (finished^ || subscribed^) {
+          if (finished^) {
             sub.cancel();
           } else {
-            subscribed := true;
             subRef := Some(sub);
           }
         },
         onComplete: () => {
-          if (!finished^ && subscribed^) {
+          if (!finished^) {
             obs.onComplete();
             subscription.cancel();
           }
         },
         onSuccess: (x: 'a) => {
-          if (!finished^ && subscribed^) {
+          if (!finished^) {
             obs.onSuccess(x);
             subscription.cancel();
           }
         },
         onError: (x: exn) => {
-          if (!finished^ && subscribed^) {
+          if (!finished^) {
             if (retries^ < count) {
+              let oldRef = subRef^;
               retry();
+              switch (oldRef) {
+              | Some(ref) => ref.cancel()
+              | None => ()
+              };
             } else {
               obs.onError(x);
               subscription.cancel();
@@ -86,8 +86,7 @@ let operator = (count: int, source: Types.Maybe.t('a)): Types.Maybe.t('a) => {
             raise(x);
           }
         },
-      };
-      source.subscribeWith(observer);
+      }));
     };
 
     obs.onSubscribe(subscription);
