@@ -60,13 +60,13 @@ let make = (obs: Types.Observable.Observer.t('a)): Types.Observable.Observer.t('
       if (!finished^) {
         obs.onError(x);
         subscription.cancel();
+      } else {
+        raise(x);
       }
     },
     onNext: (x: 'a) => {
       if (!finished^) {
         obs.onNext(x);
-      } else {
-        raise(x);
       }
     },
   });
