@@ -27,25 +27,21 @@
  */
 let operator = (source: Types.Observable.t('a)): Types.Observable.t(Types.Observable.Notification.t('a)) => {
   subscribeWith: (obs: Types.Observable.Observer.t(Types.Observable.Notification.t('a))) => {
-    let safe: Types.Observable.Observer.t(Types.Observable.Notification.t('a)) = SafeObservableObserver.make(obs);
-
-    let observer: Types.Observable.Observer.t('a) = {
+    source.subscribeWith(SafeObservableObserver.make({
       onSubscribe: (sub: Types.Subscription.t) => {
-        safe.onSubscribe(sub);
+        obs.onSubscribe(sub);
       },
       onComplete: () => {
-        safe.onNext(Types.Observable.Notification.OnComplete);
-        safe.onComplete();
+        obs.onNext(Types.Observable.Notification.OnComplete);
+        obs.onComplete();
       },
       onError: (x: exn) => {
-        safe.onNext(Types.Observable.Notification.OnError(x));
-        safe.onComplete();
+        obs.onNext(Types.Observable.Notification.OnError(x));
+        obs.onComplete();
       },
       onNext: (x: 'a) => {
-        safe.onNext(Types.Observable.Notification.OnNext(x));
+        obs.onNext(Types.Observable.Notification.OnNext(x));
       },
-    };
-
-    source.subscribeWith(observer);
+    }));
   }
 };
