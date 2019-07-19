@@ -65,6 +65,8 @@ let make = (obs: Types.Observable.Observer.t('a)): Types.Observable.Observer.t('
     onNext: (x: 'a) => {
       if (!finished^) {
         obs.onNext(x);
+      } else {
+        raise(x);
       }
     },
   });
