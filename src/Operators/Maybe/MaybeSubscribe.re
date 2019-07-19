@@ -26,55 +26,41 @@
  * @copyright Alexis Munsayac 2019
  */
 let operator = (observer: Types.Maybe.Observer.Lambda.t('a), source: Types.Maybe.t('a)): Types.Subscription.t => {
-  let subscribed = ref(false);
   let finished = ref(false);
   let subRef: ref(option(Types.Subscription.t)) = ref(None);
   
   let subscription: Types.Subscription.t = {
     cancel: () => {
       if (!finished^) {
-        if (subscribed^) {
-          switch (subRef^) {
-          | Some(ref) => ref.cancel()
-          | None => ()
-          }
+        switch (subRef^) {
+        | Some(ref) => ref.cancel()
+        | None => ()
         }
         finished := true;
       }
     }
   };
 
-  source.subscribeWith({
+  source.subscribeWith(SafeMaybeObserver.make({
     onSubscribe: (sub: Types.Subscription.t) => {
-      if (finished^ || subscribed^) {
-        sub.cancel();
-      } else {
-        subscribed := true;
-        subRef := Some(sub);
-      }
+      subRef := Some(sub);
     },
 
     onComplete: () => {
-      if (subscribed^ && !finished^) {
-        observer.onComplete();
-        subscription.cancel();
-      }
+      observer.onComplete();
+      subscription.cancel();
     },
 
     onSuccess: (x: 'a) => {
-      if (subscribed^ && !finished^) {
-        observer.onSuccess(x);
-        subscription.cancel();
-      }
+      observer.onSuccess(x);
+      subscription.cancel();
     },
 
     onError: (x: exn) => {
-      if (subscribed^ && !finished^) {
-        observer.onError(x);
-        subscription.cancel();
-      }
-    }
-  })
+      observer.onError(x);
+      subscription.cancel();
+    },
+  }));
 
   subscription;
 };
