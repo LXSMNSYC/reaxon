@@ -27,71 +27,36 @@
  */
 let operator = (source: Types.Observable.t('a)): Types.Single.t('a) => {
   subscribeWith: (obs: Types.Single.Observer.t('a)) => {
-    let subscribed = ref(false);
-    let finished = ref(false);
-    let subRef: ref(option(Types.Subscription.t)) = ref(None);
-    
-    let subscription: Types.Subscription.t = {
-      cancel: () => {
-        if (!finished^) {
-          if (subscribed^) {
-            switch (subRef^) {
-            | Some(ref) => ref.cancel()
-            | None => ()
-            }
-          }
-          finished := true;
-        }
-      }
-    };
+    let safe: Types.Single.Observer.t('a) = SafeSingleObserver.make(obs);
 
     let last = ref(None);
     let single = ref(false);
 
-    let observer: Types.Observable.Observer.t('a) = {
+    source.subscribeWith({
       onSubscribe: (sub: Types.Subscription.t) => {
-        if (finished^ || subscribed^) {
-          sub.cancel();
-        } else {
-          subscribed := true;
-          subRef := Some(sub);
-        }
+        safe.onSubscribe(sub);
       },
       onComplete: () => {
-        if (!finished^ && subscribed^) {
-          if (single^) {
-            switch (last^) {
-              | Some(item) => obs.onSuccess(item)
-              | None => obs.onError(Exceptions.NoSuchElement)
-            };
-          } else {
-            obs.onError(Exceptions.NoSuchElement);
-          }
-          subscription.cancel();
-        }
-      },
-      onNext: (x: 'a) => {
-        if (!finished^ && subscribed^) {
-          if (single^) {
-            obs.onError(Exceptions.IndexOutOfBounds);
-            subscription.cancel();
-          } else {
-            single := true;
-            last := Some(x);
-          }
+        if (single^) {
+          switch (last^) {
+            | Some(item) => safe.onSuccess(item)
+            | None => safe.onError(Exceptions.NoSuchElement)
+          };
+        } else {
+          safe.onError(Exceptions.NoSuchElement);
         }
       },
       onError: (x: exn) => {
-        if (!finished^ && subscribed^) {
-          obs.onError(x);
-          subscription.cancel();
+        safe.onError(x);
+      },
+      onNext: (x: 'a) => {
+        if (single^) {
+          safe.onError(Exceptions.IndexOutOfBounds);
         } else {
-          raise(x);
+          single := true;
+          last := Some(x);
         }
       },
-    };
-
-    obs.onSubscribe(subscription);
-    source.subscribeWith(observer);
+    });
   }
 };
