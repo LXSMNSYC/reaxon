@@ -27,18 +27,15 @@
  */
 let operator = (source: Types.Single.t(Types.Single.t('a))): Types.Single.t('a) => {
   subscribeWith: (obs: Types.Single.Observer.t('a)) => {
-    let subscribed = ref(false);
     let finished = ref(false);
     let subRef: ref(option(Types.Subscription.t)) = ref(None);
 
     let subscription: Types.Subscription.t = {
       cancel: () => {
         if (!finished^) {
-          if (subscribed^) {
-            switch (subRef^) {
-            | Some(ref) => ref.cancel()
-            | None => ()
-            }
+          switch (subRef^) {
+          | Some(ref) => ref.cancel()
+          | None => ()
           }
           finished := true;
         }
@@ -47,45 +44,42 @@ let operator = (source: Types.Single.t(Types.Single.t('a))): Types.Single.t('a) 
 
     obs.onSubscribe(subscription);
 
-    let innerObserver: Types.Single.Observer.t('a) = {
+    let innerObserver: Types.Single.Observer.t('a) = ProtectedSingleObserver.make({
       onSubscribe: (sub: Types.Subscription.t) => {
-        if (finished^ || subscribed^) {
+        if (finished^) {
           sub.cancel();
         } else {
-          subscribed := true;
           subRef := Some(sub);
         }
       },
       onSuccess: (x: 'a) => {
-        if (!finished^ && subscribed^) {
+        if (!finished^) {
           obs.onSuccess(x);
           subscription.cancel();
         }
       },
       onError: (x: exn) => {
-        if (!finished^ && subscribed^) {
+        if (!finished^) {
           obs.onError(x);
           subscription.cancel();
         } else {
           raise(x);
         }
       },
-    };
+    });
 
-    let outerObserver: Types.Single.Observer.t(Types.Single.t('a)) = {
+    let outerObserver: Types.Single.Observer.t(Types.Single.t('a)) = ProtectedSingleObserver.make({
       onSubscribe: (sub: Types.Subscription.t) => {
-        if (finished^ || subscribed^) {
+        if (finished^ ) {
           sub.cancel();
         } else {
-          subscribed := true;
           subRef := Some(sub);
         }
       },
       onSuccess: (x: Types.Single.t('a)) => {
-        if (!finished^ && subscribed^) {
+        if (!finished^) {
           let oldRef = subRef^;
 
-          subscribed := false;
           subRef := None;
           x.subscribeWith(innerObserver);
           
@@ -96,14 +90,14 @@ let operator = (source: Types.Single.t(Types.Single.t('a))): Types.Single.t('a) 
         }
       },
       onError: (x: exn) => {
-        if (!finished^ && subscribed^) {
+        if (!finished^) {
           obs.onError(x);
           subscription.cancel();
         } else {
           raise(x);
         }
       },
-    };
+    });
 
     source.subscribeWith(outerObserver);
   }
