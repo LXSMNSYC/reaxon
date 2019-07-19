@@ -60,6 +60,8 @@ let make = (obs: Types.Single.Observer.t('a)): Types.Single.Observer.t('a) => {
       if (!finished^) {
         obs.onError(x);
         subscription.cancel();
+      } else {
+        raise(x);
       }
     },
   });
