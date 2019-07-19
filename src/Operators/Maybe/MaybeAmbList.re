@@ -40,14 +40,12 @@ let operator = (sources: list(Types.Maybe.t('a))): Types.Maybe.t('a) => {
     };
 
     sources |> List.iter((source: Types.Maybe.t('a)) => {
-      let subscribed = ref(false);
-      source.subscribeWith({
+      source.subscribeWith(ProtectedMaybeObserver.make({
         onSubscribe: (sub: Types.Subscription.t) => {
-          if (finished^ || subscribed^) {
+          if (finished^) {
             sub.cancel();
           } else {
             subRef := [sub] @ subRef^;
-            subscribed := true;
           }
         },
         onComplete: () => {
@@ -70,7 +68,7 @@ let operator = (sources: list(Types.Maybe.t('a))): Types.Maybe.t('a) => {
             raise(x);
           }
         },
-      });
+      }));
     });
   }
 };
