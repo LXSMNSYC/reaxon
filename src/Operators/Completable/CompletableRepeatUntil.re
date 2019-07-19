@@ -47,45 +47,48 @@ let operator = (supplier: int => bool, source: Types.Completable.t): Types.Compl
 
     let rec retry = () => {
       subRef := None;
-      retries := retries^ + 1;
 
-      source.subscribeWith(ProtectedCompletableObserver.make({
-        onSubscribe: (sub: Types.Subscription.t) => {
-          if (finished^) {
-            sub.cancel();
-          } else {
-            subRef := Some(sub);
-          }
-        },
-        onComplete: () => {
-          if (!finished^) {
-            let oldRef = subRef^;
-            switch(supplier(retries^)) {
-              | true => {
-                obs.onComplete();
-                subscription.cancel();
+      switch(supplier(retries^)) {
+        | true => {
+          obs.onComplete();
+          subscription.cancel();
+        }
+        | false => {
+          retries := retries^ + 1;
+          source.subscribeWith(ProtectedCompletableObserver.make({
+            onSubscribe: (sub: Types.Subscription.t) => {
+              if (finished^) {
+                sub.cancel();
+              } else {
+                subRef := Some(sub);
               }
-              | false => retry()
-              | exception e => {
-                obs.onError(e);
-                subscription.cancel();
+            },
+            onComplete: () => {
+              if (!finished^) {
+                let oldRef = subRef^;
+                retry()
+                switch (oldRef) {
+                | Some(ref) => ref.cancel()
+                | None => ()
+                };
               }
-            };
-            switch (oldRef) {
-            | Some(ref) => ref.cancel()
-            | None => ()
-            };
-          }
-        },
-        onError: (x: exn) => {
-          if (!finished^) {
-            obs.onError(x);
-            subscription.cancel();
-          } else {
-            raise(x);
-          }
-        },
-      }));
+            },
+            onError: (x: exn) => {
+              if (!finished^) {
+                obs.onError(x);
+                subscription.cancel();
+              } else {
+                raise(x);
+              }
+            },
+          }));
+        }
+        | exception e => {
+          obs.onError(e);
+          subscription.cancel();
+        }
+      };
+      
     };
 
     obs.onSubscribe(subscription);
