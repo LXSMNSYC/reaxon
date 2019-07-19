@@ -1,26 +1,53 @@
-let operator: ObservableTypes.s('source, Notification.Observable.t('a)) => ObservableTypes.operator('downstream, 'a) = (source) => {
-  pub subscribeWith = (obs) => {
-    let state = Cancellable.Linked.make();
+/**
+ * @license
+ * MIT License
+ *
+ * Copyright (c) 2019 Alexis Munsayac
+ * Permission is hereby granted, free of charge, to any person obtaining a copy
+ * of this software and associated documentation files (the "Software"), to deal
+ * in the Software without restriction, including without limitation the rights
+ * to use, copy, modify, merge, publish, distribute, sublicense, and/or sell
+ * copies of the Software, and to permit persons to whom the Software is
+ * furnished to do so, subject to the following conditions:
+ *
+ * The above copyright notice and this permission notice shall be included in all
+ * copies or substantial portions of the Software.
+ *
+ * THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND, EXPRESS OR
+ * IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF MERCHANTABILITY,
+ * FITNESS FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT. IN NO EVENT SHALL THE
+ * AUTHORS OR COPYRIGHT HOLDERS BE LIABLE FOR ANY CLAIM, DAMAGES OR OTHER
+ * LIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING FROM,
+ * OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE
+ * SOFTWARE.
+ *
+ *
+ * @author Alexis Munsayac <alexis.munsayac@gmail.com>
+ * @copyright Alexis Munsayac 2019
+ */
+let operator = (source: Types.Observable.t(Types.Observable.Notification.t('a))): Types.Observable.t('a) => {
+  subscribeWith: (obs: Types.Observable.Observer.t('a)) => {
+    let safe: Types.Observable.Observer.t('a) = SafeObservableObserver.make(obs);
 
-    obs#onSubscribe(Utils.c2sub(state));
+    let observer: Types.Observable.Observer.t(Types.Observable.Notification.t('a)) = {
+      onSubscribe: (sub: Types.Subscription.t) => {
+        safe.onSubscribe(sub);
+      },
+      onComplete: () => {
+        safe.onComplete();
+      },
+      onError: (x: exn) => {
+        safe.onError(x);
+      },
+      onNext: (x: Types.Observable.Notification.t('a)) => {
+        switch (x) {
+          | Types.Observable.Notification.OnComplete => safe.onComplete()
+          | Types.Observable.Notification.OnError(err) => safe.onError(err)
+          | Types.Observable.Notification.OnNext(item) => safe.onNext(item)
+        };
+      },
+    };
 
-    source#subscribeWith({
-      pub onSubscribe = state#link;
-
-      pub onNext = x => switch (x) {
-        | Notification.Observable.OnComplete => {
-          obs#onComplete();
-          state#cancel();
-        }
-        | Notification.Observable.OnError(item) => {
-          obs#onError(item)
-          state#cancel();
-        }
-        | Notification.Observable.OnNext(item) => obs#onNext(item)
-      };
-
-      pub onComplete = obs#onComplete;
-      pub onError = obs#onError;
-    });
-  };
+    source.subscribeWith(observer);
+  }
 };
