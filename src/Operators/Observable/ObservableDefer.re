@@ -27,11 +27,9 @@
  */
 let operator = (supplier: unit => Types.Observable.t('a)): Types.Observable.t('a) => {
   subscribeWith: (obs: Types.Observable.Observer.t('a)) => {
-    let safe: Types.Observable.Observer.t('a) = SafeObservableObserver.make(obs);
-
     switch (supplier()) {
-      | result => result.subscribeWith(safe)
-      | exception e => ObservableError.operator(e).subscribeWith(safe)
+      | result => result.subscribeWith(SafeObservableObserver.make(obs));
+      | exception e => ObservableError.operator(e).subscribeWith(obs);
     };
   }
 };
