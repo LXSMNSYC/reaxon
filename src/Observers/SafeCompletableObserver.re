@@ -60,6 +60,8 @@ let make = (obs: Types.Completable.Observer.t): Types.Completable.Observer.t => 
       if (!finished^) {
         obs.onError(x);
         subscription.cancel();
+      } else {
+        raise(x);
       }
     },
   });
