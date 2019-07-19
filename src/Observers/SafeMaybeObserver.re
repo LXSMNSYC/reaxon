@@ -66,6 +66,8 @@ let make = (obs: Types.Maybe.Observer.t('a)): Types.Maybe.Observer.t('a) => {
       if (!finished^) {
         obs.onError(x);
         subscription.cancel();
+      } else {
+        raise(x);
       }
     },
   });
