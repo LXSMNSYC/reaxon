@@ -25,12 +25,8 @@
  * @author Alexis Munsayac <alexis.munsayac@gmail.com>
  * @copyright Alexis Munsayac 2019
  */
-let subscription: Types.Subscription.t = {
-  cancel: () => (),
-};
-
 let instance: Types.Observable.t('a) = {
-  subscribeWith: (obs: Types.Observable.Observer.t('a)) => obs.onSubscribe(subscription)
+  subscribeWith: (obs: Types.Observable.Observer.t('a)) => obs.onSubscribe(EmptySubscription.instance)
 };
 
 let operator = () => instance;
