@@ -27,58 +27,11 @@
  */
 let operator = (supplier: unit => Types.Observable.t('a)): Types.Observable.t('a) => {
   subscribeWith: (obs: Types.Observable.Observer.t('a)) => {
-    let subscribed = ref(false);
-    let finished = ref(false);
-    let subRef: ref(option(Types.Subscription.t)) = ref(None);
-    
-    let subscription: Types.Subscription.t = {
-      cancel: () => {
-        if (!finished^) {
-          if (subscribed^) {
-            switch (subRef^) {
-            | Some(ref) => ref.cancel()
-            | None => ()
-            }
-          }
-          finished := true;
-        }
-      }
-    };
+    let safe: Types.Observable.Observer.t('a) = SafeObservableObserver.make(obs);
 
-    let observer: Types.Observable.Observer.t('a) = {
-      onSubscribe: (sub: Types.Subscription.t) => {
-        if (finished^ || subscribed^) {
-          sub.cancel();
-        } else {
-          subscribed := true;
-          subRef := Some(sub);
-        }
-      },
-      onComplete: () => {
-        if (!finished^ && subscribed^) {
-          obs.onComplete();
-          subscription.cancel();
-        }
-      },
-      onError: (x: exn) => {
-        if (!finished^ && subscribed^) {
-          obs.onError(x);
-          subscription.cancel();
-        } else {
-          raise(x);
-        }
-      },
-      onNext: (x: 'a) => {
-        if (!finished^ && subscribed^) {
-          obs.onNext(x);
-        }
-      },
-    };
-
-    obs.onSubscribe(subscription);
     switch (supplier()) {
-      | result => result.subscribeWith(observer)
-      | exception e => observer.onError(e)
+      | result => result.subscribeWith(safe)
+      | exception e => ObservableError.operator(e).subscribeWith(safe)
     };
   }
 };
