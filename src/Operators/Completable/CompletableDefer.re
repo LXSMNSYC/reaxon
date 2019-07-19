@@ -27,13 +27,9 @@
  */
 let operator = (supplier: unit => Types.Completable.t): Types.Completable.t => {
   subscribeWith: (obs: Types.Completable.Observer.t) => {
-    let safe: Types.Completable.Observer.t = SafeCompletableObserver.make(obs);
     switch (supplier()) {
-      | result => result.subscribeWith(safe)
-      | exception e => {
-        safe.onSubscribe(EmptySubscription.instance);
-        safe.onError(e);
-      }
+      | result => result.subscribeWith(SafeCompletableObserver.make(obs))
+      | exception e => CompletableError.operator(e).subscribeWith(obs)
     };
   }
 };
