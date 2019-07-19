@@ -40,14 +40,12 @@ let operator = (sources: array(Types.Completable.t)): Types.Completable.t => {
     };
 
     sources |> Array.iter((source: Types.Completable.t) => {
-      let subscribed = ref(false);
-      source.subscribeWith({
+      source.subscribeWith(ProtectedCompletableObserver.make({
         onSubscribe: (sub: Types.Subscription.t) => {
-          if (finished^ || subscribed^) {
+          if (finished^) {
             sub.cancel();
           } else {
             subRef := [sub] @ subRef^;
-            subscribed := true;
           }
         },
         onComplete: () => {
@@ -64,7 +62,7 @@ let operator = (sources: array(Types.Completable.t)): Types.Completable.t => {
             raise(x);
           }
         },
-      });
+      }));
     });
   }
 };
