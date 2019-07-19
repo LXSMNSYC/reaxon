@@ -27,53 +27,19 @@
  */
 let operator = (source: Types.Single.t(Types.Single.Notification.t('a))): Types.Single.t('a) => {
   subscribeWith: (obs: Types.Single.Observer.t('a)) => {
-    let subscribed = ref(false);
-    let finished = ref(false);
-    let subRef: ref(option(Types.Subscription.t)) = ref(None);
-    
-    let subscription: Types.Subscription.t = {
-      cancel: () => {
-        if (!finished^) {
-          if (subscribed^) {
-            switch (subRef^) {
-            | Some(ref) => ref.cancel()
-            | None => ()
-            }
-          }
-          finished := true;
-        }
-      }
-    };
-
-    let observer: Types.Single.Observer.t(Types.Single.Notification.t('a)) = {
+    source.subscribeWith(SafeSingleObserver.make({
       onSubscribe: (sub: Types.Subscription.t) => {
-        if (finished^ || subscribed^) {
-          sub.cancel();
-        } else {
-          subscribed := true;
-          subRef := Some(sub);
-        }
+        obs.onSubscribe(sub);
       },
       onSuccess: (x: Types.Single.Notification.t('a)) => {
-        if (!finished^ && subscribed^) {
-          switch (x) {
-            | Types.Single.Notification.OnSuccess(item) => obs.onSuccess(item)
-            | Types.Single.Notification.OnError(item) => obs.onError(item)
-          };
-          subscription.cancel();
-        }
+        switch (x) {
+          | Types.Single.Notification.OnSuccess(item) => obs.onSuccess(item)
+          | Types.Single.Notification.OnError(item) => obs.onError(item)
+        };
       },
       onError: (x: exn) => {
-        if (!finished^ && subscribed^) {
-          obs.onError(x);
-          subscription.cancel();
-        } else {
-          raise(x);
-        }
+        obs.onError(x);
       },
-    };
-
-    obs.onSubscribe(subscription);
-    source.subscribeWith(observer);
+    }));
   },
 };
