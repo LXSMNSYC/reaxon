@@ -28,18 +28,15 @@
 
 let operator = (supplier: (int, exn) => bool, source: Types.Completable.t): Types.Completable.t => {
   subscribeWith: (obs: Types.Completable.Observer.t) => {
-    let subscribed = ref(false);
     let finished = ref(false);
     let subRef: ref(option(Types.Subscription.t)) = ref(None);
 
     let subscription: Types.Subscription.t = {
       cancel: () => {
         if (!finished^) {
-          if (subscribed^) {
-            switch (subRef^) {
-            | Some(ref) => ref.cancel()
-            | None => ()
-            }
+          switch (subRef^) {
+          | Some(ref) => ref.cancel()
+          | None => ()
           }
           finished := true;
         }
@@ -49,27 +46,26 @@ let operator = (supplier: (int, exn) => bool, source: Types.Completable.t): Type
     let retries = ref(-1);
 
     let rec retry = () => {
-      subscribed := false;
       subRef := None;
       retries := retries^ + 1;
 
-      let observer: Types.Completable.Observer.t = {
+      source.subscribeWith(ProtectedCompletableObserver.make({
         onSubscribe: (sub: Types.Subscription.t) => {
-          if (finished^ || subscribed^) {
+          if (finished^) {
             sub.cancel();
           } else {
-            subscribed := true;
             subRef := Some(sub);
           }
         },
         onComplete: () => {
-          if (!finished^ && subscribed^) {
+          if (!finished^) {
             obs.onComplete();
             subscription.cancel();
           }
         },
         onError: (x: exn) => {
-          if (!finished^ && subscribed^) {
+          if (!finished^) {
+            let oldRef = subRef^;
             switch(supplier(retries^, x)) {
               | true => retry()
               | false => {
@@ -81,12 +77,15 @@ let operator = (supplier: (int, exn) => bool, source: Types.Completable.t): Type
                 subscription.cancel();
               }
             };
+            switch (oldRef) {
+            | Some(ref) => ref.cancel()
+            | None => ()
+            };
           } else {
             raise(x);
           }
         },
-      };
-      source.subscribeWith(observer);
+      }));
     };
 
     obs.onSubscribe(subscription);
