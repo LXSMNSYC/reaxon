@@ -27,29 +27,9 @@
  */
 let operator = (value: exn): Types.Single.t('a) => {
   subscribeWith: (obs: Types.Single.Observer.t('a)) => {
-    let subscribed = ref(false);
-    let finished = ref(false);
-    let subRef: ref(option(Types.Subscription.t)) = ref(None);
-    
-    let subscription: Types.Subscription.t = {
-      cancel: () => {
-        if (!finished^) {
-          if (subscribed^) {
-            switch (subRef^) {
-            | Some(ref) => ref.cancel()
-            | None => ()
-            }
-          }
-          finished := true;
-        }
-      }
-    };
+    let safe: Types.Single.Observer.t('a) = SafeSingleObserver.make(obs);
 
-    obs.onSubscribe(subscription);
-
-    if (!finished^) {
-      obs.onError(value);
-      subscription.cancel();
-    }
+    safe.onSubscribe(EmptySubscription.instance);
+    safe.onError(value);
   }
 };
