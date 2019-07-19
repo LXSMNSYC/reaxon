@@ -27,24 +27,20 @@
  */
 let operator = (checker: exn => bool, source: Types.Completable.t): Types.Completable.t => {
   subscribeWith: (obs: Types.Completable.Observer.t) => {
-    let safe: Types.Completable.Observer.t = SafeCompletableObserver.make(obs);
-
-    let observer: Types.Completable.Observer.t = {
+    source.subscribeWith(SafeCompletableObserver.make({
       onSubscribe: (sub: Types.Subscription.t) => {
-        safe.onSubscribe(sub);
+        obs.onSubscribe(sub);
       },
       onComplete: () => {
-        safe.onComplete();
+        obs.onComplete();
       },
       onError: (x: exn) => {
         switch (checker(x)) {
-          | true => safe.onComplete()
-          | false => safe.onError(x)
-          | exception e => safe.onError(e) 
+          | true => obs.onComplete()
+          | false => obs.onError(x)
+          | exception e => obs.onError(e) 
         }
       },
-    };
-
-    source.subscribeWith(observer);
+    }));
   }
 };
