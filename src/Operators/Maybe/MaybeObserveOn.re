@@ -27,37 +27,32 @@
  */
 let operator = (scheduler: Types.Scheduler.t, source: Types.Maybe.t('a)): Types.Maybe.t('a) => {
   subscribeWith: (obs: Types.Maybe.Observer.t('a)) => {
-    let subscribed = ref(false);
     let finished = ref(false);
     let subRef: ref(option(Types.Subscription.t)) = ref(None);
 
     let subscription: Types.Subscription.t = {
       cancel: () => {
         if (!finished^) {
-          if (subscribed^) {
-            switch (subRef^) {
-            | Some(ref) => ref.cancel()
-            | None => ()
-            }
+          switch (subRef^) {
+          | Some(ref) => ref.cancel()
+          | None => ()
           }
           finished := true;
         }
       }
     };
 
-    obs.onSubscribe(subscription);
-
-    let observer: Types.Maybe.Observer.t('a) = {
+    source.subscribeWith(ProtectedMaybeObserver.make({
       onSubscribe: (sub: Types.Subscription.t) => {
-        if (finished^ || subscribed^) {
+        if (finished^) {
           sub.cancel();
         } else {
-          subscribed := true;
           subRef := Some(sub);
+          obs.onSubscribe(subscription);
         }
       },
       onComplete: () => {
-        if (!finished^ && subscribed^) {
+        if (!finished^) {
           let oldRef = subRef^;
 
           subRef := Some(scheduler.run(() => {
@@ -72,7 +67,7 @@ let operator = (scheduler: Types.Scheduler.t, source: Types.Maybe.t('a)): Types.
         }
       },
       onSuccess: (x: 'a) => {
-        if (!finished^ && subscribed^) {
+        if (!finished^) {
           let oldRef = subRef^;
 
           subRef := Some(scheduler.run(() => {
@@ -87,7 +82,7 @@ let operator = (scheduler: Types.Scheduler.t, source: Types.Maybe.t('a)): Types.
         }
       },
       onError: (x: exn) => {
-        if (!finished^ && subscribed^) {
+        if (!finished^) {
           let oldRef = subRef^;
 
           subRef := Some(scheduler.run(() => {
@@ -103,8 +98,6 @@ let operator = (scheduler: Types.Scheduler.t, source: Types.Maybe.t('a)): Types.
           raise(x);
         }
       },
-    };
-
-    source.subscribeWith(observer);
+    }));
   }
 }
