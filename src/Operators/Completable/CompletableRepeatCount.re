@@ -47,19 +47,20 @@ let operator = (count: int, source: Types.Completable.t): Types.Completable.t =>
 
     let rec retry = () => {
       subRef := None;
-      retries := retries^ + 1;
 
-      source.subscribeWith(ProtectedCompletableObserver.make({
-        onSubscribe: (sub: Types.Subscription.t) => {
-          if (finished^) {
-            sub.cancel();
-          } else {
-            subRef := Some(sub);
-          }
-        },
-        onComplete: () => {
-          if (!finished^) {
-            if (retries^ < count) {
+      if (retries^ < count) {
+        retries := retries^ + 1;
+  
+        source.subscribeWith(ProtectedCompletableObserver.make({
+          onSubscribe: (sub: Types.Subscription.t) => {
+            if (finished^) {
+              sub.cancel();
+            } else {
+              subRef := Some(sub);
+            }
+          },
+          onComplete: () => {
+            if (!finished^) {
               let oldRef = subRef^;
   
               retry();
@@ -68,21 +69,21 @@ let operator = (count: int, source: Types.Completable.t): Types.Completable.t =>
               | Some(ref) => ref.cancel()
               | None => ()
               };
-            } else {
-              obs.onComplete();
-              subscription.cancel();
             }
-          }
-        },
-        onError: (x: exn) => {
-          if (!finished^) {
-            obs.onError(x);
-            subscription.cancel();
-          } else {
-            raise(x);
-          }
-        },
-      }));
+          },
+          onError: (x: exn) => {
+            if (!finished^) {
+              obs.onError(x);
+              subscription.cancel();
+            } else {
+              raise(x);
+            }
+          },
+        }));
+      } else {
+        obs.onComplete();
+        subscription.cancel();
+      }
     };
 
     obs.onSubscribe(subscription);
