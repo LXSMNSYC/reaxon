@@ -1,20 +1,51 @@
-let operator: int => int => int => ObservableTypes.operator('downstream, int) = (start, size, stepSize) => {
-  pri produce = (iterator, current) => if (current <= size) {
-    iterator(current);
-    this#produce(iterator, current + stepSize);
-  };
-  pub subscribeWith = (obs) => {
-    let state = Cancellable.Boolean.make();
+/**
+ * @license
+ * MIT License
+ *
+ * Copyright (c) 2019 Alexis Munsayac
+ * Permission is hereby granted, free of charge, to any person obtaining a copy
+ * of this software and associated documentation files (the "Software"), to deal
+ * in the Software without restriction, including without limitation the rights
+ * to use, copy, modify, merge, publish, distribute, sublicense, and/or sell
+ * copies of the Software, and to permit persons to whom the Software is
+ * furnished to do so, subject to the following conditions:
+ *
+ * The above copyright notice and this permission notice shall be included in all
+ * copies or substantial portions of the Software.
+ *
+ * THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND, EXPRESS OR
+ * IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF MERCHANTABILITY,
+ * FITNESS FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT. IN NO EVENT SHALL THE
+ * AUTHORS OR COPYRIGHT HOLDERS BE LIABLE FOR ANY CLAIM, DAMAGES OR OTHER
+ * LIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING FROM,
+ * OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE
+ * SOFTWARE.
+ *
+ *
+ * @author Alexis Munsayac <alexis.munsayac@gmail.com>
+ * @copyright Alexis Munsayac 2019
+ */
+let operator = (low: int, high: int, step: int): Types.Observable.t(int) => {
+  subscribeWith: (obs: Types.Observable.Observer.t(int)) => {
+    let safe: Types.Observable.Observer.t(int) = SafeObservableObserver.make(obs);
 
-    obs#onSubscribe(state);
+    let finished = ref(false);
 
-    this#produce(x => if (!state#isCancelled()) {
-      obs#onNext(x);
-    }, start);
+    safe.onSubscribe({
+      cancel: () => {
+        finished := true;
+      }
+    })
 
-    if (!state#isCancelled()) {
-      obs#onComplete();
-      state#cancel();
-    }
-  };
+    let rec generate = (current: int) => {
+      if ((step < 0 && current >= high) || (step > 0 && current <= high)) {
+        safe.onNext(current);
+        generate(current + step);
+      }
+    };
+
+
+    generate(low);
+    safe.onComplete();
+  },
 };
