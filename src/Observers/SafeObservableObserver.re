@@ -26,50 +26,46 @@
  * @copyright Alexis Munsayac 2019
  */
 let make = (obs: Types.Observable.Observer.t('a)): Types.Observable.Observer.t('a) => {
-  let subscribed = ref(false);
   let finished = ref(false);
   let subRef: ref(option(Types.Subscription.t)) = ref(None);
 
   let subscription: Types.Subscription.t = {
     cancel: () => {
       if (!finished^) {
-        if (subscribed^) {
-          switch (subRef^) {
-          | Some(ref) => ref.cancel()
-          | None => ()
-          }
+        switch (subRef^) {
+        | Some(ref) => ref.cancel()
+        | None => ()
         }
         finished := true;
       }
     }
   };
 
-  {
+  ProtectedObservableObserver.make({
     onSubscribe: (sub: Types.Subscription.t) => {
-      if (finished^ || subscribed^) {
+      if (finished^) {
         sub.cancel();
       } else {
-        subscribed := true;
         subRef := Some(sub);
         obs.onSubscribe(subscription);
       }
     },
     onComplete: () => {
-      if (!finished^ && subscribed^) {
+      if (!finished^) {
         obs.onComplete();
         subscription.cancel();
       }
     },
     onError: (x: exn) => {
-      if (!finished^ && subscribed^) {
+      if (!finished^) {
         obs.onError(x);
         subscription.cancel();
       }
     },
     onNext: (x: 'a) => {
-      if (!finished^ && subscribed^) {
+      if (!finished^) {
         obs.onNext(x);
       }
     },
-  };
+  });
 };
