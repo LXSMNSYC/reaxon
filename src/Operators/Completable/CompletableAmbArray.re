@@ -27,14 +27,14 @@
  */
 let operator = (sources: array(Types.Completable.t)): Types.Completable.t => {
   subscribeWith: (obs: Types.Completable.Observer.t) => {
-    let finished = ref(false);
+    let alive = ref(true);
     let subRef: ref(list(Types.Subscription.t)) = ref([]);
   
     let subscription: Types.Subscription.t = {
       cancel: () => {
-        if (!finished^) {
+        if (alive^) {
           subRef^ |> List.iter((item: Types.Subscription.t) => item.cancel());
-          finished := true;
+          alive := false;
         }
       }
     };
@@ -42,20 +42,20 @@ let operator = (sources: array(Types.Completable.t)): Types.Completable.t => {
     sources |> Array.iter((source: Types.Completable.t) => {
       source.subscribeWith(ProtectedCompletableObserver.make({
         onSubscribe: (sub: Types.Subscription.t) => {
-          if (finished^) {
-            sub.cancel();
-          } else {
+          if (alive^) {
             subRef := [sub] @ subRef^;
+          } else {
+            sub.cancel();
           }
         },
         onComplete: () => {
-          if (!finished^) {
+          if (alive^) {
             obs.onComplete();
             subscription.cancel();
           }
         },
         onError: (x: exn) => {
-          if (!finished^) {
+          if (alive^) {
             obs.onError(x);
             subscription.cancel();
           } else {
