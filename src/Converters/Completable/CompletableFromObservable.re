@@ -27,51 +27,17 @@
  */
 let operator = (source: Types.Observable.t('a)): Types.Completable.t => {
   subscribeWith: (obs: Types.Completable.Observer.t) => {
-    let subscribed = ref(false);
-    let finished = ref(false);
-    let subRef: ref(option(Types.Subscription.t)) = ref(None);
-    
-    let subscription: Types.Subscription.t = {
-      cancel: () => {
-        if (!finished^) {
-          if (subscribed^) {
-            switch (subRef^) {
-            | Some(ref) => ref.cancel()
-            | None => ()
-            }
-          }
-          finished := true;
-        }
-      }
-    };
-
-    let observer: Types.Observable.Observer.t('a) = {
+    source.subscribeWith(SafeObservableObserver.make({
       onSubscribe: (sub: Types.Subscription.t) => {
-        if (finished^ || subscribed^) {
-          sub.cancel();
-        } else {
-          subscribed := true;
-          subRef := Some(sub);
-        }
+        obs.onSubscribe(sub);
       },
       onComplete: () => {
-        if (!finished^ && subscribed^) {
-          obs.onComplete();
-          subscription.cancel();
-        }
+        obs.onComplete();
       },
-      onNext: (x: 'a) => (),
       onError: (x: exn) => {
-        if (!finished^ && subscribed^) {
-          obs.onError(x);
-          subscription.cancel();
-        } else {
-          raise(x);
-        }
+        obs.onError(x);
       },
-    };
-
-    obs.onSubscribe(subscription);
-    source.subscribeWith(observer);
+      onNext: (_: 'a) => (),
+    }));
   }
 };
