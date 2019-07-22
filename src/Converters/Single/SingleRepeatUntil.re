@@ -67,7 +67,7 @@ let operator = (supplier: int => bool, source: Types.Single.t('a)): Types.Observ
               if (!finished^) {
                 let oldRef = subRef^;
                 obs.onNext(x);
-                retry()
+                retry();
                 switch (oldRef) {
                 | Some(ref) => ref.cancel()
                 | None => ()
