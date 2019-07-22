@@ -27,17 +27,17 @@
  */
 let operator = (source: Types.Single.t(Types.Single.t('a))): Types.Single.t('a) => {
   subscribeWith: (obs: Types.Single.Observer.t('a)) => {
-    let finished = ref(false);
+    let alive = ref(true);
     let subRef: ref(option(Types.Subscription.t)) = ref(None);
 
     let subscription: Types.Subscription.t = {
       cancel: () => {
-        if (!finished^) {
+        if (alive^) {
           switch (subRef^) {
           | Some(ref) => ref.cancel()
           | None => ()
           }
-          finished := true;
+          alive := false;
         }
       }
     };
@@ -46,20 +46,20 @@ let operator = (source: Types.Single.t(Types.Single.t('a))): Types.Single.t('a) 
 
     let innerObserver: Types.Single.Observer.t('a) = ProtectedSingleObserver.make({
       onSubscribe: (sub: Types.Subscription.t) => {
-        if (finished^) {
-          sub.cancel();
-        } else {
+        if (alive^) {
           subRef := Some(sub);
+        } else {
+          sub.cancel();
         }
       },
       onSuccess: (x: 'a) => {
-        if (!finished^) {
+        if (alive^) {
           obs.onSuccess(x);
           subscription.cancel();
         }
       },
       onError: (x: exn) => {
-        if (!finished^) {
+        if (alive^) {
           obs.onError(x);
           subscription.cancel();
         } else {
@@ -70,27 +70,24 @@ let operator = (source: Types.Single.t(Types.Single.t('a))): Types.Single.t('a) 
 
     let outerObserver: Types.Single.Observer.t(Types.Single.t('a)) = ProtectedSingleObserver.make({
       onSubscribe: (sub: Types.Subscription.t) => {
-        if (finished^ ) {
-          sub.cancel();
-        } else {
+        if (alive^ ) {
           subRef := Some(sub);
+        } else {
+          sub.cancel();
         }
       },
       onSuccess: (x: Types.Single.t('a)) => {
-        if (!finished^) {
+        if (alive^) {
           let oldRef = subRef^;
 
           subRef := None;
           x.subscribeWith(innerObserver);
           
-          switch (oldRef) {
-          | Some(ref) => ref.cancel()
-          | None => ()
-          }
+          OptionalSubscription.cancel(oldRef);
         }
       },
       onError: (x: exn) => {
-        if (!finished^) {
+        if (alive^) {
           obs.onError(x);
           subscription.cancel();
         } else {
