@@ -32,10 +32,7 @@ let make = (obs: Types.Single.Observer.t('a)): Types.Single.Observer.t('a) => {
   let subscription: Types.Subscription.t = {
     cancel: () => {
       if (alive^) {
-        switch (subRef^) {
-        | Some(ref) => ref.cancel()
-        | None => ()
-        }
+        OptionalSubscription.cancel(subRef^);
         alive := false;
       }
     }
