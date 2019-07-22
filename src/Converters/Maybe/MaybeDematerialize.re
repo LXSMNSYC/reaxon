@@ -27,54 +27,20 @@
  */
 let operator = (source: Types.Single.t(Types.Maybe.Notification.t('a))): Types.Maybe.t('a) => {
   subscribeWith: (obs: Types.Maybe.Observer.t('a)) => {
-    let subscribed = ref(false);
-    let finished = ref(false);
-    let subRef: ref(option(Types.Subscription.t)) = ref(None);
-    
-    let subscription: Types.Subscription.t = {
-      cancel: () => {
-        if (!finished^) {
-          if (subscribed^) {
-            switch (subRef^) {
-            | Some(ref) => ref.cancel()
-            | None => ()
-            }
-          }
-          finished := true;
-        }
-      }
-    };
-
-    let observer: Types.Single.Observer.t(Types.Maybe.Notification.t('a)) = {
+    source.subscribeWith(SafeSingleObserver.make({
       onSubscribe: (sub: Types.Subscription.t) => {
-        if (finished^ || subscribed^) {
-          sub.cancel();
-        } else {
-          subscribed := true;
-          subRef := Some(sub);
-        }
+        obs.onSubscribe(sub);
       },
       onSuccess: (x: Types.Maybe.Notification.t('a)) => {
-        if (!finished^ && subscribed^) {
-          switch (x) {
-            | Types.Maybe.Notification.OnSuccess(item) => obs.onSuccess(item)
-            | Types.Maybe.Notification.OnError(item) => obs.onError(item)
-            | Types.Maybe.Notification.OnComplete => obs.onComplete()
-          };
-          subscription.cancel();
-        }
+        switch (x) {
+          | Types.Maybe.Notification.OnSuccess(item) => obs.onSuccess(item) 
+          | Types.Maybe.Notification.OnError(item) => obs.onError(item)
+          | Types.Maybe.Notification.OnComplete => obs.onComplete()
+        };
       },
       onError: (x: exn) => {
-        if (!finished^ && subscribed^) {
-          obs.onError(x);
-          subscription.cancel();
-        } else {
-          raise(x);
-        }
+        obs.onError(x);
       },
-    };
-
-    obs.onSubscribe(subscription);
-    source.subscribeWith(observer);
+    }));
   },
 };
