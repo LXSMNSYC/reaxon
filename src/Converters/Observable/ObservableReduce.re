@@ -1,34 +1,63 @@
-let operator: ('b => 'a => 'b) => option('b) => ObservableTypes.t('source, 'a) => MaybeTypes.operator('downstream, 'b) = (reducer, start, source) => {
-  pub subscribeWith = (obs) => {
-    let state = Cancellable.Linked.make();
+/**
+ * @license
+ * MIT License
+ *
+ * Copyright (c) 2019 Alexis Munsayac
+ * Permission is hereby granted, free of charge, to any person obtaining a copy
+ * of this software and associated documentation files (the "Software"), to deal
+ * in the Software without restriction, including without limitation the rights
+ * to use, copy, modify, merge, publish, distribute, sublicense, and/or sell
+ * copies of the Software, and to permit persons to whom the Software is
+ * furnished to do so, subject to the following conditions:
+ *
+ * The above copyright notice and this permission notice shall be included in all
+ * copies or substantial portions of the Software.
+ *
+ * THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND, EXPRESS OR
+ * IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF MERCHANTABILITY,
+ * FITNESS FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT. IN NO EVENT SHALL THE
+ * AUTHORS OR COPYRIGHT HOLDERS BE LIABLE FOR ANY CLAIM, DAMAGES OR OTHER
+ * LIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING FROM,
+ * OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE
+ * SOFTWARE.
+ *
+ *
+ * @author Alexis Munsayac <alexis.munsayac@gmail.com>
+ * @copyright Alexis Munsayac 2019
+ */
+let operator = (reducer: ('b, 'a) => 'b, starter: option('b), source: Types.Observable.t('a)): Types.Maybe.t('a) => {
+  subscribeWith: (obs: Types.Maybe.Observer.t('a)) => {
+    let current = ref(starter);
 
-    obs#onSubscribe(Utils.c2sub(state));
+    let safe: Types.Maybe.Observer.t('a) = SafeMaybeObserver.make(obs);
 
-    let current = ref(start);
-
-    source#subscribeWith({
-      pub onSubscribe = state#link;
-
-      pub onComplete = () => switch(current^){
-        | Some(item) => obs#onSuccess(item)
-        | None => obs#onComplete()
-      };
-
-      pub onError = obs#onError;
-
-      pub onNext = x => {
-        current := switch(current^) {
-          | Some(item) => switch (reducer(item, x)) {
-            | value => Some(value)
-            | exception e => {
-              obs#onError(e);
-              state#cancel();
-              None;
+    source.subscribeWith({
+      onSubscribe: (sub: Types.Subscription.t) => {
+        safe.onSubscribe(sub);
+      },
+      onComplete: () => {
+        switch(current^) {
+          | Some(item) => safe.onSuccess(item)
+          | None => safe.onComplete() 
+        };
+      },
+      onError: (x: exn) => {
+        safe.onError(x);
+      },
+      onNext: (x: 'a) => {
+        current := switch (current^) {
+          | Some(item) => {
+            switch (reducer(item, x)) {
+              | value => Some(value)
+              | exception e => {
+                safe.onError(e);
+                None;
+              }
             }
           }
           | None => Some(x)
         };
-      };
+      },
     });
-  };
+  },
 };
