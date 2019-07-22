@@ -26,54 +26,40 @@
  * @copyright Alexis Munsayac 2019
  */
 let operator = (observer: Types.Observable.Observer.Lambda.t('a), source: Types.Observable.t('a)): Types.Subscription.t => {
-  let subscribed = ref(false);
   let finished = ref(false);
   let subRef: ref(option(Types.Subscription.t)) = ref(None);
   
   let subscription: Types.Subscription.t = {
     cancel: () => {
       if (!finished^) {
-        if (subscribed^) {
-          switch (subRef^) {
-          | Some(ref) => ref.cancel()
-          | None => ()
-          }
+        switch (subRef^) {
+        | Some(ref) => ref.cancel()
+        | None => ()
         }
         finished := true;
       }
     }
   };
 
-  source.subscribeWith({
+  source.subscribeWith(SafeObservableObserver.make({
     onSubscribe: (sub: Types.Subscription.t) => {
-      if (finished^ || subscribed^) {
-        sub.cancel();
-      } else {
-        subscribed := true;
-        subRef := Some(sub);
-      }
+      subRef := Some(sub);
     },
 
     onComplete: () => {
-      if (subscribed^ && !finished^) {
-        observer.onComplete();
-        subscription.cancel();
-      }
+      observer.onComplete();
+      subscription.cancel();
     },
 
     onError: (x: exn) => {
-      if (subscribed^ && !finished^) {
-        observer.onError(x);
-        subscription.cancel();
-      }
+      observer.onError(x);
+      subscription.cancel();
     },
 
     onNext: (x: 'a) => {
-      if (subscribed^ && !finished^) {
-        observer.onNext(x);
-      }
+      observer.onNext(x);
     },
-  })
+  }));
 
   subscription;
 };
