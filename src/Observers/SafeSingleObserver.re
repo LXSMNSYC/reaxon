@@ -26,38 +26,38 @@
  * @copyright Alexis Munsayac 2019
  */
 let make = (obs: Types.Single.Observer.t('a)): Types.Single.Observer.t('a) => {
-  let finished = ref(false);
+  let alive = ref(true);
   let subRef: ref(option(Types.Subscription.t)) = ref(None);
 
   let subscription: Types.Subscription.t = {
     cancel: () => {
-      if (!finished^) {
+      if (alive^) {
         switch (subRef^) {
         | Some(ref) => ref.cancel()
         | None => ()
         }
-        finished := true;
+        alive := false;
       }
     }
   };
 
   ProtectedSingleObserver.make({
     onSubscribe: (sub: Types.Subscription.t) => {
-      if (finished^) {
-        sub.cancel();
-      } else {
+      if (alive^) {
         subRef := Some(sub);
         obs.onSubscribe(subscription);
+      } else {
+        sub.cancel();
       }
     },
     onSuccess: (x: 'a) => {
-      if (!finished^) {
+      if (alive^) {
         obs.onSuccess(x);
         subscription.cancel();
       }
     },
     onError: (x: exn) => {
-      if (!finished^) {
+      if (alive^) {
         obs.onError(x);
         subscription.cancel();
       } else {
