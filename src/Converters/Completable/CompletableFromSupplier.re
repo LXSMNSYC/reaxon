@@ -27,32 +27,10 @@
  */
 let operator = (supplier: unit => 'a): Types.Completable.t => {
   subscribeWith: (obs: Types.Completable.Observer.t) => {
-    let subscribed = ref(false);
-    let finished = ref(false);
-    let subRef: ref(option(Types.Subscription.t)) = ref(None);
-    
-    let subscription: Types.Subscription.t = {
-      cancel: () => {
-        if (!finished^) {
-          if (subscribed^) {
-            switch (subRef^) {
-            | Some(ref) => ref.cancel()
-            | None => ()
-            }
-          }
-          finished := true;
-        }
-      }
+    let safe: Types.Completable.Observer.t = SafeCompletableObserver.make(obs);
+    switch (supplier()) {
+      | _ => safe.onComplete()
+      | exception e => safe.onError(e)
     };
-
-    obs.onSubscribe(subscription);
-
-    if (!finished^) {
-      switch (supplier()) {
-        | _ => obs.onComplete()
-        | exception e => obs.onError(e)
-      };
-      subscription.cancel();
-    }
   }
 };
