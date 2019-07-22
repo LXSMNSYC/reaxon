@@ -1,18 +1,3 @@
-let operator = (source) => {
-  pub subscribeWith = (obs) => {
-    let state = Cancellable.Linked.make();
-
-    obs#onSubscribe(Utils.c2sub(state));
-
-    source#subscribeWith({
-      pub onSubscribe = state#link;
-      pub onSuccess = x => obs#onSuccess(Notification.Maybe.OnSuccess(x));
-      pub onComplete = () => obs#onSuccess(Notification.Maybe.OnComplete);
-      pub onError = x => obs#onSuccess(Notification.Maybe.OnError(x));
-    });
-  };
-};
-
 /**
  * @license
  * MIT License
@@ -42,56 +27,19 @@ let operator = (source) => {
  */
 let operator = (source: Types.Maybe.t('a)): Types.Single.t(Types.Maybe.Notification.t('a)) => {
   subscribeWith: (obs: Types.Single.Observer.t(Types.Maybe.Notification.t('a))) => {
-    let subscribed = ref(false);
-    let finished = ref(false);
-    let subRef: ref(option(Types.Subscription.t)) = ref(None);
-    
-    let subscription: Types.Subscription.t = {
-      cancel: () => {
-        if (!finished^) {
-          if (subscribed^) {
-            switch (subRef^) {
-            | Some(ref) => ref.cancel()
-            | None => ()
-            }
-          }
-          finished := true;
-        }
-      }
-    };
-
-    let observer: Types.Maybe.Observer.t('a) = {
+    source.subscribeWith(SafeMaybeObserver.make({
       onSubscribe: (sub: Types.Subscription.t) => {
-        if (finished^ || subscribed^) {
-          sub.cancel();
-        } else {
-          subscribed := true;
-          subRef := Some(sub);
-        }
+        obs.onSubscribe(sub);
       },
       onComplete: () => {
-        if (!finished^ && subscribed^) {
-          obs.onSuccess(Types.Maybe.Notification.OnComplete);
-          subscription.cancel();
-        }
+        obs.onSuccess(Types.Maybe.Notification.OnComplete);
       },
       onSuccess: (x: 'a) => {
-        if (!finished^ && subscribed^) {
-          obs.onSuccess(Types.Maybe.Notification.OnSuccess(x));
-          subscription.cancel();
-        }
+        obs.onSuccess(Types.Maybe.Notification.OnSuccess(x));
       },
       onError: (x: exn) => {
-        if (!finished^ && subscribed^) {
-          obs.onSuccess(Types.Maybe.Notification.OnError(x));
-          subscription.cancel();
-        } else {
-          raise(x);
-        }
+        obs.onSuccess(Types.Maybe.Notification.OnError(x));
       },
-    };
-
-    obs.onSubscribe(subscription);
-    source.subscribeWith(observer);
-  }
+    }));
+  },
 };
