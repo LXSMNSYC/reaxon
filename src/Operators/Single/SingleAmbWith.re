@@ -25,82 +25,65 @@
  * @author Alexis Munsayac <alexis.munsayac@gmail.com>
  * @copyright Alexis Munsayac 2019
  */
-let operator = (a: Types.Single.t('a), b: Types.Single.t('a)): Types.Single.t('a) => {
+let operator = (other: Types.Single.t('a), source: Types.Single.t('a)): Types.Single.t('a) => {
   subscribeWith: (obs: Types.Single.Observer.t('a)) => {
-    let finished = ref(false);
-    let aRef: ref(option(Types.Subscription.t)) = ref(None);
-    let bRef: ref(option(Types.Subscription.t)) = ref(None);
-    let aSub = ref(false);
-    let bSub = ref(false);
+    let alive = ref(true);
     
+    let sourceSub = ref(None);
+    let otherSub = ref(None);
+
     let subscription: Types.Subscription.t = {
       cancel: () => {
-        if (!finished^) {
-          if (aSub^) {
-            switch (aRef^) {
-            | Some(ref) => ref.cancel()
-            | None => ()
-            }
-          }
-          if (bSub^) {
-            switch (bRef^) {
-            | Some(ref) => ref.cancel()
-            | None => ()
-            }
-          }
-          finished := true;
+        if (alive^) {
+          OptionalSubscription.cancel(sourceSub^);
+          OptionalSubscription.cancel(otherSub^);
+          alive := false;
         }
       }
     };
+  
+    source.subscribeWith(ProtectedSingleObserver.make({
+      onSubscribe: (sub: Types.Subscription.t) => {
+        if (alive^) {
+          sourceSub := Some(sub);
+        } else {
+          sub.cancel();
+        }
+      },
+      onSuccess: (x: 'a) => {
+        if (alive^) {
+          obs.onSuccess(x);
+          subscription.cancel();
+        }
+      },
+      onError: (x: exn) => {
+        if (alive^) {
+          obs.onError(x);
+          subscription.cancel();
+        }
+      },
+    }));
 
-    obs.onSubscribe(subscription);
-    a.subscribeWith({
+    other.subscribeWith(ProtectedSingleObserver.make({
       onSubscribe: (sub: Types.Subscription.t) => {
-        if (finished^ || aSub^) {
-          sub.cancel();
+        if (alive^) {
+          otherSub := Some(sub);
         } else {
-          aSub := true;
-          aRef := Some(sub);
+          sub.cancel();
         }
       },
       onSuccess: (x: 'a) => {
-        if (!finished^ && aSub^) {
+        if (alive^) {
           obs.onSuccess(x);
           subscription.cancel();
         }
       },
       onError: (x: exn) => {
-        if (!finished^ && aSub^) {
+        if (alive^) {
           obs.onError(x);
           subscription.cancel();
-        } else {
-          raise(x);
         }
       },
-    });
-    b.subscribeWith({
-      onSubscribe: (sub: Types.Subscription.t) => {
-        if (finished^ || bSub^) {
-          sub.cancel();
-        } else {
-          bSub := true;
-          bRef := Some(sub);
-        }
-      },
-      onSuccess: (x: 'a) => {
-        if (!finished^ && bSub^) {
-          obs.onSuccess(x);
-          subscription.cancel();
-        }
-      },
-      onError: (x: exn) => {
-        if (!finished^ && bSub^) {
-          obs.onError(x);
-          subscription.cancel();
-        } else {
-          raise(x);
-        }
-      },
-    });
+    }));
   }
 };
