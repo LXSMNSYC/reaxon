@@ -34,26 +34,15 @@ let operator = (source: Types.Single.t('a)): Types.Single.t('a) => {
   {
     subscribeWith: (obs: Types.Single.Observer.t('a)) => {
       if (cached^) {
-        let state = ref(false);
-        let subscription: Types.Subscription.t = {
-          cancel: () => {
-            state := true;
-          }
-        };
+        let safe: Types.Single.Observer.t('a) = SafeSingleObserver.make(obs);
 
-        obs.onSubscribe(subscription);
-  
-        if (!state^) {
-          switch (signal^) {
-            | Some(notif) => switch(notif) {
-              | Types.Single.Notification.OnSuccess(x) => obs.onSuccess(x)
-              | Types.Single.Notification.OnError(x) => obs.onError(x) 
-            }
-            | None => ()
-          };
-    
-          subscription.cancel();
-        }
+        switch (signal^) {
+          | Some(notif) => switch(notif) {
+            | Types.Single.Notification.OnSuccess(x) => safe.onSuccess(x)
+            | Types.Single.Notification.OnError(x) => safe.onError(x) 
+          }
+          | None => ()
+        };
       } else {
         let state = ref(false);
         let subscription: Types.Subscription.t = {
