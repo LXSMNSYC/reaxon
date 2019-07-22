@@ -32,10 +32,7 @@ let make = (obs: Types.Completable.Observer.t): Types.Completable.Observer.t => 
   let subscription: Types.Subscription.t = {
     cancel: () => {
       if (alive^) {
-        switch (subRef^) {
-        | Some(ref) => ref.cancel()
-        | None => ()
-        }
+        OptionalSubscription.cancel(subRef^);
         alive := false;
       }
     }
