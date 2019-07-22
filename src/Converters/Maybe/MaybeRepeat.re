@@ -34,10 +34,7 @@ let operator = (source: Types.Maybe.t('a)): Types.Observable.t('a) => {
     let subscription: Types.Subscription.t = {
       cancel: () => {
         if (!finished^) {
-          switch (subRef^) {
-          | Some(ref) => ref.cancel()
-          | None => ()
-          }
+          OptionalSubscription.cancel(subRef^);
           finished := true;
         }
       }
@@ -60,10 +57,7 @@ let operator = (source: Types.Maybe.t('a)): Types.Observable.t('a) => {
 
             retry();
 
-            switch (oldRef) {
-            | Some(ref) => ref.cancel()
-            | None => ()
-            };
+            OptionalSubscription.cancel(oldRef);
           }
         },
         onSuccess: (x: 'a) => {
@@ -73,10 +67,7 @@ let operator = (source: Types.Maybe.t('a)): Types.Observable.t('a) => {
             obs.onNext(x);
             retry();
 
-            switch (oldRef) {
-            | Some(ref) => ref.cancel()
-            | None => ()
-            };
+            OptionalSubscription.cancel(oldRef);
           }
         },
         onError: (x: exn) => {
