@@ -53,3 +53,11 @@ let operator = (other, combiner, source) => {
     });
   };
 };
+
+let operator = (other: Types.Observable.t('a), combiner: ('a, 'a) => 'b, source: Types.Observable.t('a)): Types.Single.t('b) => {
+  subscribeWith: (obs: Types.Observable.Observer.t('b)) => {
+    let finished = ref(false);
+
+    
+  },
+};
