@@ -32,10 +32,7 @@ let operator = (observer: Types.Observable.Observer.Lambda.t('a), source: Types.
   let subscription: Types.Subscription.t = {
     cancel: () => {
       if (!finished^) {
-        switch (subRef^) {
-        | Some(ref) => ref.cancel()
-        | None => ()
-        }
+        OptionalSubscription.cancel(subRef^);
         finished := true;
       }
     }
