@@ -34,10 +34,7 @@ let operator = (supplier: int => bool, source: Types.Maybe.t('a)): Types.Observa
     let subscription: Types.Subscription.t = {
       cancel: () => {
         if (!finished^) {
-          switch (subRef^) {
-          | Some(ref) => ref.cancel()
-          | None => ()
-          }
+          OptionalSubscription.cancel(subRef^);
           finished := true;
         }
       }
@@ -67,10 +64,8 @@ let operator = (supplier: int => bool, source: Types.Maybe.t('a)): Types.Observa
               if (!finished^) {
                 let oldRef = subRef^;
                 retry();
-                switch (oldRef) {
-                | Some(ref) => ref.cancel()
-                | None => ()
-                };
+
+                OptionalSubscription.cancel(oldRef);
               }
             },
             onSuccess: (x: 'a) => {
@@ -78,10 +73,8 @@ let operator = (supplier: int => bool, source: Types.Maybe.t('a)): Types.Observa
                 let oldRef = subRef^;
                 obs.onNext(x);
                 retry();
-                switch (oldRef) {
-                | Some(ref) => ref.cancel()
-                | None => ()
-                };
+
+                OptionalSubscription.cancel(oldRef);
               }
             },
             onError: (x: exn) => {
