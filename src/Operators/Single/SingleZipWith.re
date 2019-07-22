@@ -1,63 +1,112 @@
-
-let operator = (other, combiner, source) => {
-  pub subscribeWith = (obs) => {
-    let state = Cancellable.Composite.make();
-
-    obs#onSubscribe(Utils.c2sub(state));
-
-    let left = ref(None);
-    let right = ref(None);
-
-    source#subscribeWith({
-      pub onSubscribe = state#add;
-
-      pub onSuccess = (x) => switch (left^) {
-        | Some(value) => {
-          switch(combiner(value, x)) {
-            | combined => obs#onSuccess(combined)
-            | exception e => obs#onError(e)
-          };
-          state#cancel();
-        }
-        | None => {
-          right := Some(x);
-        }
-      };
-
-      pub onError = (x) => {
-        obs#onError(x);
-        state#cancel();
-      };
-    });
-
-    other#subscribeWith({
-      pub onSubscribe = state#add;
-
-      pub onSuccess = (x) =>  switch (right^) {
-        | Some(value) => {
-          switch(combiner(value, x)) {
-            | combined => obs#onSuccess(combined)
-            | exception e => obs#onError(e)
-          };
-          state#cancel();
-        }
-        | None => {
-          left := Some(x);
-        }
-      };
-
-      pub onError = (x) => {
-        obs#onError(x);
-        state#cancel();
-      };
-    });
-  };
-};
-
-let operator = (other: Types.Observable.t('a), combiner: ('a, 'a) => 'b, source: Types.Observable.t('a)): Types.Single.t('b) => {
-  subscribeWith: (obs: Types.Observable.Observer.t('b)) => {
-    let finished = ref(false);
-
+/**
+ * @license
+ * MIT License
+ *
+ * Copyright (c) 2019 Alexis Munsayac
+ * Permission is hereby granted, free of charge, to any person obtaining a copy
+ * of this software and associated documentation files (the "Software"), to deal
+ * in the Software without restriction, including without limitation the rights
+ * to use, copy, modify, merge, publish, distribute, sublicense, and/or sell
+ * copies of the Software, and to permit persons to whom the Software is
+ * furnished to do so, subject to the following conditions:
+ *
+ * The above copyright notice and this permission notice shall be included in all
+ * copies or substantial portions of the Software.
+ *
+ * THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND, EXPRESS OR
+ * IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF MERCHANTABILITY,
+ * FITNESS FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT. IN NO EVENT SHALL THE
+ * AUTHORS OR COPYRIGHT HOLDERS BE LIABLE FOR ANY CLAIM, DAMAGES OR OTHER
+ * LIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING FROM,
+ * OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE
+ * SOFTWARE.
+ *
+ *
+ * @author Alexis Munsayac <alexis.munsayac@gmail.com>
+ * @copyright Alexis Munsayac 2019
+ */
+let operator = (other: Types.Single.t('a), combiner: ('a, 'a) => 'b, source: Types.Single.t('a)): Types.Single.t('b) => {
+  subscribeWith: (obs: Types.Single.Observer.t('b)) => {
+    let alive = ref(true);
     
+    let sourceSub = ref(None);
+    let otherSub = ref(None);
+
+    let aValue = ref(None);
+    let bValue = ref(None);
+
+    let subscription: Types.Subscription.t = {
+      cancel: () => {
+        if (alive^) {
+          OptionalSubscription.cancel(sourceSub^);
+          OptionalSubscription.cancel(otherSub^);
+          alive := false;
+        }
+      }
+    };
+  
+    source.subscribeWith(ProtectedSingleObserver.make({
+      onSubscribe: (sub: Types.Subscription.t) => {
+        if (alive^) {
+          sourceSub := Some(sub);
+        } else {
+          sub.cancel();
+        }
+      },
+      onSuccess: (x: 'a) => {
+        if (alive^) {
+          switch (bValue^) {
+            | Some(item) => {
+              switch (combiner(x, item)) {
+                | result => obs.onSuccess(result)
+                | exception e => obs.onError(e) 
+              }
+              subscription.cancel()
+            }
+            | None => {
+              aValue := Some(x);
+            }
+          }
+        }
+      },
+      onError: (x: exn) => {
+        if (alive^) {
+          obs.onError(x);
+          subscription.cancel();
+        }
+      },
+    }));
+
+    other.subscribeWith(ProtectedSingleObserver.make({
+      onSubscribe: (sub: Types.Subscription.t) => {
+        if (alive^) {
+          otherSub := Some(sub);
+        } else {
+          sub.cancel();
+        }
+      },
+      onSuccess: (x: 'a) => {
+        if (alive^) {
+          switch (aValue^) {
+            | Some(item) => {
+              switch (combiner(item, x)) {
+                | result => obs.onSuccess(result)
+                | exception e => obs.onError(e) 
+              }
+              subscription.cancel()
+            }
+            | None => {
+              bValue := Some(x);
+            }
+          }
+        }
+      },
+      onError: (x: exn) => {
+        if (alive^) {
+          obs.onError(x);
+          subscription.cancel();
+        }
+      },
+    }));
   },
 };
