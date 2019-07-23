@@ -39,6 +39,8 @@ let operator = (sources: array(Types.Completable.t)): Types.Completable.t => {
       }
     };
 
+    obs.onSubscribe(subscription);
+
     sources |> Array.iter((source: Types.Completable.t) => {
       source.subscribeWith(ProtectedCompletableObserver.make({
         onSubscribe: (sub: Types.Subscription.t) => {
