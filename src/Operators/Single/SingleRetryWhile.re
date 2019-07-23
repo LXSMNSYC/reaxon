@@ -28,17 +28,14 @@
 
 let operator = (supplier: (int, exn) => bool, source: Types.Single.t('a)): Types.Single.t('a) => {
   subscribeWith: (obs: Types.Single.Observer.t('a)) => {
-    let finished = ref(false);
+    let alive = ref(true);
     let subRef: ref(option(Types.Subscription.t)) = ref(None);
 
     let subscription: Types.Subscription.t = {
       cancel: () => {
-        if (!finished^) {
-          switch (subRef^) {
-          | Some(ref) => ref.cancel()
-          | None => ()
-          }
-          finished := true;
+        if (!alive^) {
+          OptionalSubscription.cancel(subRef^);
+          alive := false;
         }
       }
     };
@@ -51,20 +48,20 @@ let operator = (supplier: (int, exn) => bool, source: Types.Single.t('a)): Types
 
       source.subscribeWith(ProtectedSingleObserver.make({
         onSubscribe: (sub: Types.Subscription.t) => {
-          if (finished^) {
-            sub.cancel();
-          } else {
+          if (alive^) {
             subRef := Some(sub);
+          } else {
+            sub.cancel();
           }
         },
         onSuccess: (x: 'a) => {
-          if (!finished^) {
+          if (alive^) {
             obs.onSuccess(x);
             subscription.cancel();
           }
         },
         onError: (x: exn) => {
-          if (!finished^) {
+          if (alive^) {
             let oldRef = subRef^;
             switch(supplier(retries^, x)) {
               | true => retry()
@@ -77,10 +74,7 @@ let operator = (supplier: (int, exn) => bool, source: Types.Single.t('a)): Types
                 subscription.cancel();
               }
             };
-            switch (oldRef) {
-            | Some(ref) => ref.cancel()
-            | None => ()
-            };
+            OptionalSubscription.cancel(oldRef);
           } else {
             raise(x);
           }
