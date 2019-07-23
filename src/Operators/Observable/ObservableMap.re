@@ -27,9 +27,11 @@
  */
 let operator = (mapper: 'a => 'b, source: Types.Observable.t('a)): Types.Observable.t('b) => {
   subscribeWith: (obs: Types.Observable.Observer.t('b)) => {
-    source.subscribeWith(SafeObservableObserver.make({
+    let safe: Types.Observable.Observer.t('b) = SafeObservableObserver.make(obs);
+
+    let observer: Types.Observable.Observer.t('a) = {
       onSubscribe: (sub: Types.Subscription.t) => {
-        obs.onSubscribe(sub);
+        safe.onSubscribe(sub);
       },
       onNext: (x: 'a) => {
         switch (mapper(x)) {
@@ -38,11 +40,13 @@ let operator = (mapper: 'a => 'b, source: Types.Observable.t('a)): Types.Observa
         }
       },
       onComplete: () => {
-        obs.onComplete();
+        safe.onComplete();
       },
       onError: (x: exn) => {
-        obs.onError(x);
+        safe.onError(x);
       },
-    }));
+    };
+
+    source.subscribeWith(observer);
   }
 };
