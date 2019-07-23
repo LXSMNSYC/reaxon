@@ -1,70 +1,124 @@
+/**
+ * @license
+ * MIT License
+ *
+ * Copyright (c) 2019 Alexis Munsayac
+ * Permission is hereby granted, free of charge, to any person obtaining a copy
+ * of this software and associated documentation files (the "Software"), to deal
+ * in the Software without restriction, including without limitation the rights
+ * to use, copy, modify, merge, publish, distribute, sublicense, and/or sell
+ * copies of the Software, and to permit persons to whom the Software is
+ * furnished to do so, subject to the following conditions:
+ *
+ * The above copyright notice and this permission notice shall be included in all
+ * copies or substantial portions of the Software.
+ *
+ * THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND, EXPRESS OR
+ * IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF MERCHANTABILITY,
+ * FITNESS FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT. IN NO EVENT SHALL THE
+ * AUTHORS OR COPYRIGHT HOLDERS BE LIABLE FOR ANY CLAIM, DAMAGES OR OTHER
+ * LIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING FROM,
+ * OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE
+ * SOFTWARE.
+ *
+ *
+ * @author Alexis Munsayac <alexis.munsayac@gmail.com>
+ * @copyright Alexis Munsayac 2019
+ */
+let operator = (other: Types.Observable.t('a), combiner: ('a, 'a) => 'b, source: Types.Observable.t('a)): Types.Observable.t('b) => {
+  subscribeWith: (obs: Types.Observable.Observer.t('b)) => {
+    let alive = ref(true);
+    
+    let sourceSub = ref(None);
+    let otherSub = ref(None);
 
-let operator: ObservableTypes.s('other, 'a) => ('a => 'a => 'b) => ObservableTypes.s('source, 'a) => ObservableTypes.operator('downstream, 'b) = (other, combiner, source) => {
-  pub subscribeWith = (obs) => {
-    let state = Cancellable.Composite.make();
+    let aValues = ref([]);
+    let bValues = ref([]);
 
-    obs#onSubscribe(Utils.c2sub(state));
-
-    let left = ref(None);
-    let right = ref(None);
-
-    source#subscribeWith({
-      pub onSubscribe = state#add;
-
-      pub onComplete = () => {
-        obs#onComplete();
-        state#cancel();
-      };
-
-      pub onError = (x) => {
-        obs#onError(x);
-        state#cancel();
-      };
-
-      pub onNext = (x) => switch (left^) {
-        | Some(value) => 
-          switch(combiner(value, x)) {
-            | combined => {
-              obs#onNext(combined);
-              left := None;
-              right := None;
-            }
-            | exception e => this#onError(e);
-          }
-        | None => {
-          right := Some(x);
+    let subscription: Types.Subscription.t = {
+      cancel: () => {
+        if (alive^) {
+          OptionalSubscription.cancel(sourceSub^);
+          OptionalSubscription.cancel(otherSub^);
+          alive := false;
         }
-      };
-    });
+      }
+    };
+    
+    obs.onSubscribe(subscription);
 
-    other#subscribeWith({
-      pub onSubscribe = state#add;
+    let combine = () => {
+      let a = List.hd(aValues^);
+      let b = List.hd(bValues^);
 
+      aValues := List.tl(aValues^);
+      bValues := List.tl(bValues^);
 
-      pub onComplete = () => {
-        obs#onComplete();
-        state#cancel();
-      };
-
-      pub onError = (x) => {
-        obs#onError(x);
-        state#cancel();
-      };
-
-      pub onNext = (x) => switch (right^) {
-        | Some(value) => 
-          switch(combiner(x, value)) {
-            | combined => {
-              obs#onNext(combined);
-              left := None;
-              right := None;
-            }
-            | exception e => this#onError(e);
-          }
-        | None => {
-          left := Some(x);
+      switch (combiner(a, b)) {
+        | result => {
+          obs.onNext(result);
         }
-      };
-    });
-  };
+        | exception e => {
+          obs.onError(e);
+          subscription.cancel();
+        }
+      }
+    };
+  
+    source.subscribeWith(ProtectedObservableObserver.make({
+      onSubscribe: (sub: Types.Subscription.t) => {
+        if (alive^) {
+          sourceSub := Some(sub);
+        } else {
+          sub.cancel();
+        }
+      },
+      onComplete: () => {
+        if (alive^) {
+          obs.onComplete();
+          subscription.cancel();
+        }
+      },
+      onError: (x: exn) => {
+        if (alive^) {
+          obs.onError(x);
+          subscription.cancel();
+        }
+      },
+      onNext: (x: 'a) => {
+        if (alive^) {
+          aValues := aValues^ @ [x];
+          combine();
+        }
+      },
+    }));
+
+    other.subscribeWith(ProtectedObservableObserver.make({
+      onSubscribe: (sub: Types.Subscription.t) => {
+        if (alive^) {
+          otherSub := Some(sub);
+        } else {
+          sub.cancel();
+        }
+      },
+      onComplete: () => {
+        if (alive^) {
+          obs.onComplete();
+          subscription.cancel();
+        }
+      },
+      onError: (x: exn) => {
+        if (alive^) {
+          obs.onError(x);
+          subscription.cancel();
+        }
+      },
+      onNext: (x: 'a) => {
+        if (alive^) {
+          bValues := bValues^ @ [x];
+          combine();
+        }
+      },
+    }));
+  },
 };
