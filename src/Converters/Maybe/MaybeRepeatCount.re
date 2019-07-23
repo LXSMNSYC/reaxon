@@ -28,14 +28,14 @@
 
 let operator = (count: int, source: Types.Maybe.t('a)): Types.Observable.t('a) => {
   subscribeWith: (obs: Types.Observable.Observer.t('a)) => {
-    let finished = ref(false);
+    let alive = ref(true);
     let subRef: ref(option(Types.Subscription.t)) = ref(None);
 
     let subscription: Types.Subscription.t = {
       cancel: () => {
-        if (!finished^) {
+        if (alive^) {
           OptionalSubscription.cancel(subRef^);
-          finished := true;
+          alive := false;
         }
       }
     };
@@ -49,14 +49,14 @@ let operator = (count: int, source: Types.Maybe.t('a)): Types.Observable.t('a) =
         retries := retries^ + 1;
         source.subscribeWith(ProtectedMaybeObserver.make({
           onSubscribe: (sub: Types.Subscription.t) => {
-            if (finished^) {
-              sub.cancel();
-            } else {
+            if (alive^) {
               subRef := Some(sub);
+            } else {
+              sub.cancel();
             }
           },
           onComplete: () => {
-            if (!finished^) {
+            if (alive^) {
               let oldRef = subRef^;
 
               retry();
@@ -65,7 +65,7 @@ let operator = (count: int, source: Types.Maybe.t('a)): Types.Observable.t('a) =
             }
           },
           onSuccess: (x: 'a) => {
-            if (!finished^) {
+            if (alive^) {
               let oldRef = subRef^;
   
               obs.onNext(x);
@@ -75,7 +75,7 @@ let operator = (count: int, source: Types.Maybe.t('a)): Types.Observable.t('a) =
             }
           },
           onError: (x: exn) => {
-            if (!finished^) {
+            if (alive^) {
               obs.onError(x);
               subscription.cancel();
             } else {
