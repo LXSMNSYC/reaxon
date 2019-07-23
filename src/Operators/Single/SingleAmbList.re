@@ -27,44 +27,42 @@
  */
 let operator = (sources: list(Types.Single.t('a))): Types.Single.t('a) => {
   subscribeWith: (obs: Types.Single.Observer.t('a)) => {
-    let finished = ref(false);
+    let alive = ref(true);
     let subRef: ref(list(Types.Subscription.t)) = ref([]);
   
     let subscription: Types.Subscription.t = {
       cancel: () => {
-        if (!finished^) {
+        if (alive^) {
           subRef^ |> List.iter((item: Types.Subscription.t) => item.cancel());
-          finished := true;
+          alive := false;
         }
       }
     };
 
     sources |> List.iter((source: Types.Single.t('a)) => {
-      let subscribed = ref(false);
-      source.subscribeWith({
+      source.subscribeWith(ProtectedSingleObserver.make({
         onSubscribe: (sub: Types.Subscription.t) => {
-          if (finished^ || subscribed^) {
-            sub.cancel();
-          } else {
+          if (alive^) {
             subRef := [sub] @ subRef^;
-            subscribed := true;
+          } else {
+            sub.cancel();
           }
         },
         onSuccess: (x: 'a) => {
-          if (!finished^) {
+          if (alive^) {
             obs.onSuccess(x);
             subscription.cancel();
           }
         },
         onError: (x: exn) => {
-          if (!finished^) {
+          if (alive^) {
             obs.onError(x);
             subscription.cancel();
           } else {
             raise(x);
           }
         },
-      });
+      }));
     });
   }
 };
