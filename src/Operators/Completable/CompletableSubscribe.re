@@ -26,17 +26,14 @@
  * @copyright Alexis Munsayac 2019
  */
 let operator = (observer: Types.Completable.Observer.Lambda.t, source: Types.Completable.t): Types.Subscription.t => {
-  let finished = ref(false);
+  let alive = ref(true);
   let subRef: ref(option(Types.Subscription.t)) = ref(None);
   
   let subscription: Types.Subscription.t = {
     cancel: () => {
-      if (!finished^) {
-        switch (subRef^) {
-        | Some(ref) => ref.cancel()
-        | None => ()
-        }
-        finished := true;
+      if (alive^) {
+        OptionalSubscription.cancel(subRef^)
+        alive := false;
       }
     }
   };
