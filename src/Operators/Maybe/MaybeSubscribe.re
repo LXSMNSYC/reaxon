@@ -26,17 +26,14 @@
  * @copyright Alexis Munsayac 2019
  */
 let operator = (observer: Types.Maybe.Observer.Lambda.t('a), source: Types.Maybe.t('a)): Types.Subscription.t => {
-  let finished = ref(false);
+  let alive = ref(true);
   let subRef: ref(option(Types.Subscription.t)) = ref(None);
   
   let subscription: Types.Subscription.t = {
     cancel: () => {
-      if (!finished^) {
-        switch (subRef^) {
-        | Some(ref) => ref.cancel()
-        | None => ()
-        }
-        finished := true;
+      if (alive^) {
+        OptionalSubscription.cancel(subRef^);
+        alive := false;
       }
     }
   };
@@ -46,8 +43,8 @@ let operator = (observer: Types.Maybe.Observer.Lambda.t('a), source: Types.Maybe
       subRef := Some(sub);
     },
 
-    onComplete: () => {
-      observer.onComplete();
+    onComplete: (x: 'a) => {
+      observer.onComplete(x);
       subscription.cancel();
     },
 
