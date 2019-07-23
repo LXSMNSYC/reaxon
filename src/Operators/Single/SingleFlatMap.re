@@ -28,12 +28,15 @@
 let operator = (mapper: 'a => Types.Single.t('b), source: Types.Single.t('a)): Types.Single.t('b) => {
   subscribeWith: (obs: Types.Single.Observer.t('b)) => {
     let alive = ref(true);
-    let subRef: ref(option(Types.Subscription.t)) = ref(None);
+
+    let outerSub: ref(option(Types.Subscription.t)) = ref(None);
+    let innerSub: ref(option(Types.Subscription.t)) = ref(None);
 
     let subscription: Types.Subscription.t = {
       cancel: () => {
         if (alive^) {
-          OptionalSubscription.cancel(subRef^);
+          OptionalSubscription.cancel(outerSub^);
+          OptionalSubscription.cancel(innerSub^);
           alive := false;
         }
       }
@@ -44,7 +47,7 @@ let operator = (mapper: 'a => Types.Single.t('b), source: Types.Single.t('a)): T
     let innerObserver: Types.Single.Observer.t('b) = ProtectedSingleObserver.make({
       onSubscribe: (sub: Types.Subscription.t) => {
         if (alive^) {
-          subRef := Some(sub);
+          innerSub := Some(sub);
         } else {
           sub.cancel();
         }
@@ -68,7 +71,7 @@ let operator = (mapper: 'a => Types.Single.t('b), source: Types.Single.t('a)): T
     let outerObserver: Types.Single.Observer.t('a) = ProtectedSingleObserver.make({
       onSubscribe: (sub: Types.Subscription.t) => {
         if (alive^ ) {
-          subRef := Some(sub);
+          outerSub := Some(sub);
         } else {
           sub.cancel();
         }
@@ -78,11 +81,8 @@ let operator = (mapper: 'a => Types.Single.t('b), source: Types.Single.t('a)): T
           
           switch (mapper(x)) {
             | item => {
-              let oldRef = subRef^;
-    
-              subRef := None;
               item.subscribeWith(innerObserver);
-              OptionalSubscription.cancel(oldRef);
+              OptionalSubscription.cancel(outerSub^);
             } 
             | exception e => {
               obs.onError(e);
