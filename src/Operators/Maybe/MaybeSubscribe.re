@@ -43,8 +43,8 @@ let operator = (observer: Types.Maybe.Observer.Lambda.t('a), source: Types.Maybe
       subRef := Some(sub);
     },
 
-    onComplete: (x: 'a) => {
-      observer.onComplete(x);
+    onComplete: () => {
+      observer.onComplete();
       subscription.cancel();
     },
 
