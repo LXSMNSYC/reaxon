@@ -27,54 +27,46 @@
  */
 let operator = (onSubscribe: Types.Completable.Emitter.t => unit): Types.Completable.t => {
   subscribeWith: (obs: Types.Completable.Observer.t) => {
-    let subscribed = ref(false);
-    let finished = ref(false);
+    let alive = ref(true);
     let subRef: ref(option(Types.Subscription.t)) = ref(None);
   
-    let cancelRef = () => {
-      if (subscribed^) {
-        switch (subRef^) {
-          | Some(ref) => ref.cancel()
-          | None => ()
-        }
-      }
-    };
     
     let subscription: Types.Subscription.t = {
       cancel: () => {
-        if (!finished^) {
-          cancelRef();
-          finished := true;
+        if (alive^) {
+          OptionalSubscription.cancel(subRef^);
+          alive := false;
         }
       }
     };
 
+    let protected = ProtectedCompletableObserver.make(obs);
+
     let emitter: Types.Completable.Emitter.t = {
       setSubscription: (sub: Types.Subscription.t) => {
-        if (!finished^) {
-          cancelRef();
-          subscribed := true;
+        if (alive^) {
+          OptionalSubscription.cancel(subRef^);
           subRef := Some(sub);
         } else {
           sub.cancel();
         }
       },
-      isCancelled: () => finished^,
+      isCancelled: () => !alive^,
       onComplete: () => {
-        if (!finished^) {
-          obs.onComplete();
+        if (alive^) {
+          protected.onComplete();
           subscription.cancel();
         }
       },
       onError: (x: exn) => {
-        if (!finished^) {
-          obs.onError(x);
+        if (alive^) {
+          protected.onError(x);
           subscription.cancel();
         }
       },
     };
 
-    obs.onSubscribe(subscription);
+    protected.onSubscribe(subscription);
 
     try (onSubscribe(emitter)) {
       | e => emitter.onError(e)
