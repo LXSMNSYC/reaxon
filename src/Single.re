@@ -27,8 +27,6 @@ let doOnSubscribe = SingleDoOnSubscribe.operator;
 let doOnSuccess = SingleDoOnSuccess.operator;
 let doOnTerminate = SingleDoOnTerminate.operator;
 
-let equals = SingleEquals.operator;
-
 let flatMap = SingleFlatMap.operator;
 let flatMapCompletable = SingleFlatMapCompletable.operator;
 let flatMapMaybe = SingleFlatMapMaybe.operator;
