@@ -27,54 +27,46 @@
  */
 let operator = (onSubscribe: Types.Single.Emitter.t('a) => unit): Types.Single.t('a) => {
   subscribeWith: (obs: Types.Single.Observer.t('a)) => {
-    let subscribed = ref(false);
-    let finished = ref(false);
+    let alive = ref(true);
     let subRef: ref(option(Types.Subscription.t)) = ref(None);
   
-    let cancelRef = () => {
-      if (subscribed^) {
-        switch (subRef^) {
-          | Some(ref) => ref.cancel()
-          | None => ()
-        }
-      }
-    };
     
     let subscription: Types.Subscription.t = {
       cancel: () => {
-        if (!finished^) {
-          cancelRef();
-          finished := true;
+        if (alive^) {
+          OptionalSubscription.cancel(subRef^);
+          alive := false;
         }
       }
     };
 
+    let protected = ProtectedSingleObserver.make(obs);
+
     let emitter: Types.Single.Emitter.t('a) = {
       setSubscription: (sub: Types.Subscription.t) => {
-        if (!finished^) {
-          cancelRef();
-          subscribed := true;
+        if (alive^) {
+          OptionalSubscription.cancel(subRef^);
           subRef := Some(sub);
         } else {
           sub.cancel();
         }
       },
-      isCancelled: () => finished^,
+      isCancelled: () => !alive^,
       onSuccess: (x: 'a) => {
-        if (subscribed^ && !finished^) {
-          obs.onSuccess(x);
+        if (alive^) {
+          protected.onSuccess(x);
           subscription.cancel();
         }
       },
       onError: (x: exn) => {
-        if (subscribed^ && !finished^) {
-          obs.onError(x);
+        if (alive^) {
+          protected.onError(x);
           subscription.cancel();
         }
       },
     };
 
-    obs.onSubscribe(subscription);
+    protected.onSubscribe(subscription);
 
     try (onSubscribe(emitter)) {
       | e => emitter.onError(e)
