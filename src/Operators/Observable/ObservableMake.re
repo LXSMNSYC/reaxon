@@ -27,59 +27,51 @@
  */
 let operator = (onSubscribe: Types.Observable.Emitter.t('a) => unit): Types.Observable.t('a) => {
   subscribeWith: (obs: Types.Observable.Observer.t('a)) => {
-    let subscribed = ref(false);
-    let finished = ref(false);
+    let alive = ref(true);
     let subRef: ref(option(Types.Subscription.t)) = ref(None);
   
-    let cancelRef = () => {
-      if (subscribed^) {
-        switch (subRef^) {
-          | Some(ref) => ref.cancel()
-          | None => ()
-        }
-      }
-    };
     
     let subscription: Types.Subscription.t = {
       cancel: () => {
-        if (!finished^) {
-          cancelRef();
-          finished := true;
+        if (alive^) {
+          OptionalSubscription.cancel(subRef^);
+          alive := false;
         }
       }
     };
 
+    let protected = ProtectedObservableObserver.make(obs);
+
     let emitter: Types.Observable.Emitter.t('a) = {
       setSubscription: (sub: Types.Subscription.t) => {
-        if (!finished^) {
-          cancelRef();
-          subscribed := true;
+        if (alive^) {
+          OptionalSubscription.cancel(subRef^);
           subRef := Some(sub);
         } else {
           sub.cancel();
         }
       },
-      isCancelled: () => finished^,
+      isCancelled: () => !alive^,
       onComplete: () => {
-        if (subscribed^ && !finished^) {
-          obs.onComplete();
+        if (alive^) {
+          protected.onComplete();
           subscription.cancel();
         }
       },
       onError: (x: exn) => {
-        if (subscribed^ && !finished^) {
-          obs.onError(x);
+        if (alive^) {
+          protected.onError(x);
           subscription.cancel();
         }
       },
       onNext: (x: 'a) => {
-        if (subscribed^ && !finished^) {
-          obs.onNext(x);
+        if (alive^) {
+          protected.onNext(x);
         }
       },
     };
 
-    obs.onSubscribe(subscription);
+    protected.onSubscribe(subscription);
 
     try (onSubscribe(emitter)) {
       | e => emitter.onError(e)
