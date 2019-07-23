@@ -44,6 +44,16 @@ let operator = (other: Types.Single.t('a), combiner: ('a, 'a) => 'b, source: Typ
         }
       }
     };
+    
+    obs.onSubscribe(subscription);
+
+    let combine = (a, b) => {
+      switch (combiner(a, b)) {
+        | result => obs.onSuccess(result)
+        | exception e => obs.onError(e) 
+      }
+      subscription.cancel()
+    };
   
     source.subscribeWith(ProtectedSingleObserver.make({
       onSubscribe: (sub: Types.Subscription.t) => {
@@ -57,11 +67,7 @@ let operator = (other: Types.Single.t('a), combiner: ('a, 'a) => 'b, source: Typ
         if (alive^) {
           switch (bValue^) {
             | Some(item) => {
-              switch (combiner(x, item)) {
-                | result => obs.onSuccess(result)
-                | exception e => obs.onError(e) 
-              }
-              subscription.cancel()
+              combine(x, item);
             }
             | None => {
               aValue := Some(x);
@@ -89,11 +95,7 @@ let operator = (other: Types.Single.t('a), combiner: ('a, 'a) => 'b, source: Typ
         if (alive^) {
           switch (aValue^) {
             | Some(item) => {
-              switch (combiner(item, x)) {
-                | result => obs.onSuccess(result)
-                | exception e => obs.onError(e) 
-              }
-              subscription.cancel()
+              combine(item, x);
             }
             | None => {
               bValue := Some(x);
