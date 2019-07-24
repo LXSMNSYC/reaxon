@@ -25,8 +25,8 @@
  * @author Alexis Munsayac <alexis.munsayac@gmail.com>
  * @copyright Alexis Munsayac 2019
  */
-let operator = (scheduler: Types.Scheduler.t, source: Types.Observable.t('a)): Types.Observable.t('b) => {
-  subscribeWith: (obs: Types.Observable.Observer.t('b)) => {
+let operator = (scheduler: Types.Scheduler.t, source: Types.Observable.t('a)): Types.Observable.t('a) => {
+  subscribeWith: (obs: Types.Observable.Observer.t('a)) => {
     let alive = ref(true);
     
     let sourceSub = ref(None);
