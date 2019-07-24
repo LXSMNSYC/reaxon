@@ -1,36 +1,92 @@
+/**
+ * @license
+ * MIT License
+ *
+ * Copyright (c) 2019 Alexis Munsayac
+ * Permission is hereby granted, free of charge, to any person obtaining a copy
+ * of this software and associated documentation files (the "Software"), to deal
+ * in the Software without restriction, including without limitation the rights
+ * to use, copy, modify, merge, publish, distribute, sublicense, and/or sell
+ * copies of the Software, and to permit persons to whom the Software is
+ * furnished to do so, subject to the following conditions:
+ *
+ * The above copyright notice and this permission notice shall be included in all
+ * copies or substantial portions of the Software.
+ *
+ * THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND, EXPRESS OR
+ * IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF MERCHANTABILITY,
+ * FITNESS FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT. IN NO EVENT SHALL THE
+ * AUTHORS OR COPYRIGHT HOLDERS BE LIABLE FOR ANY CLAIM, DAMAGES OR OTHER
+ * LIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING FROM,
+ * OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE
+ * SOFTWARE.
+ *
+ *
+ * @author Alexis Munsayac <alexis.munsayac@gmail.com>
+ * @copyright Alexis Munsayac 2019
+ */
+let operator = (other: Types.Single.t('a), source: Types.Single.t('a)): Types.Single.t('b) => {
+  subscribeWith: (obs: Types.Single.Observer.t('b)) => {
+    let alive = ref(true);
+    
+    let sourceSub = ref(None);
+    let otherSub = ref(None);
 
-let operator = (other, source) => {
-  pub subscribeWith = (obs) => {
-    let state = Cancellable.Composite.make();
 
-    obs#onSubscribe(Utils.c2sub(state));
+    let subscription: Types.Subscription.t = {
+      cancel: () => {
+        if (alive^) {
+          OptionalSubscription.cancel(sourceSub^);
+          OptionalSubscription.cancel(otherSub^);
+          alive := false;
+        }
+      }
+    };
+    
+    obs.onSubscribe(subscription);
+  
+    source.subscribeWith(ProtectedSingleObserver.make({
+      onSubscribe: (sub: Types.Subscription.t) => {
+        if (alive^) {
+          sourceSub := Some(sub);
+        } else {
+          sub.cancel();
+        }
+      },
+      onSuccess: (x: 'a) => {
+        if (alive^) {
+          obs.onSuccess(x);
+          subscription.cancel();
+        }
+      },
+      onError: (x: exn) => {
+        if (alive^) {
+          obs.onError(x);
+          subscription.cancel();
+        }
+      },
+    }));
 
-    other#subscribeWith({
-      pub onSubscribe = state#add;
-
-      pub onSuccess = (x) => {
-        obs#onError(Exceptions.Cancellation);
-        state#cancel();
-      };
-
-      pub onError = (x) => {
-        obs#onError(x);
-        state#cancel();
-      };
-    });
-
-    source#subscribeWith({
-      pub onSubscribe = state#add;
-
-      pub onSuccess = (x) => {
-        obs#onSuccess(x);
-        state#cancel();
-      };
-
-      pub onError = (x) => {
-        obs#onError(x);
-        state#cancel();
-      };
-    });
-  };
+    other.subscribeWith(ProtectedSingleObserver.make({
+      onSubscribe: (sub: Types.Subscription.t) => {
+        if (alive^) {
+          otherSub := Some(sub);
+        } else {
+          sub.cancel();
+        }
+      },
+      onSuccess: (_: 'a) => {
+        if (alive^) {
+          obs.onError(Exceptions.Cancellation);
+          subscription.cancel();
+        }
+      },
+      onError: (x: exn) => {
+        if (alive^) {
+          obs.onError(x);
+          subscription.cancel();
+        }
+      },
+    }));
+  },
 };
