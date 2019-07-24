@@ -27,8 +27,21 @@
  */
 let operator = (time: int, scheduler: Types.Scheduler.t): Types.Single.t(int) => {
   subscribeWith: (obs: Types.Single.Observer.t(int)) => {
-    obs.onSubscribe(scheduler.timeout(() => {
-      obs.onSuccess(0);
-    }, time));
+    let alive = ref(true);
+
+    let timerSub = scheduler.timeout(() => {
+      if (alive^) {
+        obs.onSuccess(0);
+      }
+    }, time);
+
+    obs.onSubscribe({
+      cancel: () => {
+        if (alive^) {
+          timerSub.cancel();
+          alive := false;
+        }
+      }
+    });
   }
 };
