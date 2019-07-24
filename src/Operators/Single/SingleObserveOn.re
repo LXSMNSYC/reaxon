@@ -27,68 +27,50 @@
  */
 let operator = (scheduler: Types.Scheduler.t, source: Types.Single.t('a)): Types.Single.t('a) => {
   subscribeWith: (obs: Types.Single.Observer.t('a)) => {
-    let subscribed = ref(false);
-    let finished = ref(false);
-    let subRef: ref(option(Types.Subscription.t)) = ref(None);
+    let alive = ref(true);
+    let outerRef: ref(option(Types.Subscription.t)) = ref(None);
+    let innerRef: ref(option(Types.Subscription.t)) = ref(None);
 
     let subscription: Types.Subscription.t = {
       cancel: () => {
-        if (!finished^) {
-          if (subscribed^) {
-            switch (subRef^) {
-            | Some(ref) => ref.cancel()
-            | None => ()
-            }
-          }
-          finished := true;
+        if (alive^) {
+          OptionalSubscription.cancel(outerRef^);
+          OptionalSubscription.cancel(innerRef^);
+          alive := false;
         }
       }
     };
 
-    obs.onSubscribe(subscription);
-
-    let observer: Types.Single.Observer.t('a) = {
+    let observer: Types.Single.Observer.t('a) = ProtectedSingleObserver.make({
       onSubscribe: (sub: Types.Subscription.t) => {
-        if (finished^ || subscribed^) {
-          sub.cancel();
+        if (alive^) {
+          outerRef := Some(sub);
+          obs.onSubscribe(subscription);
         } else {
-          subscribed := true;
-          subRef := Some(sub);
+          sub.cancel();
         }
       },
       onSuccess: (x: 'a) => {
-        if (!finished^ && subscribed^) {
-          let oldRef = subRef^;
-
-          subRef := Some(scheduler.run(() => {
+        if (alive^) {
+          innerRef := Some(scheduler.run(() => {
             obs.onSuccess(x);
             subscription.cancel();
           }));
-          
-          switch (oldRef) {
-          | Some(ref) => ref.cancel()
-          | None => ()
-          }
+          OptionalSubscription.cancel(outerRef^);
         }
       },
       onError: (x: exn) => {
-        if (!finished^ && subscribed^) {
-          let oldRef = subRef^;
-
-          subRef := Some(scheduler.run(() => {
+        if (alive^) {
+          innerRef := Some(scheduler.run(() => {
             obs.onError(x);
             subscription.cancel();
           }));
-          
-          switch (oldRef) {
-          | Some(ref) => ref.cancel()
-          | None => ()
-          }
+          OptionalSubscription.cancel(outerRef^);
         } else {
           raise(x);
         }
       },
-    };
+    });
 
     source.subscribeWith(observer);
   }
