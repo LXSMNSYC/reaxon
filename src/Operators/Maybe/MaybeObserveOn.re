@@ -27,77 +27,60 @@
  */
 let operator = (scheduler: Types.Scheduler.t, source: Types.Maybe.t('a)): Types.Maybe.t('a) => {
   subscribeWith: (obs: Types.Maybe.Observer.t('a)) => {
-    let finished = ref(false);
-    let subRef: ref(option(Types.Subscription.t)) = ref(None);
+    let alive = ref(true);
+    let outerRef: ref(option(Types.Subscription.t)) = ref(None);
+    let innerRef: ref(option(Types.Subscription.t)) = ref(None);
 
     let subscription: Types.Subscription.t = {
       cancel: () => {
-        if (!finished^) {
-          switch (subRef^) {
-          | Some(ref) => ref.cancel()
-          | None => ()
-          }
-          finished := true;
+        if (alive^) {
+          OptionalSubscription.cancel(outerRef^);
+          OptionalSubscription.cancel(innerRef^);
+          alive := false;
         }
       }
     };
 
-    source.subscribeWith(ProtectedMaybeObserver.make({
+    let observer: Types.Maybe.Observer.t('a) = ProtectedMaybeObserver.make({
       onSubscribe: (sub: Types.Subscription.t) => {
-        if (finished^) {
-          sub.cancel();
-        } else {
-          subRef := Some(sub);
+        if (alive^) {
+          outerRef := Some(sub);
           obs.onSubscribe(subscription);
+        } else {
+          sub.cancel();
         }
       },
       onComplete: () => {
-        if (!finished^) {
-          let oldRef = subRef^;
-
-          subRef := Some(scheduler.run(() => {
+        if (alive^) {
+          innerRef := Some(scheduler.run(() => {
             obs.onComplete();
             subscription.cancel();
           }));
-          
-          switch (oldRef) {
-          | Some(ref) => ref.cancel()
-          | None => ()
-          }
+          OptionalSubscription.cancel(outerRef^);
         }
       },
       onSuccess: (x: 'a) => {
-        if (!finished^) {
-          let oldRef = subRef^;
-
-          subRef := Some(scheduler.run(() => {
+        if (alive^) {
+          innerRef := Some(scheduler.run(() => {
             obs.onSuccess(x);
             subscription.cancel();
           }));
-          
-          switch (oldRef) {
-          | Some(ref) => ref.cancel()
-          | None => ()
-          }
+          OptionalSubscription.cancel(outerRef^);
         }
       },
       onError: (x: exn) => {
-        if (!finished^) {
-          let oldRef = subRef^;
-
-          subRef := Some(scheduler.run(() => {
+        if (alive^) {
+          innerRef := Some(scheduler.run(() => {
             obs.onError(x);
             subscription.cancel();
           }));
-          
-          switch (oldRef) {
-          | Some(ref) => ref.cancel()
-          | None => ()
-          }
+          OptionalSubscription.cancel(outerRef^);
         } else {
           raise(x);
         }
       },
-    }));
+    });
+
+    source.subscribeWith(observer);
   }
 }
