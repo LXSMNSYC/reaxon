@@ -42,7 +42,6 @@ let operator = (resumeIfError: exn => Types.Maybe.t('a), source: Types.Maybe.t('
       }
     };
 
-    obs.onSubscribe(subscription);
 
     let innerObserver: Types.Maybe.Observer.t('a) = ProtectedMaybeObserver.make({
       onSubscribe: (sub: Types.Subscription.t) => {
@@ -78,6 +77,7 @@ let operator = (resumeIfError: exn => Types.Maybe.t('a), source: Types.Maybe.t('
       onSubscribe: (sub: Types.Subscription.t) => {
         if (alive^ ) {
           outerSub := Some(sub);
+          obs.onSubscribe(subscription);
         } else {
           sub.cancel();
         }
