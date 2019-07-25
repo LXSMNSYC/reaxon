@@ -28,64 +28,79 @@
 let operator = (source: Types.Single.t('a)): Types.Single.t('a) => {
   let cached = ref(false);
   let subscribed = ref(false);
-  let observers = ref([]);
-  let signal = ref(None);
+  let observers: ref(list(Types.Single.Observer.t('a))) = ref([]);
+  let signal: ref(option(Types.Single.Notification.t('a))) = ref(None);
 
   {
     subscribeWith: (obs: Types.Single.Observer.t('a)) => {
       if (cached^) {
-        let safe: Types.Single.Observer.t('a) = SafeSingleObserver.make(obs);
+        let safe = SafeSingleObserver.make(obs);
 
+        safe.onSubscribe(EmptySubscription.instance);
+        
         switch (signal^) {
-          | Some(notif) => switch(notif) {
-            | Types.Single.Notification.OnSuccess(x) => safe.onSuccess(x)
-            | Types.Single.Notification.OnError(x) => safe.onError(x) 
+          | Some(item) => {
+            switch (item) {
+              | Types.Single.Notification.OnSuccess(x) => safe.onSuccess(x)
+              | Types.Single.Notification.OnError(e) => safe.onError(e)
+            }
           }
           | None => ()
-        };
+        }
       } else {
-        let state = ref(false);
+        let alive = ref(true);
+
+        observers := [obs] @ observers^;
+
         let subscription: Types.Subscription.t = {
           cancel: () => {
-            state := true;
-          }
-        }
-  
-        observers := [obs] @ observers^;
-  
-        let newSub: Types.Subscription.t = {
-          cancel: () => {
-            observers := observers^ |> List.filter(x => x != obs);
-            subscription.cancel();
+            if (alive^) {
+              observers := observers^ |> List.filter(x => x == obs);
+              alive := false;
+            }
           }
         };
-  
-        obs.onSubscribe(newSub);
-  
+
+        obs.onSubscribe(subscription);
+
         if (!subscribed^) {
           subscribed := true;
+          
+          let subRef = ref(None);
 
-          source.subscribeWith({
-            onSubscribe: (sub) => (),
-    
+          source.subscribeWith(SafeSingleObserver.make({
+            onSubscribe: (sub: Types.Subscription.t) => {
+              subRef := Some(sub);
+            },
             onSuccess: (x: 'a) => {
-              cached := true;
-              signal := Some(OnSuccess(x));
-  
-              observers^ |> List.iter((o: Types.Single.Observer.t('a)) => o.onSuccess(x));
-              newSub.cancel();
+              if (!cached^) {
+                cached := true;
+
+                signal := Some(Types.Single.Notification.OnSuccess(x));
+
+                observers^ |> List.iter((observer: Types.Single.Observer.t('a)) => {
+                  observer.onSuccess(x);
+                });
+
+                OptionalSubscription.cancel(subRef^);
+              }
             },
-  
-            onError: (e) => {
-              cached := true;
-              signal := Some(OnError(e));
-  
-              observers^ |> List.iter((o: Types.Single.Observer.t('a)) => o.onError(e));
-              newSub.cancel();
+            onError: (x: exn) => {
+              if (!cached^) {
+                cached := true;
+
+                signal := Some(Types.Single.Notification.OnError(x));
+
+                observers^ |> List.iter((observer: Types.Single.Observer.t('a)) => {
+                  observer.onError(x);
+                });
+
+                OptionalSubscription.cancel(subRef^);
+              }
             },
-          });
+          }));
         }
       }
-    }
+    },
   }
 };
