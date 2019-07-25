@@ -27,18 +27,9 @@
  */
 let operator = (sources: array(Types.Completable.t)): Types.Completable.t => {
   subscribeWith: (obs: Types.Completable.Observer.t) => {
-    let alive = ref(true);
+    let composite = CompositeSubscription.make();
 
-    let subs = ref([]);
-
-    let subscription: Types.Subscription.t = {
-      cancel: () => {
-        if (alive^) {
-          subs^ |> List.iter((sub: Types.Subscription.t) => sub.cancel());
-          alive := false;
-        }
-      }
-    };
+    let { subscription, alive }: CompositeSubscription.t = composite;
 
     let index = ref(Array.length(sources));
 
@@ -47,14 +38,10 @@ let operator = (sources: array(Types.Completable.t)): Types.Completable.t => {
     sources |> Array.iter((source: Types.Completable.t) => {
       source.subscribeWith(SafeCompletableObserver.make({
         onSubscribe: (sub: Types.Subscription.t) => {
-          if (alive^) {
-            subs :=  subs^ @ [sub];
-          } else {
-            sub.cancel();
-          }
+          composite.add(sub);
         },
         onComplete: () => {
-          if (alive^) {
+          if (alive()) {
             index := index^ - 1;
 
             if (index^ == 0) {
@@ -64,7 +51,7 @@ let operator = (sources: array(Types.Completable.t)): Types.Completable.t => {
           }
         },
         onError: (x: exn) => {
-          if (alive^) {
+          if (alive()) {
             obs.onError(x);
             subscription.cancel();
           } else {
