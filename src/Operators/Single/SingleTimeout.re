@@ -25,8 +25,8 @@
  * @author Alexis Munsayac <alexis.munsayac@gmail.com>
  * @copyright Alexis Munsayac 2019
  */
-let operator = (time: int, scheduler: Types.Scheduler.t, source: Types.Single.t('a)): Types.Single.t('b) => {
-  subscribeWith: (obs: Types.Single.Observer.t('b)) => {
+let operator = (time: int, scheduler: Types.Scheduler.t, source: Types.Single.t('a)): Types.Single.t('a) => {
+  subscribeWith: (obs: Types.Single.Observer.t('a)) => {
     let alive = ref(true);
     
     let sourceSub = ref(None);
