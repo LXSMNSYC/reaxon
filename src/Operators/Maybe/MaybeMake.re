@@ -68,6 +68,8 @@ let operator = (onSubscribe: Types.Maybe.Emitter.t('a) => unit): Types.Maybe.t('
         if (alive^) {
           protected.onError(x);
           subscription.cancel();
+        } else {
+          raise(x);
         }
       },
     };
