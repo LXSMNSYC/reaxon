@@ -27,41 +27,43 @@
  */
 let operator = (sources: list(Types.Maybe.t('a))): Types.Maybe.t('a) => {
   subscribeWith: (obs: Types.Maybe.Observer.t('a)) => {
-    let finished = ref(false);
+    let alive = ref(true);
     let subRef: ref(list(Types.Subscription.t)) = ref([]);
   
     let subscription: Types.Subscription.t = {
       cancel: () => {
-        if (!finished^) {
+        if (alive^) {
           subRef^ |> List.iter((item: Types.Subscription.t) => item.cancel());
-          finished := true;
+          alive := false;
         }
       }
     };
 
+    obs.onSubscribe(subscription);
+
     sources |> List.iter((source: Types.Maybe.t('a)) => {
       source.subscribeWith(ProtectedMaybeObserver.make({
         onSubscribe: (sub: Types.Subscription.t) => {
-          if (finished^) {
-            sub.cancel();
-          } else {
+          if (alive^) {
             subRef := [sub] @ subRef^;
+          } else {
+            sub.cancel();
           }
         },
         onComplete: () => {
-          if (!finished^) {
+          if (alive^) {
             obs.onComplete();
             subscription.cancel();
           }
         },
         onSuccess: (x: 'a) => {
-          if (!finished^) {
+          if (alive^) {
             obs.onSuccess(x);
             subscription.cancel();
           }
         },
         onError: (x: exn) => {
-          if (!finished^) {
+          if (alive^) {
             obs.onError(x);
             subscription.cancel();
           } else {
