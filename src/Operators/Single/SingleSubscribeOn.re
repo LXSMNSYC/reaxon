@@ -65,6 +65,8 @@ let operator = (scheduler: Types.Scheduler.t, source: Types.Single.t('a)): Types
           if (alive^) {
             obs.onError(x);
             subscription.cancel();
+          } else {
+            raise(x);
           }
         },
       }));
