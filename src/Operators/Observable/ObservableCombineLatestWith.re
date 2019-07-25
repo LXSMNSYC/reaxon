@@ -63,3 +63,4 @@ let operator: ObservableTypes.s('other, 'a) => ('a => 'a => 'b) => ObservableTyp
     });
   };
 };
+
