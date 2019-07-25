@@ -65,6 +65,8 @@ let operator = (scheduler: Types.Scheduler.t, source: Types.Observable.t('a)): T
           if (alive^) {
             obs.onError(x);
             subscription.cancel();
+          } else {
+            raise(x);
           }
         },
         onNext: (x: 'a) => {
