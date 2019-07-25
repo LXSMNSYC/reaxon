@@ -28,17 +28,14 @@
 
 let operator = (source: Types.Completable.t): Types.Completable.t => {
   subscribeWith: (obs: Types.Completable.Observer.t) => {
-    let finished = ref(false);
+    let alive = ref(true);
     let subRef: ref(option(Types.Subscription.t)) = ref(None);
 
     let subscription: Types.Subscription.t = {
       cancel: () => {
-        if (!finished^) {
-          switch (subRef^) {
-          | Some(ref) => ref.cancel()
-          | None => ()
-          }
-          finished := true;
+        if (alive^) {
+          OptionalSubscription.cancel(subRef^);
+          alive := false;
         }
       }
     };
@@ -48,14 +45,14 @@ let operator = (source: Types.Completable.t): Types.Completable.t => {
 
       source.subscribeWith(ProtectedCompletableObserver.make({
         onSubscribe: (sub: Types.Subscription.t) => {
-          if (finished^) {
-            sub.cancel();
-          } else {
+          if (alive^) {
             subRef := Some(sub);
+          } else {
+            sub.cancel();
           }
         },
         onComplete: () => {
-          if (!finished^) {
+          if (alive^) {
             let oldRef = subRef^;
 
             retry();
@@ -67,7 +64,7 @@ let operator = (source: Types.Completable.t): Types.Completable.t => {
           }
         },
         onError: (x: exn) => {
-          if (!finished^) {
+          if (alive^) {
             obs.onError(x);
             subscription.cancel();
           } else {
