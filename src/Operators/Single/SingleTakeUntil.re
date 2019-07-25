@@ -63,6 +63,8 @@ let operator = (other: Types.Single.t('a), source: Types.Single.t('a)): Types.Si
         if (alive^) {
           obs.onError(x);
           subscription.cancel();
+        } else {
+          raise(x);
         }
       },
     }));
@@ -85,6 +87,8 @@ let operator = (other: Types.Single.t('a), source: Types.Single.t('a)): Types.Si
         if (alive^) {
           obs.onError(x);
           subscription.cancel();
+        } else {
+          raise(x);
         }
       },
     }));
