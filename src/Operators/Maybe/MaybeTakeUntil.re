@@ -69,6 +69,8 @@ let operator = (other: Types.Maybe.t('a), source: Types.Maybe.t('a)): Types.Mayb
         if (alive^) {
           obs.onError(x);
           subscription.cancel();
+        } else {
+          raise(x);
         }
       },
     }));
@@ -97,6 +99,8 @@ let operator = (other: Types.Maybe.t('a), source: Types.Maybe.t('a)): Types.Mayb
         if (alive^) {
           obs.onError(x);
           subscription.cancel();
+        } else {
+          raise(x);
         }
       },
     }));
