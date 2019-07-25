@@ -62,6 +62,8 @@ let operator = (onSubscribe: Types.Observable.Emitter.t('a) => unit): Types.Obse
         if (alive^) {
           protected.onError(x);
           subscription.cancel();
+        } else {
+          raise(x);
         }
       },
       onNext: (x: 'a) => {
