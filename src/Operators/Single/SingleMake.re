@@ -62,6 +62,8 @@ let operator = (onSubscribe: Types.Single.Emitter.t('a) => unit): Types.Single.t
         if (alive^) {
           protected.onError(x);
           subscription.cancel();
+        } else {
+          raise(x);
         }
       },
     };
