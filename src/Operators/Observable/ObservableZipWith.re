@@ -83,6 +83,8 @@ let operator = (other: Types.Observable.t('a), combiner: ('a, 'a) => 'b, source:
         if (alive^) {
           obs.onError(x);
           subscription.cancel();
+        } else {
+          raise(x);
         }
       },
       onNext: (x: 'a) => {
@@ -111,6 +113,8 @@ let operator = (other: Types.Observable.t('a), combiner: ('a, 'a) => 'b, source:
         if (alive^) {
           obs.onError(x);
           subscription.cancel();
+        } else {
+          raise(x);
         }
       },
       onNext: (x: 'a) => {
