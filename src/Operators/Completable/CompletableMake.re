@@ -62,6 +62,8 @@ let operator = (onSubscribe: Types.Completable.Emitter.t => unit): Types.Complet
         if (alive^) {
           protected.onError(x);
           subscription.cancel();
+        } else {
+          raise(x);
         }
       },
     };
