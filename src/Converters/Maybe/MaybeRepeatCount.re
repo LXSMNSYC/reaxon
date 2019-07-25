@@ -29,7 +29,7 @@
 let operator = (count: int, source: Types.Maybe.t('a)): Types.Observable.t('a) => {
   subscribeWith: (obs: Types.Observable.Observer.t('a)) => {
     let alive = ref(true);
-    let subRef: ref(option(Types.Subscription.t)) = ref(None);
+    let subRef = ref(None);
 
     let subscription: Types.Subscription.t = {
       cancel: () => {
