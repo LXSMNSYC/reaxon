@@ -85,6 +85,8 @@ let operator = (other: Types.Maybe.t('a), combiner: ('a, 'a) => 'b, source: Type
         if (alive^) {
           obs.onError(x);
           subscription.cancel();
+        } else {
+          raise(x);
         }
       },
     }));
@@ -119,6 +121,8 @@ let operator = (other: Types.Maybe.t('a), combiner: ('a, 'a) => 'b, source: Type
         if (alive^) {
           obs.onError(x);
           subscription.cancel();
+        } else {
+          raise(x);
         }
       },
     }));
