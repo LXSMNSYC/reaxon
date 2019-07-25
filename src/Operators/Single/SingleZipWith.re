@@ -79,6 +79,8 @@ let operator = (other: Types.Single.t('a), combiner: ('a, 'a) => 'b, source: Typ
         if (alive^) {
           obs.onError(x);
           subscription.cancel();
+        } else {
+          raise(x);
         }
       },
     }));
@@ -107,6 +109,8 @@ let operator = (other: Types.Single.t('a), combiner: ('a, 'a) => 'b, source: Typ
         if (alive^) {
           obs.onError(x);
           subscription.cancel();
+        } else {
+          raise(x);
         }
       },
     }));
