@@ -27,96 +27,59 @@
  */
 let operator = (other: Types.Completable.t, source: Types.Completable.t): Types.Completable.t => {
   subscribeWith: (obs: Types.Completable.Observer.t) => {
+    let composite = CompositeSubscription.make();
+
+    let { subscription, alive }: CompositeSubscription.t = composite;
+
     let aFinished = ref(false);
     let bFinished = ref(false);
-    let aRef: ref(option(Types.Subscription.t)) = ref(None);
-    let bRef: ref(option(Types.Subscription.t)) = ref(None);
-    let aSub = ref(false);
-    let bSub = ref(false);
-
-    let aCancel = () => {
-      if (aSub^) {
-        switch (aRef^) {
-        | Some(ref) => ref.cancel()
-        | None => ()
-        }
-      }
-      aFinished := true;
-    };
-
-    let bCancel = () => {
-      if (bSub^) {
-        switch (bRef^) {
-        | Some(ref) => ref.cancel()
-        | None => ()
-        }
-      }
-      bFinished := true;
-    };
-    
-    let subscription: Types.Subscription.t = {
-      cancel: () => {
-        if (!(aFinished^ && bFinished^)) {
-          aCancel();
-          bCancel();
-        }
-      }
-    };
 
     obs.onSubscribe(subscription);
-    source.subscribeWith({
+
+    source.subscribeWith(SafeCompletableObserver.make({
       onSubscribe: (sub: Types.Subscription.t) => {
-        if (aFinished^ || aSub^) {
-          sub.cancel();
-        } else {
-          aSub := true;
-          aRef := Some(sub);
-        }
+        composite.add(sub);
       },
       onComplete: () => {
-        if (!aFinished^ && aSub^) {
+        if (alive()) {
+          aFinished := true;
           if (bFinished^) {
             obs.onComplete();
             subscription.cancel();
           }
-          aCancel();
         }
       },
       onError: (x: exn) => {
-        if (!aFinished^ && aSub^) {
+        if (alive()) {
           obs.onError(x);
           subscription.cancel();
         } else {
           raise(x);
         }
       },
-    });
-    other.subscribeWith({
+    }));
+
+    other.subscribeWith(SafeCompletableObserver.make({
       onSubscribe: (sub: Types.Subscription.t) => {
-        if (bFinished^ || bSub^) {
-          sub.cancel();
-        } else {
-          bSub := true;
-          bRef := Some(sub);
-        }
+        composite.add(sub);
       },
       onComplete: () => {
-        if (!bFinished^ && bSub^) {
+        if (alive()) {
+          bFinished := true;
           if (aFinished^) {
             obs.onComplete();
             subscription.cancel();
           }
-          bCancel();
         }
       },
       onError: (x: exn) => {
-        if (!bFinished^ && bSub^) {
+        if (alive()) {
           obs.onError(x);
           subscription.cancel();
         } else {
           raise(x);
         }
       },
-    });
+    }));
   }
 };
