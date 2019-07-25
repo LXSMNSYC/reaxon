@@ -60,6 +60,8 @@ let operator = (other: Types.Completable.t, source: Types.Completable.t): Types.
         if (alive^) {
           obs.onError(x);
           subscription.cancel();
+        } else {
+          raise(x);
         }
       },
     }));
@@ -82,6 +84,8 @@ let operator = (other: Types.Completable.t, source: Types.Completable.t): Types.
         if (alive^) {
           obs.onError(x);
           subscription.cancel();
+        } else {
+          raise(x);
         }
       },
     }));
