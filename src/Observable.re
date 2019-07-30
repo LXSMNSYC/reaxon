@@ -14,3 +14,6 @@ let just = ObservableJust.operator;
 let zipArray = ObservableZipArray.operator;
 let make = ObservableMake.operator;
 let debounce = ObservableDebounce.operator;
+let materialize = ObservableMaterialize.operator;
+let defer = ObservableDefer.operator;
+let dematerialize = ObservableDematerialize.operator;
