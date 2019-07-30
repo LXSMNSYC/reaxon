@@ -3,18 +3,18 @@
  * the events of the first one that signals
  * (disposing the rest). 
  */
-let ambArray: array(MaybeTypes.s('source, 'a)) => MaybeTypes.operator('downstream, 'a);
+let ambArray: array(Types.Maybe.t('a)) => Types.Maybe.t('a);
 /**
  * Runs multiple MaybeSources and signals
  * the events of the first one that signals
  * (disposing the rest). 
  */
-let ambList: list(MaybeTypes.s('source, 'a)) => MaybeTypes.operator('downstream, 'a);
+let ambList: list(Types.Maybe.t('a)) => Types.Maybe.t('a);
 /**
  * Mirrors the MaybeSource (current or provided)
  * that first signals an event. 
  */
-let ambWith: MaybeTypes.s('other, 'a) => MaybeTypes.s('source, 'a) => MaybeTypes.operator('downstream, 'a);
+let ambWith: Types.Maybe.t('a) => Types.Maybe.t('a) => Types.Maybe.t('a);
 /**
  * Returns a Maybe that subscribes to this Maybe
  * lazily, caches its event and replays it, to
@@ -24,23 +24,23 @@ let ambWith: MaybeTypes.s('other, 'a) => MaybeTypes.s('source, 'a) => MaybeTypes
  * downstream subscriber subscribes and maintains
  * a single subscription towards this Maybe. 
  */
-let cache: MaybeTypes.s('source, 'a) => MaybeTypes.operator('downstream, 'a);
+let cache: Types.Maybe.t('a) => Types.Maybe.t('a);
 /**
  * Concatenate the single values, in a non-overlapping
  * fashion, of the MaybeSource sources in the array. 
  */
-let concatArray: array(MaybeTypes.s('source, 'a)) => ObservableTypes.operator('downstream, 'a);
+let concatArray: array(Types.Maybe.t('a)) => Types.Observable.t('a);
 /**
  * Concatenate the single values, in a non-overlapping
  * fashion, of the MaybeSource sources in the list. 
  */
-let concatList: list(MaybeTypes.s('source, 'a)) => ObservableTypes.operator('downstream, 'a);
+let concatList: list(Types.Maybe.t('a)) => Types.Observable.t('a);
 /**
  * Returns a Flowable that emits the items emitted
  * from the current MaybeSource, then the next,
  * one after the other, without interleaving them. 
  */
-let concatWith: MaybeTypes.s('other, 'a) => MaybeTypes.s('source, 'a) => ObservableTypes.operator('downstream, 'a);
+let concatWith: Types.Maybe.t('a) => Types.Maybe.t('a) => Types.Observable.t('a);
 /**
  * Returns a Single that emits a Boolean that
  * indicates whether the source Maybe emitted a
@@ -58,7 +58,7 @@ let count: MaybeTypes.s('source, 'a) => SingleTypes.operator('downstream, int);
  * the source Maybe or a specified default item if
  * the source Maybe is empty. 
  */
-let defaultIfEmpty: 'a => MaybeTypes.s('source, 'a) => SingleTypes.operator('downstream, 'a);
+let defaultIfEmpty: 'a => Types.Maybe.t('a) => Types.Single.t('a);
 /**
  * Calls a supplier for each individual MaybeObserver
  * to return the actual MaybeSource source to be
@@ -71,14 +71,14 @@ let defer: (unit => Types.Maybe.t('a)) => Types.Maybe.t('a);
  * a specified delay running on the specified
  * Scheduler. 
  */
-let delay: int => Scheduler.t => MaybeTypes.s('source, 'a) => MaybeTypes.operator('downstream, 'a);
+let delay: int => Types.Scheduler.t => Types.Maybe.t('a) => Types.Maybe.t('a);
 /**
  * Returns a Maybe that delays the subscription
  * to the source Maybe by a given amount of time,
  * both waiting and subscribing on a given
  * Scheduler. 
  */
-let delaySubscription: int => Scheduler.t => MaybeTypes.s('source, 'a) => MaybeTypes.operator('downstream, 'a);
+let delaySubscription: int => Types.Scheduler.t => Types.Maybe.t('a) => Types.Maybe.t('a);
 /**
  * Delays the actual subscription to the current
  * Maybe until the other Maybe has emitted a
@@ -90,18 +90,18 @@ let delayUntil: MaybeTypes.s('other, 'a) => MaybeTypes.s('source, 'a) => MaybeTy
  * Maybe back into normal onSuccess, onComplete
  * or onError.
  */
-let dematerialize: SingleTypes.s('source, Notification.Maybe.t('a)) => MaybeTypes.operator('downstream, 'a);
+let dematerialize: Types.Single.t(Types.Maybe.Notification.t('a)) => Types.Maybe.t('a);
 /**
  * Calls the specified consumer with the success
  * item after this item has been emitted to the
  * downstream. 
  */
-let doAfterSuccess: ('a => unit) => MaybeTypes.s('source, 'a) => MaybeTypes.operator('downstream, 'a);
+let doAfterSuccess: ('a => unit) => Types.Maybe.t('a) => Types.Maybe.t('a);
 /**
  * Registers an action to be called when this Maybe
  * invokes either onSuccess, onComplete or onError. 
  */
-let doAfterTerminate: (unit => unit) => MaybeTypes.s('source, 'a) => MaybeTypes.operator('downstream, 'a);
+let doAfterTerminate: (unit => unit) => Types.Maybe.t('a) => Types.Maybe.t('a);
 /**
  * Calls the specified action after this Maybe signals
  * onSuccess, onError or onComplete or gets disposed
@@ -111,24 +111,24 @@ let doAfterTerminate: (unit => unit) => MaybeTypes.s('source, 'a) => MaybeTypes.
  * dispose call, the provided onFinally action is
  * executed once per subscription. 
  */
-let doFinally: (unit => unit) => MaybeTypes.s('source, 'a) => MaybeTypes.operator('downstream, 'a);
+let doFinally: (unit => unit) => Types.Maybe.t('a) => Types.Maybe.t('a);
 /**
  * Calls the shared Action if a MaybeObserver
  * subscribed to the current Maybe disposes the
  * common Disposable it received via onSubscribe. 
  */
-let doOnCancel: (unit => unit) => MaybeTypes.s('source, 'a) => MaybeTypes.operator('downstream, 'a);
+let doOnCancel: (unit => unit) => Types.Maybe.t('a) => Types.Maybe.t('a);
 /**
  * Modifies the source Maybe so that it invokes an
  * action when it calls onComplete. 
  */
-let doOnComplete: (unit => unit) => MaybeTypes.s('source, 'a) => MaybeTypes.operator('downstream, 'a);
+let doOnComplete: (unit => unit) => Types.Maybe.t('a) => Types.Maybe.t('a);
 /**
  * Calls the shared consumer with the error sent
  * via onError for each MaybeObserver that
  * subscribes to the current Maybe.
  */
-let doOnError: (exn => unit) => MaybeTypes.s('source, 'a) => MaybeTypes.operator('downstream, 'a);
+let doOnError: (exn => unit) => Types.Maybe.t('a) => Types.Maybe.t('a);
 /**
  * Calls the given onEvent callback with the
  * (success value, none) for an onSuccess,
@@ -136,30 +136,31 @@ let doOnError: (exn => unit) => MaybeTypes.s('source, 'a) => MaybeTypes.operator
  * for an onComplete signal from this Maybe
  * before delivering said signal to the downstream. 
  */
-let doOnEvent: (option('a) => option(exn) => unit) => MaybeTypes.s('source, 'a) => MaybeTypes.operator('downstream, 'a);
+let doOnEvent: (option('a) => option(exn) => unit) => Types.Maybe.t('a) => Types.Maybe.t('a);
 /**
  * Calls the shared consumer with the Disposable
  * sent through the onSubscribe for each MaybeObserver
  * that subscribes to the current Maybe. 
  */
-let doOnSubscribe: (MaybeTypes.subscription => unit) => MaybeTypes.s('source, 'a) => MaybeTypes.operator('downstream, 'a);
+let doOnSubscribe: (Types.Subscription.t => unit) => Types.Maybe.t('a) => Types.Maybe.t('a);
 /**
  * Calls the shared consumer with the success
  * value sent via onSuccess for each MaybeObserver
  * that subscribes to the current Maybe. 
  */
-let doOnSuccess: ('a => unit) => MaybeTypes.s('source, 'a) => MaybeTypes.operator('downstream, 'a);
+let doOnSuccess: ('a => unit) => Types.Maybe.t('a) => Types.Maybe.t('a);
 /**
  * Returns a Maybe instance that calls the given
  * onTerminate callback just before this Maybe
  * completes normally or with an exception. 
  */
-let doOnTerminate: (unit => unit) => MaybeTypes.s('source, 'a) => MaybeTypes.operator('downstream, 'a);
+let doOnTerminate: (unit => unit) => Types.Maybe.t('a) => Types.Maybe.t('a);
 /**
  * Returns a (singleton) Maybe instance that
  * calls onComplete immediately. 
  */
-let empty: unit => MaybeTypes.operator('downstream, 'a);
+let empty: unit => Types.Maybe.t('a);
+
 let equals: MaybeTypes.s('left, 'a) => MaybeTypes.s('right, 'b) => ('a => 'b => bool) => SingleTypes.operator('downstream, bool);
 /**
  * Returns a Maybe that invokes a subscriber's
@@ -172,14 +173,14 @@ let error: exn => Types.Maybe.t('a);
  * predicate function and emitting it if the
  * predicate returns true, completing otherwise. 
  */
-let filter: ('a => bool) => MaybeTypes.s('source, 'a) => MaybeTypes.operator('downstream, 'a);
+let filter: ('a => bool) => Types.Maybe.t('a) => Types.Maybe.t('a);
 /**
  * Returns a Maybe that is based on applying a
  * specified function to the item emitted by the
  * source Maybe, where that function returns a
  * MaybeSource. 
  */
-let flatMap: ('a => MaybeTypes.s('other, 'b)) => MaybeTypes.s('source, 'a) => MaybeTypes.operator('downstream, 'b);
+let flatMap: ('a => Types.Maybe.t('b)) => Types.Maybe.t('a) => Types.Maybe.t('b);
 /**
  * Returns a Completable that completes based on
  * applying a specified function to the item emitted
@@ -226,40 +227,41 @@ let flattenToListObservable: ('a => list('a)) => MaybeTypes.s('source, 'a) => Ob
  * Action for each subscriber and emits either
  * its exception or simply completes. 
  */
-let fromAction: (unit => unit) => MaybeTypes.operator('downstream, 'a);
+let fromAction: (unit => unit) => Types.Maybe.t('a);
 /**
  * Wraps a CompletableSource into a Maybe.
  */
-let fromCompletable: CompletableTypes.s('source) => MaybeTypes.operator('downstream, 'a);
-let fromObservable: ObservableTypes.s('source, 'a) => MaybeTypes.operator('downstream, 'a);
+let fromCompletable: Types.Completable.t => Types.Maybe.t(unit);
+
+let fromObservable: Types.Observable.t('a) => Types.Maybe.t('a);
 /**
  * Wraps a SingleSource into a Maybe.
  */
-let fromSingle: SingleTypes.s('source, 'a) => MaybeTypes.operator('downstream, 'a);
+let fromSingle: Types.Single.t('a) => Types.Maybe.t('a);
 /**
  * Returns a Maybe that invokes the given supplier
  * for each individual MaybeObserver that subscribes
  * and emits the resulting non-null item via onSuccess
  */
-let fromSupplier: (unit => 'a) => MaybeTypes.operator('downstream, 'a);
+let fromSupplier: (unit => 'a) => Types.Maybe.t('a);
 /**
  * Hides the identity of this Maybe and its Disposable. 
  */
-let hide: MaybeTypes.s('source, 'a) => MaybeTypes.operator('downstream, 'a);
+let hide: Types.Maybe.t('a) => Types.Maybe.t('a);
 /**
  * Ignores the item emitted by the source Maybe and
  * only calls onComplete or onError. 
  */
-let ignoreElement: MaybeTypes.s('source, 'a) => CompletableTypes.operator('downstream);
+let ignoreElement: Types.Maybe.t('a) => Types.Completable.t;
 /**
  * Returns a Single that emits true if the source
  * Maybe is empty, otherwise false. 
  */
-let isEmpty: MaybeTypes.s('source, 'a) => SingleTypes.operator('downstream, bool);
+let isEmpty: Types.Maybe.t('a) => Types.Single.t(bool);
 /**
  * Returns a Maybe that emits a specified item. 
  */
-let just: 'a => MaybeTypes.operator('downstream, 'a);
+let just: 'a => Types.Maybe.t('a);
 /**
  * This method requires advanced knowledge about
  * building operators, please consider other
@@ -290,81 +292,74 @@ let lift: (Types.Maybe.Observer.t('b) => Types.Maybe.Observer.t('a)) => Types.Ma
  * Provides an API (via a cold Maybe) that bridges
  * the reactive world with the callback-style world. 
  */
-let make: (MaybeTypes.emitter({
-  .
-  isCancelled: unit => bool,
-  setCancellable: Cancellable.t({..}) => unit,
-  onComplete: unit => unit,
-  onSuccess: 'a => unit,
-  onError: exn => unit,
-}, 'a) => unit) => MaybeTypes.operator('downstream, 'a);
+let make: (Types.Maybe.Emitter.t('a) => unit) => Types.Maybe.t('a);
 /**
  * Returns a Maybe that applies a specified function
  * to the item emitted by the source Maybe and emits
  * the result of this function application. 
  */
-let map: ('a => 'b) => MaybeTypes.s('source, 'a) => MaybeTypes.operator('downstream, 'b);
+let map: ('a => 'b) => Types.Maybe.t('a) => Types.Maybe.t('b);
 /**
  * Maps the signal types of this Maybe into a Notification
  * of the same kind and emits it as a single success
  * value to downstream. 
  */
-let materialize: MaybeTypes.s('source, 'a) => SingleTypes.operator('downstream, Notification.Maybe.t('a));
+let materialize: Types.Maybe.t('a) => Types.Single.t(Types.Maybe.Notification.t('a));
 /**
  * Flattens a MaybeSource that emits a MaybeSource
  * into a single MaybeSource that emits the item
  * emitted by the nested MaybeSource, without any
  * transformation. 
  */
-let merge: MaybeTypes.s('source, MaybeTypes.s('result, 'a)) => MaybeTypes.operator('downstream, 'a);
+let merge: Types.Maybe.t(Types.Maybe.t('a)) => Types.Maybe.t('a);
 /**
  * Merges an array sequence of MaybeSource
  * instances into a single Flowable sequence,
  * running all MaybeSources at once. 
  */
-let mergeArray: array(MaybeTypes.s('source, 'a)) => ObservableTypes.operator('downstream, 'a);
+let mergeArray: array(Types.Maybe.t('a)) => Types.Observable.t('a);
 /**
  * Merges an list sequence of MaybeSource
  * instances into a single Flowable sequence,
  * running all MaybeSources at once. 
  */
-let mergeList: list(MaybeTypes.s('source, 'a)) => ObservableTypes.operator('downstream, 'a);
+let mergeList: list(Types.Maybe.t('a)) => Types.Observable.t('a);
 /**
  * Flattens this and another Maybe into a
  * single Flowable, without any transformation. 
  */
-let mergeWith: MaybeTypes.s('other, 'a) => MaybeTypes.s('source, 'a) => ObservableTypes.operator('downstream, 'a);
+let mergeWith: Types.Maybe.t('a) => Types.Maybe.t('a) => Types.Observable.t('a);
 /**
  * Returns a Maybe that never sends any items
  * or notifications to a MaybeObserver. 
  */
-let never: unit => MaybeTypes.operator('downstream, 'a);
-let observeOn: Scheduler.t => MaybeTypes.s('source, 'a) => MaybeTypes.operator('downstream, 'a);
-let onErrorComplete: MaybeTypes.s('source, 'a) => MaybeTypes.operator('downstream, 'a);
-let onErrorCompleteWhen: (exn => bool) => MaybeTypes.s('source, 'a) => MaybeTypes.operator('downstream, 'a);
-let onErrorResume: (exn => MaybeTypes.s('backup, 'a)) => MaybeTypes.s('source, 'a) => MaybeTypes.operator('downstream, 'a);
-let onErrorResumeNext: MaybeTypes.s('backup, 'a) => MaybeTypes.s('source, 'a) => MaybeTypes.operator('downstream, 'a);
-let onErrorReturn: (exn => 'a) => MaybeTypes.s('source, 'a) => MaybeTypes.operator('downstream, 'a);
-let onErrorReturnItem: 'a => MaybeTypes.s('source, 'a) => MaybeTypes.operator('downstream, 'a);
-let repeat: MaybeTypes.s('source, 'a) => ObservableTypes.operator('downstream, 'a);
-let repeatCount: int => MaybeTypes.s('source, 'a) => ObservableTypes.operator('downstream, 'a);
-let repeatUntil: (int => bool) => MaybeTypes.s('source, 'a) => ObservableTypes.operator('downstream, 'a);
-let retry: MaybeTypes.s('source, 'a) => MaybeTypes.operator('downstream, 'a);
-let retryCount: int => MaybeTypes.s('source, 'a) => MaybeTypes.operator('downstream, 'a);
-let retryUntil: (int => bool) => MaybeTypes.s('source, 'a) => MaybeTypes.operator('downstream, 'a) ;
-let retryWhile: (int => exn => bool) => MaybeTypes.s('source, 'a) => MaybeTypes.operator('downstream, 'a);
-let subscribe: ('a => unit) => (unit => unit) => (exn => unit) => MaybeTypes.s('source, 'a) => MaybeTypes.subscription;
-let subscribeOn: Scheduler.t => MaybeTypes.s('source, 'a) => MaybeTypes.operator('downstream, 'a);
-let switchIfEmpty: MaybeTypes.s('other, 'a) => MaybeTypes.s('source, 'a) => MaybeTypes.operator('downstream, 'a);
-let switchIfEmptySingle: SingleTypes.s('other, 'a) => MaybeTypes.s('source, 'a) => SingleTypes.operator('downstream, 'a);
-let takeUntil: MaybeTypes.s('other, 'a) => MaybeTypes.s('source, 'a) => MaybeTypes.operator('downstream, 'a);
-let timeout: int => Scheduler.t => MaybeTypes.s('source, 'a) => MaybeTypes.operator('downstream, 'a);
-let timer: int => Scheduler.t => MaybeTypes.operator('downstream, int);
-let toCompletable: MaybeTypes.s('source, 'a) => CompletableTypes.operator('downstream);
-let toObservable: MaybeTypes.s('source, 'a) => ObservableTypes.operator('downstream, 'a);
-let toSingle: MaybeTypes.s('source, 'a) => SingleTypes.operator('downstream ,'a);
-let toSingleDefault: 'a => MaybeTypes.s('source, 'a) => SingleTypes.operator('downstream, 'a);
-let unsubscribeOn: Scheduler.t => MaybeTypes.s('source, 'a) => MaybeTypes.operator('downstream, 'a);
+let never: unit => Types.Maybe.t('a);
+let observeOn: Types.Scheduler.t => Types.Maybe.t('a) => Types.Maybe.t('a);
+let onErrorComplete: Types.Maybe.t('a) => Types.Maybe.t('a);
+let onErrorCompleteWhen: (exn => bool) => Types.Maybe.t('a) => Types.Maybe.t('a);
+let onErrorResume: (exn => Types.Maybe.t('a)) => Types.Maybe.t('a) => Types.Maybe.t('a);
+let onErrorResumeNext: Types.Maybe.t('a) => Types.Maybe.t('a) => Types.Maybe.t('a);
+let onErrorReturn: (exn => 'a) => Types.Maybe.t('a) => Types.Maybe.t('a);
+let onErrorReturnItem: 'a => Types.Maybe.t('a) => Types.Maybe.t('a);
+let repeat: Types.Maybe.t('a) => Types.Observable.t('a);
+let repeatCount: int => Types.Maybe.t('a) => Types.Observable.t('a);
+let repeatUntil: (int => bool) => Types.Maybe.t('a) => Types.Observable.t('a);
+let retry: Types.Maybe.t('a) => Types.Maybe.t('a);
+let retryCount: int => Types.Maybe.t('a) => Types.Maybe.t('a);
+let retryUntil: (int => bool) => Types.Maybe.t('a) => Types.Maybe.t('a);
+let retryWhile: (int => exn => bool) => Types.Maybe.t('a) => Types.Maybe.t('a);
+let subscribe: Types.Maybe.Observer.Lambda.t('a) => Types.Maybe.t('a) => Types.Subscription.t;
+let subscribeOn: Types.Scheduler.t => Types.Maybe.t('a) => Types.Maybe.t('a);
+let switchIfEmpty: Types.Maybe.t('a) => Types.Maybe.t('a) => Types.Maybe.t('a);
+let switchIfEmptySingle: Types.Single.t('a) => Types.Maybe.t('a) => Types.Single.t('a);
+let takeUntil: Types.Maybe.t('a) => Types.Maybe.t('a) => Types.Maybe.t('a);
+let timeout: int => Types.Scheduler.t => Types.Maybe.t('a) => Types.Maybe.t('a);
+let timer: int => Types.Scheduler.t => Types.Maybe.t(int);
+let toCompletable: Types.Maybe.t('a) => Types.Completable.t;
+let toObservable: Types.Maybe.t('a) => Types.Observable.t('a);
+let toSingle: Types.Maybe.t('a) => Types.Single.t('a);
+let toSingleDefault: 'a => Types.Maybe.t('a) => Types.Single.t('a);
+let unsubscribeOn: Types.Scheduler.t => Types.Maybe.t('a) => Types.Maybe.t('a);
 let zipArray: array(MaybeTypes.s('source, 'a)) => (array('a) => 'b) => MaybeTypes.operator('downstream, 'b);
 let zipList: list(MaybeTypes.s('source, 'a)) => (array('a) => 'b) => MaybeTypes.operator('downstream, 'b);
-let zipWith: MaybeTypes.s('other, 'a) => ('a => 'a => 'b) => MaybeTypes.s('source, 'a) => MaybeTypes.operator('downstream, 'b);
+let zipWith: Types.Maybe.t('a) => ('a => 'a => 'b) => Types.Maybe.t('a) => Types.Maybe.t('b);
