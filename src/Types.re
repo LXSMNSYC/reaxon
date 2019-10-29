@@ -17,13 +17,13 @@ module Single {
       onSubscribe: Subscription.t => unit,
       onSuccess: 'a => unit,
       onError: exn => unit,
-    }
+    };
 
     module Lambda {
       type t('a) = {
         onSuccess: 'a => unit,
         onError: exn => unit,
-      }
+      };
     }
   }
 
@@ -33,7 +33,7 @@ module Single {
       isCancelled: unit => bool,
       onSuccess: 'a => unit,
       onError: exn => unit,
-    }
+    };
   }
 
 
@@ -62,7 +62,7 @@ module Completable {
       type t = {
         onComplete: unit => unit,
         onError: exn => unit,
-      }
+      };
     }
   }
 
@@ -72,7 +72,7 @@ module Completable {
       isCancelled: unit => bool,
       onComplete: unit => unit,
       onError: exn => unit,
-    }
+    };
   }
 
   module Notification {
@@ -94,14 +94,14 @@ module Maybe {
       onComplete: unit => unit,
       onSuccess: 'a => unit,
       onError: exn => unit,
-    }
+    };
 
     module Lambda {
       type t('a) = {
         onComplete: unit => unit,
         onSuccess: 'a => unit,
         onError: exn => unit,
-      }
+      };
     }
   }
 
@@ -112,7 +112,7 @@ module Maybe {
       onComplete: unit => unit,
       onSuccess: 'a => unit,
       onError: exn => unit,
-    }
+    };
   }
 
   module Notification {
@@ -135,14 +135,14 @@ module Observable {
       onComplete: unit => unit,
       onError: exn => unit,
       onNext: 'a => unit,
-    }
+    };
 
     module Lambda {
       type t('a) = {
         onComplete: unit => unit,
         onError: exn => unit,
         onNext: 'a => unit,
-      }
+      };
     }
   }
 
@@ -153,7 +153,7 @@ module Observable {
       onComplete: unit => unit,
       onError: exn => unit,
       onNext: 'a => unit,
-    }
+    };
   }
 
   module Notification {
@@ -173,5 +173,5 @@ module Scheduler {
   type t = {
     run: (unit => unit) => Subscription.t,
     timeout: (unit => unit) => int => Subscription.t,
-  }
+  };
 }
