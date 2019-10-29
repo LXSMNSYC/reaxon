@@ -4,10 +4,9 @@
   "description": "Reactive Extensions for Reason",
   "main": "index.js",
   "scripts": {
-    "build": "./node_modules/.bin/bsb -make-world",
-    "start": "./node_modules/.bin/bsb -make-world -w",
-    "clean": "./node_modules/.bin/bsb -clean-world",
-    "docs": "./node_modules/.bin/bsdoc build Reaxon"
+    "build": "bsb -make-world",
+    "start": "bsb -make-world -w",
+    "clean": "bsb -clean-world"
   },
   "repository": {
     "type": "git",
