@@ -46,7 +46,7 @@ let concatWith: Types.Maybe.t('a) => Types.Maybe.t('a) => Types.Observable.t('a)
  * indicates whether the source Maybe emitted a
  * specified item. 
  */
-let contains: 'a => ('a => 'a => bool) => MaybeTypes.s('source, 'a) => SingleTypes.operator('downstream, bool);
+let contains: 'a => ('a => 'a => bool) => Types.Maybe.t('a) => Types.Single.t(bool);
 /**
  * Returns a Single that counts the total number
  * of items emitted (0 or 1) by the source Maybe
