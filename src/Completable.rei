@@ -332,7 +332,7 @@ let subscribeOn: Types.Scheduler.t => Types.Completable.t => Types.Completable.t
  * Completable terminates (wins the termination race)
  * while cancelling the connection to the losing source. 
  */
-let takeUntil: CompletableTypes.s('other) => CompletableTypes.s('source) => CompletableTypes.operator('downstream);
+let takeUntil: Types.Completable.t => Types.Completable.t => Types.Completable.t;
 /**
  * Returns a Completable that runs this Completable
  * and emits a Exceptions.Timeout in case this
