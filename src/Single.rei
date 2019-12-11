@@ -66,7 +66,7 @@ let delaySubscription: int => Types.Scheduler.t => Types.Single.t('a) => Types.S
  * Single until the other Single has emitted a
  * success item.
  */
-let delayUntil: SingleTypes.s('other, 'a) => SingleTypes.s('source, 'a) => SingleTypes.operator('downstream, 'a);
+let delayUntil: Types.Single.t('b) => Types.Single.t('a) => Types.Single.t('a);
 /**
  * Maps the Notification success value of this
  * Single back into normal onSuccess or onError.
@@ -168,18 +168,6 @@ let flatMapMaybe: ('a => Types.Maybe.t('a)) => Types.Single.t('a) => Types.Maybe
  * Single, where that function returns an Observable. 
  */
 let flatMapObservable: ('a => Types.Observable.t('a)) => Types.Single.t('a) => Types.Observable.t('a);
-/**
- * Maps the success value of the upstream Single into
- * an array and emits its items as an Observable
- * sequence. 
- */
-let flattenToArrayObservable: ('a => array('a)) => SingleTypes.s('source, 'a) => ObservableTypes.operator('downstream, 'a);
-/**
- * Maps the success value of the upstream Single into
- * a list and emits its items as an Observable
- * sequence. 
- */
-let flattenToListObservable: ('a => list('a)) => SingleTypes.s('source, 'a) => ObservableTypes.operator('downstream, 'a);
 /**
  * Wraps an specific Completable into a Single and
  * signals Exceptions.NoSuchElement on completion
