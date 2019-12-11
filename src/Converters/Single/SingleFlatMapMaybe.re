@@ -25,8 +25,8 @@
  * @author Alexis Munsayac <alexis.munsayac@gmail.com>
  * @copyright Alexis Munsayac 2019
  */
-let operator = (mapper: 'a => Types.Maybe.t('a), source: Types.Single.t('a)): Types.Maybe.t('a) => {
-  subscribeWith: (obs: Types.Maybe.Observer.t('a)) => {
+let operator = (mapper: 'a => Types.Maybe.t('b), source: Types.Single.t('a)): Types.Maybe.t('b) => {
+  subscribeWith: (obs: Types.Maybe.Observer.t('b)) => {
     let alive = ref(true);
 
     let outerSub: ref(option(Types.Subscription.t)) = ref(None);
@@ -44,7 +44,7 @@ let operator = (mapper: 'a => Types.Maybe.t('a), source: Types.Single.t('a)): Ty
 
     obs.onSubscribe(subscription);
 
-    let innerObserver: Types.Maybe.Observer.t('a) = ProtectedMaybeObserver.make({
+    let innerObserver: Types.Maybe.Observer.t('b) = ProtectedMaybeObserver.make({
       onSubscribe: (sub: Types.Subscription.t) => {
         if (alive^) {
           innerSub := Some(sub);
@@ -58,7 +58,7 @@ let operator = (mapper: 'a => Types.Maybe.t('a), source: Types.Single.t('a)): Ty
           subscription.cancel();
         }
       },
-      onSuccess: (x: 'a) => {
+      onSuccess: (x: 'b) => {
         if (alive^) {
           obs.onSuccess(x);
           subscription.cancel();
