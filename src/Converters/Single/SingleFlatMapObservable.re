@@ -25,8 +25,8 @@
  * @author Alexis Munsayac <alexis.munsayac@gmail.com>
  * @copyright Alexis Munsayac 2019
  */
-let operator = (mapper: 'a => Types.Observable.t('a), source: Types.Single.t('a)): Types.Observable.t('a) => {
-  subscribeWith: (obs: Types.Observable.Observer.t('a)) => {
+let operator = (mapper: 'a => Types.Observable.t('b), source: Types.Single.t('a)): Types.Observable.t('b) => {
+  subscribeWith: (obs: Types.Observable.Observer.t('b)) => {
     let alive = ref(true);
 
     let outerSub: ref(option(Types.Subscription.t)) = ref(None);
@@ -44,7 +44,7 @@ let operator = (mapper: 'a => Types.Observable.t('a), source: Types.Single.t('a)
 
     obs.onSubscribe(subscription);
 
-    let innerObserver: Types.Observable.Observer.t('a) = ProtectedObservableObserver.make({
+    let innerObserver: Types.Observable.Observer.t('b) = ProtectedObservableObserver.make({
       onSubscribe: (sub: Types.Subscription.t) => {
         if (alive^) {
           innerSub := Some(sub);
@@ -66,7 +66,7 @@ let operator = (mapper: 'a => Types.Observable.t('a), source: Types.Single.t('a)
           raise(x);
         }
       },
-      onNext: (x: 'a) => {
+      onNext: (x: 'b) => {
         if (alive^) {
           obs.onNext(x);
         }
