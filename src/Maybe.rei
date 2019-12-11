@@ -52,7 +52,7 @@ let contains: 'a => ('a => 'a => bool) => Types.Maybe.t('a) => Types.Single.t(bo
  * of items emitted (0 or 1) by the source Maybe
  * and emits this count as a 64-bit Long.
  */
-let count: MaybeTypes.s('source, 'a) => SingleTypes.operator('downstream, int);
+let count: Types.Maybe.t('a) => Types.Single.t(int);
 /**
  * Returns a Single that emits the item emitted by
  * the source Maybe or a specified default item if
