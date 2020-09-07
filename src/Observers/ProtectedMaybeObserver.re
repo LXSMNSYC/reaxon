@@ -50,6 +50,8 @@ let make = (obs: Types.Maybe.Observer.t('a)): Types.Maybe.Observer.t('a) => {
     onError: (x: exn) => {
       if (subscribed^) {
         obs.onError(x);
+      } else {
+        raise(x);
       }
     },
   };

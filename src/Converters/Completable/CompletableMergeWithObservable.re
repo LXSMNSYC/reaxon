@@ -26,32 +26,34 @@
  * @copyright Alexis Munsayac 2019
  */
 let operator = (other: Types.Observable.t('a), source: Types.Completable.t): Types.Observable.t('a) => {
-  subscribeWith: (obs: Types.Observable.Observer.t('a)) => {
-    let composite = CompositeSubscription.make();
-
-    let { subscription, alive }: CompositeSubscription.t = composite;
+  subscribeWith: ({ onSubscribe, onComplete, onError, onNext }: Types.Observable.Observer.t('a)) => {
+    let (alive, left, right, subscription) = DoubleSubscription.make();
 
     let aFinished = ref(false);
     let bFinished = ref(false);
 
-    obs.onSubscribe(subscription);
+    onSubscribe(subscription);
 
     source.subscribeWith(SafeCompletableObserver.make({
       onSubscribe: (sub: Types.Subscription.t) => {
-        composite.add(sub);
+        if (alive^) {
+          left := Some(sub);
+        } else {
+          sub.cancel();
+        }
       },
       onComplete: () => {
-        if (alive()) {
+        if (alive^) {
           aFinished := true;
           if (bFinished^) {
-            obs.onComplete();
+            onComplete();
             subscription.cancel();
           }
         }
       },
       onError: (x: exn) => {
-        if (alive()) {
-          obs.onError(x);
+        if (alive^) {
+          onError(x);
           subscription.cancel();
         } else {
           raise(x);
@@ -61,27 +63,31 @@ let operator = (other: Types.Observable.t('a), source: Types.Completable.t): Typ
 
     other.subscribeWith(SafeObservableObserver.make({
       onSubscribe: (sub: Types.Subscription.t) => {
-        composite.add(sub);
+        if (alive^) {
+          right := Some(sub);
+        } else {
+          sub.cancel();
+        }
       },
       onComplete: () => {
-        if (alive()) {
+        if (alive^) {
           bFinished := true;
           if (aFinished^) {
-            obs.onComplete();
+            onComplete();
             subscription.cancel();
           }
         }
       },
       onError: (x: exn) => {
-        if (alive()) {
-          obs.onError(x);
+        if (alive^) {
+          onError(x);
           subscription.cancel();
         } else {
           raise(x);
         }
       },
       onNext: (x: 'a) => {
-        obs.onNext(x);
+        onNext(x);
       },
     }));
   }

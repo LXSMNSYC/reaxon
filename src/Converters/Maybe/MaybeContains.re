@@ -26,25 +26,19 @@
  * @copyright Alexis Munsayac 2019
  */
 let operator = (item: 'a, comparer: 'a => 'a => bool, source: Types.Maybe.t('a)): Types.Single.t(bool) => {
-  subscribeWith: (obs: Types.Single.Observer.t(bool)) => {
-    let safe = SafeSingleObserver.make(obs);
-
-    source.subscribeWith({
-      onSubscribe: (subscription: Types.Subscription.t) => {
-        safe.onSubscribe(subscription);
-      },
+  subscribeWith: ({ onSubscribe, onSuccess, onError }: Types.Single.Observer.t(bool)) => {
+    source.subscribeWith(SafeMaybeObserver.make({
+      onSubscribe,
       onComplete: () => {
-        safe.onSuccess(false);
+        onSuccess(false);
       },
       onSuccess: (x: 'a) => {
         switch (comparer(x, item)) {
-          | result => safe.onSuccess(result);
-          | exception e => safe.onError(e);
+          | result => onSuccess(result);
+          | exception e => onError(e);
         }
       },
-      onError: (err: exn) => {
-        safe.onError(err);
-      },
-    });
+      onError,
+    }));
   },
 }

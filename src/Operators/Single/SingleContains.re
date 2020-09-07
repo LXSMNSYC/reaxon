@@ -26,20 +26,16 @@
  * @copyright Alexis Munsayac 2019
  */
 let operator = (item: 'a, comparer: ('a, 'a) => bool, source: Types.Single.t('a)): Types.Single.t(bool) => {
-  subscribeWith: (obs: Types.Single.Observer.t(bool)) => {
+  subscribeWith: ({ onSubscribe, onSuccess, onError }: Types.Single.Observer.t(bool)) => {
     source.subscribeWith(SafeSingleObserver.make({
-      onSubscribe: (sub: Types.Subscription.t) => {
-        obs.onSubscribe(sub);
-      },
+      onSubscribe,
       onSuccess: (x: 'a) => {
         switch (comparer(x, item)) {
-          | result => obs.onSuccess(result)
-          | exception e => obs.onError(e);
+          | result => onSuccess(result)
+          | exception e => onError(e);
         };
       },
-      onError: (x: exn) => {
-        obs.onError(x);
-      },
+      onError,
     }));
   }
 };

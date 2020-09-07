@@ -26,41 +26,28 @@
  * @copyright Alexis Munsayac 2019
  */
 let operator = (mapper: 'a => Types.Observable.t('b), source: Types.Maybe.t('a)): Types.Observable.t('b) => {
-  subscribeWith: (obs: Types.Observable.Observer.t('b)) => {
-    let alive = ref(true);
+  subscribeWith: ({ onSubscribe, onComplete, onError, onNext }: Types.Observable.Observer.t('b)) => {
+    let (alive, left, right, subscription) = DoubleSubscription.make();
 
-    let outerSub: ref(option(Types.Subscription.t)) = ref(None);
-    let innerSub: ref(option(Types.Subscription.t)) = ref(None);
-
-    let subscription: Types.Subscription.t = {
-      cancel: () => {
-        if (alive^) {
-          OptionalSubscription.cancel(outerSub^);
-          OptionalSubscription.cancel(innerSub^);
-          alive := false;
-        }
-      }
-    };
-
-    obs.onSubscribe(subscription);
+    onSubscribe(subscription);
 
     let innerObserver: Types.Observable.Observer.t('b) = ProtectedObservableObserver.make({
       onSubscribe: (sub: Types.Subscription.t) => {
         if (alive^) {
-          innerSub := Some(sub);
+          left := Some(sub);
         } else {
           sub.cancel();
         }
       },
       onComplete: () => {
         if (alive^) {
-          obs.onComplete();
+          onComplete();
           subscription.cancel();
         }
       },
       onError: (x: exn) => {
         if (alive^) {
-          obs.onError(x);
+          onError(x);
           subscription.cancel();
         } else {
           raise(x);
@@ -68,7 +55,7 @@ let operator = (mapper: 'a => Types.Observable.t('b), source: Types.Maybe.t('a))
       },
       onNext: (x: 'b) => {
         if (alive^) {
-          obs.onNext(x);
+          onNext(x);
         } 
       },
     });
@@ -76,14 +63,14 @@ let operator = (mapper: 'a => Types.Observable.t('b), source: Types.Maybe.t('a))
     let outerObserver: Types.Maybe.Observer.t('a) = ProtectedMaybeObserver.make({
       onSubscribe: (sub: Types.Subscription.t) => {
         if (alive^ ) {
-          outerSub := Some(sub);
+          right := Some(sub);
         } else {
           sub.cancel();
         }
       },
       onComplete: () => {
         if (alive^) {
-          obs.onComplete();
+          onComplete();
           subscription.cancel();
         }
       },
@@ -92,10 +79,10 @@ let operator = (mapper: 'a => Types.Observable.t('b), source: Types.Maybe.t('a))
           switch (mapper(x)) {
             | item => {
               item.subscribeWith(innerObserver);
-              OptionalSubscription.cancel(outerSub^);
+              OptionalSubscription.cancel(right^);
             } 
             | exception e => {
-              obs.onError(e);
+              onError(e);
               subscription.cancel();
             }
           }
@@ -103,7 +90,7 @@ let operator = (mapper: 'a => Types.Observable.t('b), source: Types.Maybe.t('a))
       },
       onError: (x: exn) => {
         if (alive^) {
-          obs.onError(x);
+          onError(x);
           subscription.cancel();
         } else {
           raise(x);

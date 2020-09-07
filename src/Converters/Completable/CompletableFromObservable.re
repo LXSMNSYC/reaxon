@@ -26,17 +26,11 @@
  * @copyright Alexis Munsayac 2019
  */
 let operator = (source: Types.Observable.t('a)): Types.Completable.t => {
-  subscribeWith: (obs: Types.Completable.Observer.t) => {
+  subscribeWith: ({ onSubscribe, onComplete, onError }: Types.Completable.Observer.t) => {
     source.subscribeWith(SafeObservableObserver.make({
-      onSubscribe: (sub: Types.Subscription.t) => {
-        obs.onSubscribe(sub);
-      },
-      onComplete: () => {
-        obs.onComplete();
-      },
-      onError: (x: exn) => {
-        obs.onError(x);
-      },
+      onSubscribe,
+      onComplete,
+      onError,
       onNext: (_: 'a) => (),
     }));
   }

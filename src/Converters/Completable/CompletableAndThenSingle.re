@@ -26,41 +26,28 @@
  * @copyright Alexis Munsayac 2019
  */
 let operator = (other: Types.Single.t('a), source: Types.Completable.t): Types.Single.t('a) => {
-  subscribeWith: (obs: Types.Single.Observer.t('a)) => {
-    let alive = ref(true);
+  subscribeWith: ({ onSubscribe, onSuccess, onError }: Types.Single.Observer.t('a)) => {
+    let (alive, outer, inner, subscription) = DoubleSubscription.make();
 
-    let innerSub: ref(option(Types.Subscription.t)) = ref(None);
-    let outerSub: ref(option(Types.Subscription.t)) = ref(None);
-
-    let subscription: Types.Subscription.t = {
-      cancel: () => {
-        if (alive^) {
-          OptionalSubscription.cancel(innerSub^);
-          OptionalSubscription.cancel(outerSub^);
-          alive := false;
-        }
-      },
-    };
-
-    obs.onSubscribe(subscription);
+    onSubscribe(subscription);
 
     let innerObserver = ProtectedSingleObserver.make({
       onSubscribe: (sub: Types.Subscription.t) => {
         if (alive^) {
-          innerSub := Some(sub);
+          inner := Some(sub);
         } else {
           sub.cancel();
         }
       },
       onSuccess: (x: 'a) => {
         if (alive^) {
-          obs.onSuccess(x);
+          onSuccess(x);
           subscription.cancel();
         }
       },
       onError: (x: exn) => {
         if (alive^) {
-          obs.onError(x);
+          onError(x);
           subscription.cancel();
         } else {
           raise(x);
@@ -71,7 +58,7 @@ let operator = (other: Types.Single.t('a), source: Types.Completable.t): Types.S
     let outerObserver = ProtectedCompletableObserver.make({
       onSubscribe: (sub: Types.Subscription.t) => {
         if (alive^) {
-          outerSub := Some(sub);
+          outer := Some(sub);
         } else {
           sub.cancel();
         }
@@ -79,12 +66,12 @@ let operator = (other: Types.Single.t('a), source: Types.Completable.t): Types.S
       onComplete: () => {
         if (alive^) {
           other.subscribeWith(innerObserver);
-          OptionalSubscription.cancel(outerSub^);
+          OptionalSubscription.cancel(outer^);
         }
       },
       onError: (x: exn) => {
         if (alive^) {
-          obs.onError(x);
+          onError(x);
           subscription.cancel();
         } else {
           raise(x);

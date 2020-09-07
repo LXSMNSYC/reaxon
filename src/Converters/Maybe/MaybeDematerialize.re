@@ -26,21 +26,17 @@
  * @copyright Alexis Munsayac 2019
  */
 let operator = (source: Types.Single.t(Types.Maybe.Notification.t('a))): Types.Maybe.t('a) => {
-  subscribeWith: (obs: Types.Maybe.Observer.t('a)) => {
+  subscribeWith: ({ onSubscribe, onComplete, onSuccess, onError }: Types.Maybe.Observer.t('a)) => {
     source.subscribeWith(SafeSingleObserver.make({
-      onSubscribe: (sub: Types.Subscription.t) => {
-        obs.onSubscribe(sub);
-      },
+      onSubscribe,
       onSuccess: (x: Types.Maybe.Notification.t('a)) => {
         switch (x) {
-          | Types.Maybe.Notification.OnSuccess(item) => obs.onSuccess(item) 
-          | Types.Maybe.Notification.OnError(item) => obs.onError(item)
-          | Types.Maybe.Notification.OnComplete => obs.onComplete()
+          | Types.Maybe.Notification.OnSuccess(item) => onSuccess(item) 
+          | Types.Maybe.Notification.OnError(item) => onError(item)
+          | Types.Maybe.Notification.OnComplete => onComplete()
         };
       },
-      onError: (x: exn) => {
-        obs.onError(x);
-      },
+      onError,
     }));
   },
 };

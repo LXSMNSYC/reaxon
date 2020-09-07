@@ -45,6 +45,8 @@ let make = (obs: Types.Completable.Observer.t): Types.Completable.Observer.t => 
     onError: (x: exn) => {
       if (subscribed^) {
         obs.onError(x);
+      } else {
+        raise(x);
       }
     },
   };

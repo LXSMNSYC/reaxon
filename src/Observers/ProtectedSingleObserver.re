@@ -45,6 +45,8 @@ let make = (obs: Types.Single.Observer.t('a)): Types.Single.Observer.t('a) => {
     onError: (x: exn) => {
       if (subscribed^) {
         obs.onError(x);
+      } else {
+        raise(x);
       }
     },
   };

@@ -27,45 +27,34 @@
  */
 let operator = (time: int, scheduler: Types.Scheduler.t, source: Types.Single.t('a)): Types.Single.t('a) => {
   subscribeWith: (obs: Types.Single.Observer.t('a)) => {
-    let alive = ref(true);
-    let outerRef: ref(option(Types.Subscription.t)) = ref(None);
-    let innerRef: ref(option(Types.Subscription.t)) = ref(None);
+    let (alive, outer, inner, subscription) = DoubleSubscription.make();
 
-    let subscription: Types.Subscription.t = {
-      cancel: () => {
-        if (alive^) {
-          OptionalSubscription.cancel(outerRef^);
-          OptionalSubscription.cancel(innerRef^);
-          alive := false;
-        }
-      }
-    };
+    obs.onSubscribe(subscription);
 
     let observer: Types.Single.Observer.t('a) = ProtectedSingleObserver.make({
       onSubscribe: (sub: Types.Subscription.t) => {
         if (alive^) {
-          outerRef := Some(sub);
-          obs.onSubscribe(subscription);
+          outer := Some(sub);
         } else {
           sub.cancel();
         }
       },
       onSuccess: (x: 'a) => {
         if (alive^) {
-          innerRef := Some(scheduler.timeout(() => {
+          inner := Some(scheduler.timeout(() => {
             obs.onSuccess(x);
             subscription.cancel();
           }, time));
-          OptionalSubscription.cancel(outerRef^);
+          OptionalSubscription.cancel(outer^);
         }
       },
       onError: (x: exn) => {
         if (alive^) {
-          innerRef := Some(scheduler.timeout(() => {
+          inner := Some(scheduler.timeout(() => {
             obs.onError(x);
             subscription.cancel();
           }, time));
-          OptionalSubscription.cancel(outerRef^);
+          OptionalSubscription.cancel(outer^);
         } else {
           raise(x);
         }

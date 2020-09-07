@@ -45,6 +45,8 @@ let make = (obs: Types.Observable.Observer.t('a)): Types.Observable.Observer.t('
     onError: (x: exn) => {
       if (subscribed^) {
         obs.onError(x);
+      } else {
+        raise(x);
       }
     },
     onNext: (x: 'a) => {

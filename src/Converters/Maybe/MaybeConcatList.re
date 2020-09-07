@@ -26,7 +26,7 @@
  * @copyright Alexis Munsayac 2019
  */
 let operator = (sources: list(Types.Maybe.t('a))): Types.Observable.t('a) => {
-  subscribeWith: (obs: Types.Observable.Observer.t('a)) => {
+  subscribeWith: ({ onSubscribe, onComplete, onError, onNext }: Types.Observable.Observer.t('a)) => {
     let alive = ref(true);
 
     let subRef = ref(None);
@@ -44,7 +44,7 @@ let operator = (sources: list(Types.Maybe.t('a))): Types.Observable.t('a) => {
 
     let rec subscribe = (index) => {
       if (index >= max) {
-        obs.onComplete();
+        onComplete();
         subscription.cancel();
       } else {
         subRef := None;
@@ -66,14 +66,14 @@ let operator = (sources: list(Types.Maybe.t('a))): Types.Observable.t('a) => {
           onSuccess: (x: 'a) => {
             if (alive^) {
               let oldRef = subRef^;
-              obs.onNext(x);
+              onNext(x);
               subscribe(index + 1);
               OptionalSubscription.cancel(oldRef);
             }
           },
           onError: (x: exn) => {
             if (alive^) {
-              obs.onError(x);
+              onError(x);
               subscription.cancel();
             } else {
               raise(x);
@@ -83,7 +83,7 @@ let operator = (sources: list(Types.Maybe.t('a))): Types.Observable.t('a) => {
       }
     };
 
-    obs.onSubscribe(subscription);
+    onSubscribe(subscription);
     subscribe(0);
   }
 };

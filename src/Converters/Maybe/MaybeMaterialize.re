@@ -26,19 +26,17 @@
  * @copyright Alexis Munsayac 2019
  */
 let operator = (source: Types.Maybe.t('a)): Types.Single.t(Types.Maybe.Notification.t('a)) => {
-  subscribeWith: (obs: Types.Single.Observer.t(Types.Maybe.Notification.t('a))) => {
+  subscribeWith: ({ onSubscribe, onSuccess }: Types.Single.Observer.t(Types.Maybe.Notification.t('a))) => {
     source.subscribeWith(SafeMaybeObserver.make({
-      onSubscribe: (sub: Types.Subscription.t) => {
-        obs.onSubscribe(sub);
-      },
+      onSubscribe,
       onComplete: () => {
-        obs.onSuccess(Types.Maybe.Notification.OnComplete);
+        onSuccess(Types.Maybe.Notification.OnComplete);
       },
       onSuccess: (x: 'a) => {
-        obs.onSuccess(Types.Maybe.Notification.OnSuccess(x));
+        onSuccess(Types.Maybe.Notification.OnSuccess(x));
       },
       onError: (x: exn) => {
-        obs.onSuccess(Types.Maybe.Notification.OnError(x));
+        onSuccess(Types.Maybe.Notification.OnError(x));
       },
     }));
   },

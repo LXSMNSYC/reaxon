@@ -26,20 +26,16 @@
  * @copyright Alexis Munsayac 2019
  */
 let operator = (source: Types.Single.t(Types.Completable.Notification.t)): Types.Completable.t => {
-  subscribeWith: (obs: Types.Completable.Observer.t) => {
+  subscribeWith: ({ onSubscribe, onComplete, onError }: Types.Completable.Observer.t) => {
     source.subscribeWith(SafeSingleObserver.make({
-      onSubscribe: (sub: Types.Subscription.t) => {
-        obs.onSubscribe(sub);
-      },
+      onSubscribe,
       onSuccess: (x: Types.Completable.Notification.t) => {
         switch (x) {
-          | Types.Completable.Notification.OnError(item) => obs.onError(item)
-          | Types.Completable.Notification.OnComplete => obs.onComplete()
+          | Types.Completable.Notification.OnError(item) => onError(item)
+          | Types.Completable.Notification.OnComplete => onComplete()
         };
       },
-      onError: (x: exn) => {
-        obs.onError(x);
-      },
+      onError,
     }));
   },
 };
